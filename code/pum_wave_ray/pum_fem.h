@@ -15,6 +15,7 @@
 using namespace std::complex_literals;
 
 class exp_wave{
+// f(x,y) = exp(i(d1x+d2y))
 public:
     exp_wave(double d1, double d2): d1_(d1), d2_(d2) {}
     std::complex<double> operator=(Eigen::Vector2d x){
@@ -24,6 +25,7 @@ private:
     double d1_, d2_; // frequency
 };
 
+template <typenmae FUNCT_G, typename FUNCT_H>
 class PUM_FEM {
 public:
     using size_type = unsigned int;
@@ -40,7 +42,7 @@ public:
     void Prolongation_P(); // generate P
     void Prolongation_Q(); // generate Q
     
-    std::pair<elem_mat_t, res_vec_t> build_finest();
+    std::pair<elem_mat_t, res_vec_t> build_finest(); // equation: Ax=\phi, return (A, \phi)
     
 private:
     size_type L;  // number of refinement steps
@@ -56,11 +58,13 @@ private:
     mat_scalar int_mesh(int level, lf::uscalfe::MeshFunctionGlobal f);
         // use three point quadtature rule to approximate \int_fdx based on mesh_hierarchy->getMesh(level)
     
-    (mat_scalar)(Eigen::Vector2d) g;
+    FUNCT_G g;
+    FUNCT_H h;
 }
 
 
 void Gaussian_Seidel(PUM_FEM::elem_mat_t& A, PUM_FEM::rhs_vec_t& phi, PUM_FEM::rhs_vec_t& u, int t) {
+    // u: initial value; t: number of iterations
     int N = A.rows();
     for(int i = 0; i < t; ++i){
         for(int j = 0; j < N; ++j) {
