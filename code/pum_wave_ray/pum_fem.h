@@ -33,21 +33,23 @@ public:
     using elem_mat_t = Eigen::Matrix<mat_scalar, Eigen::Dynamic, Eigen::Dynamic>;
     using rhs_vec_t = Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1>;
     
-    PUM_FEM(size_type L_, double k_, std::shared_ptr<lf::mesh::Mesh> mesh):
-        L(L_), k(k_), coarsest_mesh(mesh),
-    mesh_hierarchy(lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(coarsest_mesh, L)){}
+    PUM_FEM(size_type L, double k, std::string mesh_path, FUNCT_G g, FUNCT_H h); // constructor 
     
     lf::assemble::UniformFEDofHandler generate_dof(size_type);
+    
+    // return mesh at l-th level
+    std::shared_ptr<lf::mesh::Mesh> getmesh(size_type l) { return mesh_hierarchy->getMesh(l); }
     
     void Prolongation_P(); // generate P
     void Prolongation_Q(); // generate Q
     
     std::pair<elem_mat_t, res_vec_t> build_finest(); // equation: Ax=\phi, return (A, \phi)
-    
+    mat_scalar int_mesh(int level, lf::uscalfe::MeshFunctionGlobal f);
+    // use three point quadtature rule to approximate \int_fdx based on mesh_hierarchy->getMesh(level)
 private:
-    size_type L;  // number of refinement steps
-    double k;  // wave number in the Helmholtz equation
-    std::shared_ptr<lf::mesh::Mesh> coarsest_mesh; // pointer to the coarsest mesh, from which refinement will start
+    size_type L_;  // number of refinement steps
+    double k_;  // wave number in the Helmholtz equation
+    lf::io::GmshReader reader; // read the coarest mesh
     std::shared_ptr<lf::refinement::MeshHierarchy> mesh_hierarchy;
     // mesh_hierarchy->getMesh(0) -- coarsest
     // mesh_hierarchy->getMesh(L) -- finest
@@ -55,11 +57,8 @@ private:
     std::vector<elem_mat_t> P; // P[i]: level i -> level i+1, standard space
     std::vector<elem_mat_t> Q; // Q[i]: level i -> level i+1, plane wave
     
-    mat_scalar int_mesh(int level, lf::uscalfe::MeshFunctionGlobal f);
-        // use three point quadtature rule to approximate \int_fdx based on mesh_hierarchy->getMesh(level)
-    
-    FUNCT_G g;
-    FUNCT_H h;
+    FUNCT_G g_;
+    FUNCT_H h_;
 }
 
 

@@ -27,7 +27,8 @@ lf::assemble::UniformFEDofHandler PUM_FEM::generate_dof(size_type level) {
     return lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), num}});
 }
 
-PUM_FEM::PUM_FEM(size_type L, double k, std::string mesh_path): L_(L), k_(k) {
+template <typename FUNCT_G, typename FUNCT_H>
+PUM_FEM::PUM_FEM(size_type L, double k, std::string mesh_path, FUNCT_G g, FUNCT_H h): L_(L), k_(k), g_(g), h_(h) {
     auto mesh_factory = std::make_unique<lf::mesh::hybrid2d::MeshFactory>(2);
     reader = lf::io::GmshReader(std::move(mesh_factory), mesh_path);
     mesh_hierarchy = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(mesh, L);
@@ -100,7 +101,6 @@ void PUM_FEM::Prolongation_Q() {
             auto dl1t = generate_fre(L_, k_, l, i);
             auto dl1t1 = generate_fre(L_, k_, l, i+1);
             auto dlt = generate_fre(L_, k_, l, 2*i+1);
-            
             
             Eigen::Matrix<mat_scalar, 2, 2> A;
             A << int_mesh(L_, mf_one),
@@ -203,8 +203,7 @@ PUM_FEM::build_finest() {
     // modify linear system of equations
     lf::assemble::FixFlaggedSolutionCompAlt<mat_scalar>(
         [&ess_dof_select](size::type dof_idx)->std::pair<bool, mat_scalar> {
-            return ess_dof_select[dof_idx];
-        },
+            return ess_dof_select[dof_idx];},
     A, phi);
     return {A, phi};
 }
