@@ -29,4 +29,4 @@ private:
     size_type L;
     size_type l;
     double k;
-}
+};

@@ -17,47 +17,47 @@
 
 #include "EdgeMat.h"
 #include "ElementMatrix.h"
-#inlucde "pum_fem.h"
+#include "pum_fem.h"
 
 using namespace std::complex_literals;
 
-lf::assemble::UniformFEDofHandler PUM_FEM::generate_dof(size_type level) {
+lf::assemble::UniformFEDofHandler PUM_FEM::generate_dof(unsigned int level) {
     auto mesh = mesh_hierarchy->getMesh(level);
     size_type num = level == L_ ? 1 : std::pow(2, L_ + 1 - level);
     return lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), num}});
 }
 
-template <typename FUNCT_G, typename FUNCT_H>
-PUM_FEM::PUM_FEM(size_type L, double k, std::string mesh_path, FUNCT_G g, FUNCT_H h): L_(L), k_(k), g_(g), h_(h) {
+PUM_FEM::PUM_FEM(unsigned int L, double k, std::string mesh_path, PUM_FEM::function_type g, PUM_FEM::function_type h): 
+    L_(L), k_(k), g_(g), h_(h) {
     auto mesh_factory = std::make_unique<lf::mesh::hybrid2d::MeshFactory>(2);
-    reader = lf::io::GmshReader(std::move(mesh_factory), mesh_path);
-    mesh_hierarchy = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(mesh, L);
+    reader = std::make_shared<lf::io::GmshReader>(std::move(mesh_factory), mesh_path);
+    mesh_hierarchy = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(reader->mesh(), L);
 }
 
-void PUM_FEM::generate_dof::Prolongation_P(){
-    P = std::vector<elem_mat_t>(L_-1);
-    for(int l = 0; l < L_ - 1; ++l) {
+void PUM_FEM::Prolongation_P(){
+    P = std::vector<elem_mat_t>(L_);
+    for(int l = 0; l < L_; ++l) {
         auto coarse_mesh = mesh_hierarchy->getMesh(l);
         auto fine_mesh = mesh_hierarchy->getMesh(l+1);
         
         auto coarse_dofh = lf::assemble::UniformFEDofHandler(coarse_mesh,{{lf::base::RefEl::kPoint(), 1}});
         auto fine_dof = lf::assemble::UniformFEDofHandler(fine_mesh,{{lf::base::RefEl::kPoint(), 1}});
         
-        // TODO: how to handle when the boundary is not included
         size_type n_c = coarse_dofh.NumDofs();
         size_type n_f = fine_dof.NumDofs();
         
         elem_mat_t M(n_c, n_f);
         
-        for(auto &edge: fine_mesh->Entities(1)) {
-            auto points{edge->SubEntities(1)};
-            size_type num_points = edge->NumSubEntities(1);
+        for(const lf::mesh::Entity* edge: fine_mesh->Entities(1)) {
+            nonstd::span<const lf::mesh::Entity* const> points = edge->SubEntities(1);
+            size_type num_points = (*edge).RefEl().NumSubEntities(1); // number of endpoints, should be 2
             for(int j = 0; j < num_points; ++j) {
-                // TODO: check whether the coarser grid can recognize a verticle from the finer grid
-                if(coarse_mesh->contains(points[j])){
-                    M(coarse_mesh->Index(points[j]), coarse_mesh->Index(points[j])) = 1;
-                
-                    M(coarse_mesh->Index(points[j]),coarse_mesh->Index(points[1-j])) = 0.5;
+                auto parent_p = mesh_hierarchy->ParentEntity(l+1, *points[j]); // parent entity of current point 
+                if(parent_p->RefEl() == lf::base::RefEl::kPoint()) {
+                    // it's parent is also a NODE, if the point in finer mesh does not show in coarser mesh,
+                    // then it's parent is an EDGE
+                    M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[j])) = 1;
+                    M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[1-j])) = 0.5;
                 }
             }
         }
@@ -66,7 +66,8 @@ void PUM_FEM::generate_dof::Prolongation_P(){
 }
 
 
-PUM_FEM::mat_scalar PUM_FEM::int_mesh(int level, lf::uscalfe::MeshFunctionGlobal f) {
+
+PUM_FEM::mat_scalar PUM_FEM::integration_mesh(int level, PUM_FEM::function_type f) {
     mat_scalar res = 0;
     
     // traverse all triangles
@@ -74,10 +75,11 @@ PUM_FEM::mat_scalar PUM_FEM::int_mesh(int level, lf::uscalfe::MeshFunctionGlobal
         Eigen::MatrixXd corners = lf::geometry::Corners(*(e->Geometry()));
         double area = lf::geometry::Volume(*(e->Geometry()));
         mat_scalar tmp = 0;
-        res += (f(corners.col(0)) + f(corners.col(1)) + f(corners.col(2))) * area / 3;
+        res += (f(corners.col(0)) + f(corners.col(1)) + f(corners.col(2))) * area / 3.;
     }
     return res;
 }
+
 
 std::vector<double> generate_fre(int L, double k, int l, int t) {
     int N = (1 << (L + 1 - l));
@@ -87,11 +89,11 @@ std::vector<double> generate_fre(int L, double k, int l, int t) {
 }
 
 void PUM_FEM::Prolongation_Q() {
-    Q = std::vector<elem_mat_t>(L_-1);
+    Q = std::vector<elem_mat_t>(L_);
     
-    lf::uscalfe::MeshFunctionGlobal mf_one{[](Eigen::Vector2d x)->double{return 1.0;}};
+    auto identity = [](Eigen::Vector2d x)->mat_scalar{ return 1.0;};
     
-    for(int l = 0; l < L_ - 1; ++l) {
+    for(int l = 0; l < L_; ++l) {
         int N1 = std::pow(2, L_ + 1 - l);
         int N2 = std::pow(2, L_ - l);
         
@@ -103,13 +105,13 @@ void PUM_FEM::Prolongation_Q() {
             auto dlt = generate_fre(L_, k_, l, 2*i+1);
             
             Eigen::Matrix<mat_scalar, 2, 2> A;
-            A << int_mesh(L_, mf_one),
-                int_mesh(L_, exp_wave(dl1t1[0] - dl1t[0], dl1t1[1] - dl1t[1])),
-                int_mesh(L_, exp_wave(dl1t[0] - dl1t1[0], dl1t[1] - dl1t1[1])),
-                int_mesh(L_, mf_one);
+            A << integration_mesh(L_, identity),
+                integration_mesh(L_, exp_wave(dl1t1[0] - dl1t[0], dl1t1[1] - dl1t[1])),
+                integration_mesh(L_, exp_wave(dl1t[0] - dl1t1[0], dl1t[1] - dl1t1[1])),
+                integration_mesh(L_, identity);
             Eigen::Matrix<mat_scalar, 2, 1> b;
-            b << int_mesh(L_, exp_wave(dlt[0] - dl1t[0], dlt[1] - dl1t[1])),
-                int_mesh(L_, exp_wave(dlt[0] - dl1t1[0], dlt[1] - dl1t1[1]));
+            b << integration_mesh(L_, exp_wave(dlt[0] - dl1t[0], dlt[1] - dl1t[1])),
+                integration_mesh(L_, exp_wave(dlt[0] - dl1t1[0], dlt[1] - dl1t1[1]));
             auto tmp = A.colPivHouseholderQr().solve(b);
             
             M(i, 2 * i) = 1;
@@ -120,55 +122,67 @@ void PUM_FEM::Prolongation_Q() {
     }
 }
 
-template <typenmae FUNCT_G, typename FUNCT_H>
-std::pair<PUM_FEM::elem_mat_t, PUM_FEM::res_vec_t>
-PUM_FEM::build_finest() {
+
+/*
+std::pair<lf::assemble::COOMatrix<PUM_FEM::mat_scalar>, PUM_FEM::rhs_vec_t>
+PUM_FEM::build_equation(size_type level) {
     
-    auto mesh = mesh_hierarchy->getMesh(L_);  // finest mesh
+    auto mesh = mesh_hierarchy->getMesh(level);  // get mesh
     
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<mat_scalar>>(mesh);
     
     auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
     
     // assemble for <grad(u), grad(v)> - k^2 uv
-    lf::uscalfe::MeshFunctionGlobal mf_identity{1.};
-    lf::uscalfe::MeshFunctionGlobal mf_k{-k_ * k_};
-    lf::uscalfe::ReactionDiffusionElementProvider<mat_scalar, decltype(mf_identity), decltype(mf_k)> elmat_builder(fe_space, mf_identity, mf_k);
+    auto identity = [this](Eigen::Vector2d x) -> mat_scalar { return 1.; };
+    lf::mesh::utils::MeshFunctionGlobal mf_identity{identity};
+    auto f_k = [this](Eigen::Vector2d x) -> mat_scalar { return -1 * k_ * k_;}; 
+    lf::mesh::utils::MeshFunctionGlobal mf_k{f_k};
+    // lf::uscalfe::ReactionDiffusionElementMatrixProvider<mat_scalar, decltype(mf_identity), decltype(mf_k)> 
+    // 	elmat_builder(fe_space, mf_identity, mf_k);
+    lf::uscalfe::ReactionDiffusionElementMatrixProvider<mat_scalar, decltype(mf_identity), decltype(mf_k)> 
+    	elmat_builder(fe_space, mf_identity, mf_k);
     
     size_type N_dofs(dofh.NumDofs());
     lf::assemble::COOMatrix<mat_scalar> A(N_dofs, N_dofs);
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
     
     // assemble boundary edge matrix, -i*k*u*v over \Gamma_R (outer boundary)
-    lf::uscalfe::MeshFunctionGlobal mf_ik{-1i*k_};
+    auto f_ik = [this](Eigen::Vector2d x) -> mat_scalar { return -1i * k_;};
+    lf::mesh::utils::MeshFunctionGlobal mf_ik{f_ik};
+
     // first need to distinguish between outer and inner boundar
-    auto outer_nr = reader.PhysicalEntityName2Nr("outer_boundary");
-    auto inner_nr = reader.PhysicalEntityName2Nr("inner_boundary");
+    auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
+    auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
 
     auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)}; 
     // modify it to classify inner and outer boundary
     for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
-        if(outer_boundary(edge)) {
+        if(outer_boundary(*edge)) {
             // find a boundary edge, need to determine if it's outer boundary
-            lf::mesh::Entity* parent_edge = edge;
-            for(int i = L_; i > 0; --i) {
+            const lf::mesh::Entity* parent_edge = edge;
+            for(int i = level; i > 0; --i) {
                 parent_edge = mesh_hierarchy->ParentEntity(i, *parent_edge);
             }
-            if(reader.isPhysicalEntity(*parent_edge), inner_nr) {
+            if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
                 // it is the inner boundary
                 outer_boundary(*edge) = false;
             }
         }
     }
                                                    
-    lf::usclafe::MassEdgeMatrixProvider<mat_scalar, decltype(mf_ik), decltype(outer_boundary)> edge_mat_builder(fe_space, mf_ik, outer_boundary);
-    lf::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
+    lf::uscalfe::MassEdgeMatrixProvider<mat_scalar, decltype(mf_ik), decltype(outer_boundary)> 
+    	edge_mat_builder(fe_space, mf_ik, outer_boundary);
+    lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
            
     // Assemble RHS vector, \int_{\Gamma_R} gvdS
     rhs_vec_t phi(N_dofs);
     phi.setZero();
-    lf::uscalfe::ScalarLoadEdgeVectorProvider<mat_scalar, FUNCT_G, decltype(outer_boundary)> edgeVec_builder(fe_sapce, g_, my_selector);
-    lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, A);
+    lf::mesh::utils::MeshFunctionGlobal mf_g{g_};
+    lf::mesh::utils::MeshFunctionGlobal mf_h{h_};
+    lf::uscalfe::ScalarLoadEdgeVectorProvider<mat_scalar, decltype(mf_g), decltype(outer_boundary)> 
+    	edgeVec_builder(fe_space, mf_g, outer_boundary);
+    lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
     
 
     // Treatment of Dirichlet boundary conditions h = u|_{\Gamma_D} (inner boundary condition)
@@ -176,7 +190,7 @@ PUM_FEM::build_finest() {
     auto inner_point{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 2)};
     // flag all nodes on the inner boundary
     for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
-        if(outer_boundary(edge)) {
+        if(outer_boundary(*edge)) {
             // mark the points associated with outer boundary edge to false
             for(const lf::mesh::Entity* subent: edge->SubEntities(1)) {
                 inner_point(*subent) = false;
@@ -188,7 +202,7 @@ PUM_FEM::build_finest() {
     std::vector<std::pair<bool, mat_scalar>> ess_dof_select{};
     for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
         const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
-        const Eigen::Vector2d node_pos{lf::geometry::Corners(dof_node->Geometry()).col()};
+        const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
         const mat_scalar h_val = h_(node_pos);
         if(inner_point(dof_node)) {
             // Dof associated with a entity on the boundary: "essential dof"
@@ -196,14 +210,15 @@ PUM_FEM::build_finest() {
             // at the location of the node.
             ess_dof_select.push_back({true, h_val});
         } else {
-            ess_dof_select.push_back({true, 0});
+            ess_dof_select.push_back({false, h_val});
         }
     }
 
     // modify linear system of equations
     lf::assemble::FixFlaggedSolutionCompAlt<mat_scalar>(
-        [&ess_dof_select](size::type dof_idx)->std::pair<bool, mat_scalar> {
+        [&ess_dof_select](size_type dof_idx)->std::pair<bool, mat_scalar> {
             return ess_dof_select[dof_idx];},
     A, phi);
-    return {A, phi};
+    return std::make_pair(A, phi);
 }
+*/
