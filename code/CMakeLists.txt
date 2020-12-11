@@ -24,27 +24,31 @@ find_package(Eigen3 CONFIG REQUIRED)
 hunter_add_package(GTest)
 find_package(GTest CONFIG REQUIRED)
 
-add_subdirectory(test)
-add_subdirectory(pum_wave_ray)
+# Get Boost
+hunter_add_package(Boost COMPONENTS chrono timer system filesystem program_options)
+find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_options)
 
-
-set(pum_code, 
+set(code_sources
   pum_wave_ray/pum_fem.h
   pum_wave_ray/pum_fem.cpp
+  pum_wave_ray/main.cpp
 )
 
-set(pum_test,
-  test/test_solve_on_finest.cpp
-)
+#set(test_sources
+#  test/test_solve_on_finest.cpp
+#)
+
+# Libraries
+#add_library(pum_wave_ray.soulution ${code_sources})
 
 # define executable
-#add_executable(pum_wave_ray ${pum_code})
+add_executable(pum_wave_ray ${code_sources})
 
-add_executable(pum_test ${pum_test})
+#add_executable(pum_test ${test_sources})
 
 #link executable with LehrFEM++
-target_link_libraries(pum_test 
-  PUBLIC Eigen3::Eigen
+target_link_libraries(pum_wave_ray
+  PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
   LF::lf.mesh
   LF::lf.mesh.utils
   LF::lf.mesh.test_utils
@@ -55,3 +59,20 @@ target_link_libraries(pum_test
   LF::lf.uscalfe
   LF::lf.base
 )
+
+#target_link_libraries(pum_test 
+#  PUBLIC Eigen3::Eigen
+#  LF::lf.mesh
+#  LF::lf.mesh.utils
+#  LF::lf.mesh.test_utils
+#  LF::lf.mesh.hybrid2d
+#  LF::lf.refinement
+#  LF::lf.assemble
+#  LF::lf.io
+#  LF::lf.uscalfe
+#  LF::lf.base
+#  GTest::Main
+#  pum_wave_ray.solution
+#)
+
+#gtest_discover_tests(pum_test)
