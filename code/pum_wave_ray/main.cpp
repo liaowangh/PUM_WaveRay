@@ -59,10 +59,18 @@ int main(){
     PUM_FEM pum_fem(L, k, mesh_path, g, u_sol);
     
     auto finest_mesh = pum_fem.getmesh(L);
-    pum_fem.Prolongation_Q();
+    pum_fem.Restriction_PW();
+    pum_fem.Prolongation_LF();
+    pum_fem.Prolongation_PW();
 
-    std::cout << pum_fem.Q[0].rows() << " " << pum_fem.Q[0].cols() << std::endl;
-    // std::cout << pum_fem.Q[0] << std::endl;
+    for(int i = 0; i < L; ++i) {
+        auto P = pum_fem.Prolongation_PUM(i);
+        auto Q = pum_fem.Restriction_PUM(i);
+        std::cout << P.rows() << " " << P.cols() << " ";
+        std::cout << Q.rows() << " " << Q.cols();
+        std::cout << std::endl;
+    }
+
     /*
     auto eq_pair = pum_fem.build_equation(L);
 

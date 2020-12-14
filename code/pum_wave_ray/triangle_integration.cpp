@@ -1,4 +1,3 @@
-#include <iostream>
 #include <complex>
 #include <cmath>
 #include <vector>
@@ -11,14 +10,14 @@ using data_type = std::complex<double>;
 /*
  * \int_a^b exp(tx)dx
  */
-data_type int_exp(double a, double b, Triangle_Integratioin::data_type t) {
+data_type int_exp(double a, double b, data_type t) {
     return t == 0 ? b - a : (std::exp(t*b) - std::exp(t*a)) / t;
 }
 
 /*
  * \int_a^b x*exp(tx)dx
  */
-data_type int_xexp(double a, double b, Triangle_Integratioin::data_type t) {
+data_type int_xexp(double a, double b, data_type t) {
     return t == 0 ? (b*b - a*a) / 2 :
         (b*std::exp(t*b) - a*std::exp(t*a)) / t - (std::exp(t*b) - std::exp(t*a)) / (t*t);
 }
@@ -26,7 +25,7 @@ data_type int_xexp(double a, double b, Triangle_Integratioin::data_type t) {
 /*
  * \int_a^b x*x*exp(tx)dx
  */
-data_type int_x2exp(double a, double b, Triangle_Integratioin::data_type t) {
+data_type int_x2exp(double a, double b, data_type t) {
     return t == 0 ? (b*b*b - a*a*a) / 3 :
         (b*b*std::exp(t*b) - a*a*std::exp(t*a)) / t - 2 * (b*std::exp(t*b) - a*std::exp(t*a)) / (t*t) +
         2*(std::exp(t*b) - std::exp(t*a)) / std::pow(t, 3);
@@ -38,7 +37,7 @@ data_type int_x2exp(double a, double b, Triangle_Integratioin::data_type t) {
  */
 data_type intK_exp(double k, double d1, double d2) {
     double dd = d2 - d1;
-    Triangle_Integratioin::data_type res = 0;
+    data_type res = 0;
     if(d1 == d2) {
         res = (-1i / (k*d1) + 1 / (k*k*d1*d1)) * std::exp(1i*k*d1) - 1/(k*k*d1*d1);
     } else {
@@ -52,7 +51,7 @@ data_type intK_exp(double k, double d1, double d2) {
  * \int_K xexp(ik(d1*x+d2*y))dxdy
  */
 data_type intK_x_exp(double k, double d1, double d2) {
-    Triangle_Integratioin::data_type res = 0;
+    data_type res = 0;
     double dd = d2 - d1;
     if(d1 == d2) {
         res = (-1 / (2*k*d1) + 1 / (k*k*d1*d1) + 1i / std::pow(k*d1, 3)) *
@@ -78,7 +77,7 @@ data_type intK_y_exp(double k, double d1, double d2) {
  * \int_K x^2exp(ik(d1*x + d2*y))dxdy
  */
 data_type intK_x2_exp(double k, double d1, double d2) {
-    Triangle_Integratioin::data_type res = 0;
+    data_type res = 0;
     if(d1 == d2) {
         res += 1 / (3i * k * d1) + 1 / std::pow(k * d1, 2);
         res += 2i / std::pow(k * d1, 3) - 2 / std::pow(k * d1, 4);
@@ -127,3 +126,5 @@ data_type int_fxy_exp(double k, std::vector<data_type> a, Eigen::Vector2d d){
         a[4] * intK_y_exp(d(0), d(1)) +
         a[5] * intK_exp(d(0), d(1));
 }
+
+

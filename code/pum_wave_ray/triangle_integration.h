@@ -1,4 +1,3 @@
-#include <iostream>
 #include <complex>
 #include <cmath>
 #include <vector>
@@ -7,16 +6,16 @@
 
 using data_type = std::complex<double>;
 
-// Integration over unit triangle K = covex{[0,0], [1,0], [0,1]}
-
 // \int_a^b exp(tx)dx
 data_type int_exp(double a, double b);
 
 // \int_a^b x*exp(tx)dx
 data_type int_xexp(double a, double b, data_type t);
 
-// \int_a^n x*x*exp(tx)dx
+// \int_a^b x*x*exp(tx)dx
 data_type int_x2exp(double a, double b, data_type t);
+
+// Integration over unit triangle K = covex{[0,0], [1,0], [0,1]}
 
 // \int_K exp(ik(d1*x+d2*y))dxdy
 data_type intK_exp(double k, double d1, double d2);
@@ -38,3 +37,5 @@ data_type intK_xy_exp(double k, double d1, double d2);
 
 // \int_K (a0x^2+a1y^2+a2xy+a3x+a4y+a5)exp(ik(d1*x+d2*y))dxdy
 data_type int_fxy_exp(double k, std::vector<data_type> a, Eigen::Vector2d d);
+
+

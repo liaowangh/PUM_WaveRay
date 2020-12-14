@@ -15,7 +15,7 @@ std::vector<std::complex<double>> coefficient_comp(std::vector<std::complex<doub
 }
 
 PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity &cell) {
-    // cell contribution only, for l < L, for l == L, just the reaction diffusion element matrix provider
+    // cell contribution only, for l < L. for l == L, just the reaction diffusion element matrix provider
     
     size_type N = (1 << (L + 1 - l));
     elem_mat_t elem_mat(3*N, 3*N);
@@ -48,9 +48,9 @@ PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity &c
     
     Eigen::Vector2d d1, d2, beta1, beta2;
     std::vector<std::vector<double>> lambda_coeff{
-        {-1, -1, 1},
-        {1, 0, 0},
-        {0, 1, 0}
+        {-1, -1, 1}, // -x-y+1
+        {1, 0, 0},   // x
+        {0, 1, 0}    // y
     };
     
     // compute a(h_i1^j1, h_i2^j2), stores in elem_mat[(i1-1)*N+j1, (i2-1)*N+j2]
@@ -71,7 +71,7 @@ PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity &c
                     coeff_tmp[1] = coefficient_comp(lambda_coeff[i1-1],
                                                     {0, 0, -1i * beta2.dot(d1)}); // -ik*beta2.dot(d1)*\lambda_i1
                     coeff_tmp[2] = coefficient_comp(lambda_coeff[i2-1],
-                                                    {0, 0, -i1 * beta1.dot(d2)}); // -ik*beta1.dot(d2)*\lambda_i2
+                                                    {0, 0, -1i * beta1.dot(d2)}); // -ik*beta1.dot(d2)*\lambda_i2
                     coeff_tmp[3] = coefficient_comp(lambda_coeff[i1-1], lambda_coeff[i2-1]); // \lambda_i1 * \lambda_i2
                     
                     for(int i = 0; i < coeff_tmp[3].size(); ++i){
