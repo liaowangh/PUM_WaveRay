@@ -34,8 +34,8 @@ PUM_FEM::PUM_FEM(unsigned int L, double k, std::string mesh_path, PUM_FEM::funct
     mesh_hierarchy = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(reader->mesh(), L);
 }
 
-void PUM_FEM::Prolongation_P(){
-    P = std::vector<elem_mat_t>(L_);
+void PUM_FEM::Prolongation_LF(){
+    P_LF = std::vector<elem_mat_t>(L_);
     for(int l = 0; l < L_; ++l) {
         auto coarse_mesh = mesh_hierarchy->getMesh(l);
         auto fine_mesh = mesh_hierarchy->getMesh(l+1);
@@ -61,7 +61,7 @@ void PUM_FEM::Prolongation_P(){
                 }
             }
         }
-        P[l] = M.transpose();
+        P_LF[l] = M.transpose();
     }
 }
 
@@ -88,12 +88,12 @@ std::vector<double> generate_fre(int L, double k, int l, int t) {
     return {d1, d2};
 }
 
-void PUM_FEM::Prolongation_Q() {
-    Q = std::vector<elem_mat_t>(L_);
+void PUM_FEM::Prolongation_PW() {
+    P_PW = std::vector<elem_mat_t>(L_ - 1);
     
     auto identity = [](Eigen::Vector2d x)->mat_scalar{ return 1.0;};
     
-    for(int l = 0; l < L_; ++l) {
+    for(int l = 0; l < L_ - 1; ++l) {
         int N1 = std::pow(2, L_ + 1 - l);
         int N2 = std::pow(2, L_ - l);
         
@@ -118,10 +118,98 @@ void PUM_FEM::Prolongation_Q() {
             M(i, 2 * i + 1) = tmp(0);
             M((i+1) / N2, 2 * i + 1) = tmp(1);
         }
-        Q[l] = M;
+        P_PW[l] = M;
     }
 }
 
+void PUM_FEM::Restriction_PW() {
+    R_PW = std::vector<elem_mat_t>(L_ - 1);
+    int N1 = 2;
+    int N2 = 4;
+    for(int l = L_ - 1; l > 0; --l) {
+        N1 = N2;
+        N2 = 2*N1;
+        R_PW[l-1] = elem_mat_t::Zero(N2, N1);
+        for(int i = 0; i < N1; ++i){
+            R_PW[l-1](2*i, i) = 1;
+        }
+    }
+}
+
+
+/*
+ * Return the linear operator that map a function from level l to level l+1 
+ */
+PUM_FEM::elem_mat_t PUM_FEM::Prolongation_PUM(int l) {
+    LF_ASSERT_MSG((l < L_), 
+        "in prolongation, level should smaller than" << L_);
+    if(l == L_ - 1) {
+        auto finest_mesh = mesh_hierarchy->getMesh(L_);
+        auto coarser_mesh = mesh_hierarchy->getMesh(L_ - 1);
+
+        auto fine_dof = lf::assemble::UniformFEDofHandler(finest_mesh, {{lf::base::RefEl::kPoint(), 1}});
+        auto coarser_dof = lf::assemble::UniformFEDofHandler(coarser_mesh, {{lf::base::RefEl::kPoint(), 1}});
+
+        size_type n_f = fine_dof.NumDofs();
+        size_type n_c = coarser_dof.NumDofs();
+
+        size_type n_wave = 4;
+
+        elem_mat_t res(n_f, n_wave * n_c);
+        for(size_type t = 0; t < n_wave; ++t) {
+            elem_mat_t P_L_ = P_LF[l]; // shape: n_f * n_c
+            //
+            // std::cout << P_L_.rows() << " " << P_L_.cols() << std::endl;
+            // std::cout << n_f << " " << n_c << " " << std::endl;
+            //
+            auto fre_t = generate_fre(L_, k_, l, t);
+            auto exp_t = exp_wave(fre_t[0], fre_t[1]);
+            rhs_vec_t exp_at_v(n_f);
+            for(size_type i = 0; i < n_f; ++i) {
+                const lf::mesh::Entity& v = fine_dof.Entity(i); // the entity to which i-th global shape function is associated
+                Eigen::Vector2d v_coordinate = lf::geometry::Corners(*v.Geometry()).col(0);
+                exp_at_v(i) = exp_t(v_coordinate);
+            }
+            res.block(0, t * n_c, n_f, n_c) = exp_at_v.asDiagonal() * P_L_; // column wise * or / is not supported
+        }
+        return res;
+    } else {
+        auto Q = P_PW[l];
+        auto P = P_LF[l];
+        size_type n1 = Q.rows(), n2 = P.rows();
+        size_type m1 = Q.cols(), m2 = P.cols();
+        elem_mat_t res(n1*n2, m1*m2);
+        for(int i = 0; i < n1; ++i) {
+            for(int j = 0; j < m1; ++j) {
+                res.block(i*n2, j*m2, n2, m2) = Q(i, j) * P;
+            }
+        }
+        return res;
+    }
+}
+
+/*
+ * Return the linear operator that map a function from level l+1 to level l
+ */
+PUM_FEM::elem_mat_t PUM_FEM::Restriction_PUM(int l) {
+    LF_ASSERT_MSG((l < L_), 
+        "in prolongation, level should smaller than" << L_);
+    if(l == L_ - 1) {
+        return Prolongation_PUM(l).transpose();
+    } else {
+        auto Q = R_PW[l];
+        auto P = P_LF[l].transpose();
+        size_type n1 = Q.rows(), n2 = P.rows();
+        size_type m1 = Q.cols(), m2 = P.cols();
+        elem_mat_t res(n1*n2, m1*m2);
+        for(int i = 0; i < n1; ++i) {
+            for(int j = 0; j < m1; ++j) {
+                res.block(i*n2, j*m2, n2, m2) = Q(i, j) * P;
+            }
+        }
+        return res;
+    }
+}
 
 /*
 std::pair<lf::assemble::COOMatrix<PUM_FEM::mat_scalar>, PUM_FEM::rhs_vec_t>

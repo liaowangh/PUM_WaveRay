@@ -42,8 +42,12 @@ public:
     // return mesh at l-th level
     std::shared_ptr<lf::mesh::Mesh> getmesh(size_type l) { return mesh_hierarchy->getMesh(l); }
     
-    void Prolongation_P(); // generate P
-    void Prolongation_Q(); // generate Q
+    void Prolongation_LF(); // generate P_LF
+    void Prolongation_PW(); // generate P_PW
+    void Restriction_PW();  // generate R_PW
+
+    elem_mat_t Prolongation_PUM(int l); // level l -> level l+1 in PUM spaces
+    elem_mat_t Restriction_PUM(int l);  // level l+1 -> level l in PUM spaces
     
     std::pair<lf::assemble::COOMatrix<mat_scalar>, rhs_vec_t> build_equation(size_type level); // equation: Ax=\phi, return (A, \phi)
     mat_scalar integration_mesh(int level, function_type f);
@@ -57,9 +61,11 @@ public:
     // mesh_hierarchy->getMesh(0) -- coarsest
     // mesh_hierarchy->getMesh(L) -- finest
     
-    std::vector<elem_mat_t> P; // P[i]: level i -> level i+1, standard space
-    std::vector<elem_mat_t> Q; // Q[i]: level i -> level i+1, plane wave
+    std::vector<elem_mat_t> P_LF; // P_LF[i]: level i -> level i+1, prolongation of Lagrangian FE spaces
+    std::vector<elem_mat_t> P_PW; // P_PW[i]: level i -> level i+1, planar wave spaces
     
+    std::vector<elem_mat_t> R_PW; // R_PW[i]: level i+1 -> level i, planar wave spaces
+
     function_type g_;
     function_type h_;
 };
