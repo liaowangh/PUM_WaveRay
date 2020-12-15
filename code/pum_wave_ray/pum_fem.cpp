@@ -211,7 +211,7 @@ PUM_FEM::elem_mat_t PUM_FEM::Restriction_PUM(int l) {
     }
 }
 
-/*
+
 std::pair<lf::assemble::COOMatrix<PUM_FEM::mat_scalar>, PUM_FEM::rhs_vec_t>
 PUM_FEM::build_equation(size_type level) {
     
@@ -309,4 +309,52 @@ PUM_FEM::build_equation(size_type level) {
     A, phi);
     return std::make_pair(A, phi);
 }
-*/
+
+
+template <typename mat_type>
+void Gaussian_Seidel(mat_type& A, PUM_FEM::rhs_vec_t& phi, PUM_FEM::rhs_vec_t& u, int t) {
+    // u: initial value; t: number of iterations
+    int N = A.rows();
+    for(int i = 0; i < t; ++i){
+        for(int j = 0; j < N; ++j) {
+            auto tmp = A.row(j).dot(u);
+            u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
+        }
+    }
+}
+
+void PUM_FEM::v_cycle(rhs_vec_t& u, size_type mu1, size_type mu2) {
+    auto eq_pair = build_equation(L_); // Equaiton Ax=f in finest mesh
+    // const Eigen::SparseMatrix<mat_scalar> A(eq_pair.first.makeSparse());
+    elem_mat_t A(eq_pair.first.makeDense());
+    rhs_vec_t f = eq_pair.second;
+
+    std::vector<rhs_vec_t> initial_value(L_ + 1);
+    std::vector<rhs_vec_t> rhs_vec(L_ + 1);
+    // std::vector<Eigen::SparseMatrix<mat_scalar>> Op(L_ + 1);
+    std::vector<elem_mat_t> Op(L_ + 1);
+    std::vector<elem_mat_t> restriction(L_), prolongation(L_);
+    Op[L_] = A;
+    initial_value[L_] = u;
+    rhs_vec[L_] = f;
+    // build coarser mesh operator
+    for(size_type i = L_ - 1; i >= 0; --i) {
+        restriction[i] = Restriction_PUM(i);
+        prolongation[i] = Prolongation_PUM(i);
+        Op[i] = restriction[i] * Op[i+1] * prolongation[i];
+    }
+    // initial guess on coarser mesh are all zero
+    for(size_type i = L_ - 1; i >= 0; --i) {
+        initial_value[i] = rhs_vec_t::Zero(Op[i].rows());
+    }
+    Gaussian_Seidel(A, rhs_vec[L_], initial_value[L_], mu1);  // relaxation mu1 times on finest mesh
+    for(int i = L_ - 1; i >= 0; --i) {
+        rhs_vec[i] = restriction[i] * (rhs_vec[i+1] - Op[i+1] * initial_value[i+1]);
+        Gaussian_Seidel(Op[i], rhs_vec[i], initial_value[i], mu1); 
+    }
+    for(int i = 1; i <= L_; ++i) {
+        initial_value[i] += prolongation[i] * initial_value[i-1];
+        Gaussian_Seidel(Op[i], rhs_vec[i], initial_value[i], mu2);
+    }
+    u = initial_value[L_];
+}

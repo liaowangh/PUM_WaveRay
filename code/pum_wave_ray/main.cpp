@@ -75,11 +75,11 @@ int main(){
     auto eq_pair = pum_fem.build_equation(L);
 
     // solve linear system of equationx A*x = \phi
-    const Eigen::SparseMatrix<mat_scalar> A_crs(eq_pair.first().makeSparse());
+    const Eigen::SparseMatrix<mat_scalar> A_crs(eq_pair.first.makeSparse());
     Eigen::SparseLU<Eigen::SparseMatrix<mat_scalar>> solver;
     solver.compute(A_crs);
     if(solver.info() == Eigen::Success) {
-        auto appro_vec = solver.solve(eq_pair.second());
+        auto appro_vec = solver.solve(eq_pair.second;
     } else {
         LF_ASSERT_MSG(flase, "Eigen Factorization failed")
     }

@@ -53,6 +53,8 @@ public:
     mat_scalar integration_mesh(int level, function_type f);
     // use three point quadtature rule to approximate \int_fdx based on mesh_hierarchy->getMesh(level)
     
+    void v_cycle(rhs_vec_t& u, size_type mu1, size_type mu2); // initial: u, relaxation times: mu1 and mu2
+
 // private:
     size_type L_;  // number of refinement steps
     double k_;  // wave number in the Helmholtz equation
@@ -72,14 +74,11 @@ public:
 
 
 /*
-void Gaussian_Seidel(PUM_FEM::elem_mat_t& A, PUM_FEM::rhs_vec_t& phi, PUM_FEM::rhs_vec_t& u, int t) {
-    // u: initial value; t: number of iterations
-    int N = A.rows();
-    for(int i = 0; i < t; ++i){
-        for(int j = 0; j < N; ++j) {
-            auto tmp = A.row(j).dot(u);
-            u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
-        }
-    }
-}
-*/
+ * Relaxation using Gaussian Seidel iteration
+ * Equation: Ax = \phi
+ * u: initial guess of solution.
+ * t: relaxation times
+ */
+template <typename mat_type>
+void Gaussian_Seidel(mat_type& A, PUM_FEM::rhs_vec_t& phi, PUM_FEM::rhs_vec_t& u, int t);
+
