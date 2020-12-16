@@ -217,16 +217,16 @@ PUM_FEM::build_equation(size_type level) {
     
     auto mesh = mesh_hierarchy->getMesh(level);  // get mesh
     
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<mat_scalar>>(mesh);
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     
     auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
     
     // assemble for <grad(u), grad(v)> - k^2 uv
-    auto identity = [](Eigen::Vector2d x) -> mat_scalar { return 1.; };
+    auto identity = [](Eigen::Vector2d x) -> double { return 1.; };
     lf::mesh::utils::MeshFunctionGlobal mf_identity{identity};
-    auto f_k = [this](Eigen::Vector2d x) -> mat_scalar { return -1 * k_ * k_;}; 
+    auto f_k = [this](Eigen::Vector2d x) -> double { return -1 * k_ * k_;}; 
     lf::mesh::utils::MeshFunctionGlobal mf_k{f_k};
-    lf::uscalfe::ReactionDiffusionElementMatrixProvider<mat_scalar, decltype(mf_identity), decltype(mf_k)> 
+    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_k)> 
     	elmat_builder(fe_space, mf_identity, mf_k);
     
     size_type N_dofs(dofh.NumDofs());
@@ -257,7 +257,7 @@ PUM_FEM::build_equation(size_type level) {
         }
     }
                                                    
-    lf::uscalfe::MassEdgeMatrixProvider<mat_scalar, decltype(mf_ik), decltype(outer_boundary)> 
+    lf::uscalfe::MassEdgeMatrixProvider<double, decltype(mf_ik), decltype(outer_boundary)> 
     	edge_mat_builder(fe_space, mf_ik, outer_boundary);
     lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
            
@@ -266,7 +266,7 @@ PUM_FEM::build_equation(size_type level) {
     phi.setZero();
     lf::mesh::utils::MeshFunctionGlobal mf_g{g_};
     lf::mesh::utils::MeshFunctionGlobal mf_h{h_};
-    lf::uscalfe::ScalarLoadEdgeVectorProvider<mat_scalar, decltype(mf_g), decltype(outer_boundary)> 
+    lf::uscalfe::ScalarLoadEdgeVectorProvider<double, decltype(mf_g), decltype(outer_boundary)> 
     	edgeVec_builder(fe_space, mf_g, outer_boundary);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
     
