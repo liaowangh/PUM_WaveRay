@@ -266,7 +266,7 @@ PUM_FEM::build_equation(size_type level) {
     phi.setZero();
     lf::mesh::utils::MeshFunctionGlobal mf_g{g_};
     lf::mesh::utils::MeshFunctionGlobal mf_h{h_};
-    lf::uscalfe::ScalarLoadEdgeVectorProvider<double, decltype(mf_g), decltype(outer_boundary)> 
+    lf::uscalfe::ScalarLoadEdgeVectorProvider<mat_scalar, decltype(mf_g), decltype(outer_boundary)> 
     	edgeVec_builder(fe_space, mf_g, outer_boundary);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
     
