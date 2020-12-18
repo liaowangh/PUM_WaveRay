@@ -257,7 +257,7 @@ PUM_FEM::build_equation(size_type level) {
         }
     }
                                                    
-    lf::uscalfe::MassEdgeMatrixProvider<double, decltype(mf_ik), decltype(outer_boundary)> 
+    lf::uscalfe::MassEdgeMatrixProvider<mat_scalar, decltype(mf_ik), decltype(outer_boundary)>
     	edge_mat_builder(fe_space, mf_ik, outer_boundary);
     lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
            
