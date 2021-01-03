@@ -1,4 +1,4 @@
 hunter_config(lehrfempp
-  URL "https://github.com/craffael/lehrfempp/archive/c9fe8591bf283ed050d8bfe5287f6eef15f4aa80.tar.gz"
-  SHA1 "0f049b1d5435069524f8b9b61d91aa2a08faf405"
+  URL "https://github.com/craffael/lehrfempp/archive/410ed5b0cf91586c774a0208fe6d900dcde81fbd.tar.gz"
+  SHA1 "2efe59508dcbc35455a5f4635c4e6b3feccf48cb"
 )

@@ -3,4 +3,5 @@ code/pum_wave_ray/.vscode/
 reference/
 gmesh/
 code_test/
+.DS_Store
 

@@ -1,5 +1,7 @@
 #include <cmath>
 #include <functional>
+#include <fstream>
+#include <iostream>
 #include <string>
 
 #include <boost/filesystem.hpp>
@@ -25,14 +27,12 @@ int main(){
     // mesh path
     boost::filesystem::path here = __FILE__;
     auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string(); 
-
-    // const std::string mesh_path = "/home/liaowang/Documents/master-thesis/code/meshes/coarest_mesh.msh"; 
     
     // the exact function
     auto u_sol = [](const Eigen::Vector2d& x) -> mat_scalar {
         return std::exp(1i*(3*x(0) + 4*x(1)));
     };
-    size_type L = 3; // refinement steps
+    size_type L = 6; // refinement steps
     double k = 5; // wave number
     // Neumann boundary conditions
     auto g = [](const Eigen::Vector2d& x) -> mat_scalar {
@@ -52,12 +52,42 @@ int main(){
         }
         return res;
     };
-    // define mesh function
-    // lf::mesh::utils::MeshFunctionGlobal mf_u{u_sol};
-    // lf::mesh::utils::MeshFunctionGlobal mf_g{g};
 
     PUM_FEM pum_fem(L, k, mesh_path, g, u_sol);
     
+    std::vector<double> ndofs;
+    std::vector<double> L2err;
+    
+    for(size_type level = 0; level <= L; ++level) {
+        auto eq_pair = pum_fem.build_equation(level);
+
+        // solve linear system of equationx A*x = \phi
+        const Eigen::SparseMatrix<mat_scalar> A_crs(eq_pair.first.makeSparse());
+        Eigen::SparseLU<Eigen::SparseMatrix<mat_scalar>> solver;
+        solver.compute(A_crs);
+        Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1> appro_vec;
+        if(solver.info() == Eigen::Success) {
+            appro_vec = solver.solve(eq_pair.second);
+        } else {
+            LF_ASSERT_MSG(false, "Eigen Factorization failed")
+        }
+
+        // find the true vector representation
+        auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
+        size_type N_dofs(dofh.NumDofs());
+        ndofs.push_back(N_dofs);
+        Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1> true_vec(N_dofs);
+
+        for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+            const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
+            const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
+            true_vec(dofnum) = u_sol(node_pos);
+        }
+//        std::cout << (appro_vec - true_vec).norm() / true_vec.norm() << std::endl;
+        L2err.push_back((appro_vec - true_vec).norm() / true_vec.norm());
+    }
+    
+    /*
     auto finest_mesh = pum_fem.getmesh(L);
     pum_fem.Restriction_PW();
     pum_fem.Prolongation_LF();
@@ -70,32 +100,17 @@ int main(){
         std::cout << Q.rows() << " " << Q.cols();
         std::cout << std::endl;
     }
-
-    /*
-    auto eq_pair = pum_fem.build_equation(L);
-
-    // solve linear system of equationx A*x = \phi
-    const Eigen::SparseMatrix<mat_scalar> A_crs(eq_pair.first.makeSparse());
-    Eigen::SparseLU<Eigen::SparseMatrix<mat_scalar>> solver;
-    solver.compute(A_crs);
-    if(solver.info() == Eigen::Success) {
-        auto appro_vec = solver.solve(eq_pair.second;
-    } else {
-        LF_ASSERT_MSG(flase, "Eigen Factorization failed")
-    }
-
-    // find the true vector representation
-    auto dofh = lf::assemble:UniformFEDofHandler(finest_mesh, {{lf::base::RefEl::kPoint(), 1}});
-    size_type N_dofs(dofh.NumDofs());
-    Eigen::Matrix<mat_scalar, N_dofs, 1> true_vec;
-
-    for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
-        const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
-        const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col()};
-        true_vec(dofnum) = u_sol(node_pos);
-    }
-    std::cout << (appro_vec - u_sol).norm() << std::endl;
     */
 
+    // Tabular output of the results
+    std::cout << std::left << std::setw(10) << "N" << std::setw(20)
+              << "L2 err" << std::endl;
+    for (int l = 0; l <= L; ++l) {
+      std::cout << std::left << std::setw(10) << ndofs[l] << std::setw(20)
+                << L2err[l] << std::endl;
+    }
+    
+    // write to the file
+    
     return 0;
 }

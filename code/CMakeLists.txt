@@ -13,7 +13,8 @@ include(GoogleTest)
 ### Setup CMake Project ###
 project(PUM_Wave_Ray)
 
-# download dependencies
+# Get Dependencies
+###############################################################################
 hunter_add_package(lehrfempp)
 find_package(lehrfempp CONFIG REQUIRED)
 
@@ -28,6 +29,7 @@ find_package(GTest CONFIG REQUIRED)
 # Get Boost
 hunter_add_package(Boost COMPONENTS chrono timer system filesystem program_options)
 find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_options)
+###############################################################################
 
 set(code_sources
   pum_wave_ray/pum_fem.h
