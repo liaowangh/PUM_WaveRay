@@ -17,10 +17,25 @@
  * And \Gamma_R is the boundary of square [0,1] x [0,1]
  *     \Gamma_D is the boundary of square [0.375, 0.375] x [0.375, 0.375]
  */
+using coordinate_t = Eigen::Vector2d;
 using Scalar = std::complex<double>;
 using size_type = unsigned int;
-using function_type = std::function<Scalar(Eigen::Vector2d&)>;
+using function_type = std::function<Scalar(const coordinate_t&)>;
 using namespace std::complex_literals;
+
+class HE_sol {
+public:
+    HE_sol(double wave_num): k(wave_num){};
+    
+    //virtual Scalar operator()(const coordinate_t&) = 0;
+    virtual function_type get_fun() = 0;
+    virtual function_type boundary_g() = 0;
+    virtual ~HE_sol() = default;
+
+public:
+    double k;
+};
+
 
 /*
  * Plan waves: u(x) = exp(ik(d1*x(1) + d2*x(2))
@@ -28,17 +43,15 @@ using namespace std::complex_literals;
  * Overload the operator() to return the value a x.
  * And it should also have a member that is the g.
  */
-class plan_wave {
+class plan_wave: public HE_sol {
 public:
-    plan_wave(double k_, double d1_, double d2_): k(k_), d1(d1_), d2(d2_);
-    Scalar operator()(const Eigen::Vector2d& x){
-        return std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
-    }
+    plan_wave(double k_, double d1_, double d2_): HE_sol(k_), d1(d1_), d2(d2_){}
+//    Scalar operator()(const coordinate_t& x) override;
+    function_type get_fun() override;
+    function_type boundary_g() override;
 private:
-    double k;
     double d1;
     double d2;
-    function_type g;
 };
 
 /*
@@ -56,24 +69,32 @@ private:
  * d/dx Kv(x) = v/x * Kv(x) - K_{v+1}(x)
  */
 
+// derivative of Jv at x
 Scalar cyl_bessel_j_dx(double v, double x);
+// derivative of Yv at x
+Scalar cyl_neumann_dx(double v, double x);
+// Hankel function of first kind: Hv = Jv + i Yv
+Scalar hankel_1(double v, double x);
+// derivative of Hv
+Scalar hankel_1_dx(double v, double x);
+
 /*
- * Fundamental solutions: u(x) = i / 4 * H0(ik||x-c||)
+ * Fundamental solutions: u(x) = H0(k||x-c||) (not sure)
  * H0 is the Hankel function of first kind
  * c is the center point, and it should be outside the domain
  *
  * And H0 = J0 + iY0, where
  * J0 is the Bessel function of the first kind with order 0
  * Y0 is the Bessel function of the second kind with order 0
- 
  */
-
-class fundamental_sol {
+class fundamental_sol: public HE_sol {
 public:
-    fundamental_sol(double k_): k(k_);
-    Scalar operator()(const Eigen::Vector2d& x);
+    fundamental_sol(double wave_num, coordinate_t c_): HE_sol(wave_num), c(c_){}
+//    Scalar operator()(const coordinate_t& x) override;
+    function_type get_fun() override;
+    function_type boundary_g() override;
 private:
-    double k;
+    coordinate_t c;
 };
 
 
@@ -83,11 +104,12 @@ private:
  * and J is the Bessel functions of first find
  *
  */
-class Spherical_wave{
-    Spherical_wave(double k_, int l_);
-    Scalar operator()(const Eigen::Vector2d& x);
+class Spherical_wave: public HE_sol {
+public:
+    Spherical_wave(double wave_num, double l_): HE_sol(wave_num), l(l_){}
+//    Scalar operator()(const coordinate_t& x) override;
+    function_type get_fun() override;
+    function_type boundary_g() override;
 private:
-    double k;
-    int l;
-    function_type g;
+    double l;
 };

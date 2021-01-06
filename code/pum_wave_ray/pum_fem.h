@@ -51,7 +51,6 @@ public:
     
     std::pair<lf::assemble::COOMatrix<mat_scalar>, rhs_vec_t> build_equation(size_type level); // equation: Ax=\phi, return (A, \phi)
     mat_scalar integration_mesh(int level, function_type f);
-    // use three point quadtature rule to approximate \int_fdx based on mesh_hierarchy->getMesh(level)
     
     void v_cycle(rhs_vec_t& u, size_type mu1, size_type mu2); // initial: u, relaxation times: mu1 and mu2
 

@@ -13,6 +13,11 @@ include(GoogleTest)
 ### Setup CMake Project ###
 project(PUM_Wave_Ray)
 
+# set compiler
+set(CMAKE_CXX_STANDARD 17)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+
 # Get Dependencies
 ###############################################################################
 hunter_add_package(lehrfempp)
@@ -35,6 +40,10 @@ set(code_sources
   pum_wave_ray/pum_fem.h
   pum_wave_ray/pum_fem.cpp
   pum_wave_ray/main.cpp
+  utils/utils.h
+  utils/utils.cpp
+  utils/HE_solution.h
+  utils/HE_solution.cpp
 )
 
 #set(test_sources

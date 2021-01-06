@@ -17,58 +17,83 @@
 #include <Eigen/SparseCore>
 
 #include "pum_fem.h"
+#include "../utils/HE_solution.h"
+#include "../utils/utils.h"
 
 using namespace std::complex_literals;
 
-using mat_scalar = std::complex<double>;
+using Scalar = std::complex<double>;
 using size_type = unsigned int;
 
 int main(){
     // mesh path
     boost::filesystem::path here = __FILE__;
     auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string(); 
+    size_type L = 5; // refinement steps
+    double k = 3; // wave number
+    Eigen::Vector2d c; // center in fundamental solution
+    c << 10.0, 10.0;
     
-    // the exact function
-    auto u_sol = [](const Eigen::Vector2d& x) -> mat_scalar {
-        return std::exp(1i*(3*x(0) + 4*x(1)));
-    };
-    size_type L = 6; // refinement steps
-    double k = 5; // wave number
-    // Neumann boundary conditions
-    auto g = [](const Eigen::Vector2d& x) -> mat_scalar {
-        double x1 = x(0), y1 = x(1);
-        mat_scalar res = 0;
-        mat_scalar u = std::exp(1i*(3*x1 + 4*y1));
-        if(y1 == 0 && x1 <= 1 && x1 >= 0) {
-            res = -9i * u;
-        } else if(x1 == 1 && y1 >= 0 && y1 <= 1) {
-            res = -2i * u;
-        } else if(y1 == 1 && x1 >= 0 && x1 <= 1) {
-            res = -1i * u;
-        } else if(x1 == 0 && y1 >= 0 && y1 <= 1) {
-            res = -8i * u;
-        } else {
-            res = u;
-        }
-        return res;
-    };
-
-    PUM_FEM pum_fem(L, k, mesh_path, g, u_sol);
-    Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1> appro_vec;
-    pum_fem.v_cycle(appro_vec, 5, 5);
-    
-    // find the true vector representation
-    auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(L), {{lf::base::RefEl::kPoint(), 1}});
-    size_type N_dofs(dofh.NumDofs());
-    Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1> true_vec(N_dofs);
-    for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
-        const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
-        const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
-        true_vec(dofnum) = u_sol(node_pos);
+    std::vector<std::shared_ptr<HE_sol>> solutions(3);
+    solutions[0] = std::make_shared<plan_wave>(k, 0.6, 0.8);
+    solutions[1] = std::make_shared<fundamental_sol>(k, c);
+    solutions[2] = std::make_shared<Spherical_wave>(k, 2);
+ 
+    std::vector<std::string> sol_name{"plan wave", "fundamental sol", "spherical wave"};
+    for(int i = 0; i < 3; ++i) {
+        std::cout << sol_name[i] << std::endl;
+        auto u = solutions[i]->get_fun();
+        auto g = solutions[i]->boundary_g();
+        solve_directly(mesh_path, L, k, u, g, u);
+        std::cout << std::endl;
     }
-    std::cout << (appro_vec - true_vec).norm() / true_vec.norm() << std::endl;
-    
+}
+
     /*
+     // the exact function
+     auto u_sol = [](const Eigen::Vector2d& x) -> Scalar {
+         return std::exp(1i*(3*x(0) + 4*x(1)));
+     };
+     size_type L = 6; // refinement steps
+     double k = 5; // wave number
+     // Neumann boundary conditions
+     auto g = [](const Eigen::Vector2d& x) -> Scalar {
+         double x1 = x(0), y1 = x(1);
+         Scalar res = 0;
+         Scalar u = std::exp(1i*(3*x1 + 4*y1));
+         if(y1 == 0 && x1 <= 1 && x1 >= 0) {
+             res = -9i * u;
+         } else if(x1 == 1 && y1 >= 0 && y1 <= 1) {
+             res = -2i * u;
+         } else if(y1 == 1 && x1 >= 0 && x1 <= 1) {
+             res = -1i * u;
+         } else if(x1 == 0 && y1 >= 0 && y1 <= 1) {
+             res = -8i * u;
+         } else {
+             res = u;
+         }
+         return res;
+     };
+
+     PUM_FEM pum_fem(L, k, mesh_path, g, u_sol);
+     Eigen::Matrix<Scalar, Eigen::Dynamic, 1> appro_vec;
+     pum_fem.v_cycle(appro_vec, 5, 5);
+     
+     // find the true vector representation
+     auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(L), {{lf::base::RefEl::kPoint(), 1}});
+     size_type N_dofs(dofh.NumDofs());
+     Eigen::Matrix<Scalar, Eigen::Dynamic, 1> true_vec(N_dofs);
+     for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+         const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
+         const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
+         true_vec(dofnum) = u_sol(node_pos);
+     }
+     std::cout << (appro_vec - true_vec).norm() / true_vec.norm() << std::endl;
+     
+     
+     return 0;
+     
+     
     std::vector<double> ndofs;
     std::vector<double> L2err;
     
@@ -76,10 +101,10 @@ int main(){
         auto eq_pair = pum_fem.build_equation(level);
 
         // solve linear system of equationx A*x = \phi
-        const Eigen::SparseMatrix<mat_scalar> A_crs(eq_pair.first.makeSparse());
-        Eigen::SparseLU<Eigen::SparseMatrix<mat_scalar>> solver;
+        const Eigen::SparseMatrix<Scalar> A_crs(eq_pair.first.makeSparse());
+        Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
         solver.compute(A_crs);
-        Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1> appro_vec;
+        Eigen::Matrix<Scalar, Eigen::Dynamic, 1> appro_vec;
         if(solver.info() == Eigen::Success) {
             appro_vec = solver.solve(eq_pair.second);
         } else {
@@ -90,7 +115,7 @@ int main(){
         auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
         size_type N_dofs(dofh.NumDofs());
         ndofs.push_back(N_dofs);
-        Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1> true_vec(N_dofs);
+        Eigen::Matrix<Scalar, Eigen::Dynamic, 1> true_vec(N_dofs);
 
         for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
             const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
@@ -128,5 +153,3 @@ int main(){
     */
     // write to the file
     
-    return 0;
-}
