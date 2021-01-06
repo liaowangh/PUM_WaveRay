@@ -68,15 +68,16 @@ void PUM_FEM::Prolongation_LF(){
 
 
 PUM_FEM::mat_scalar PUM_FEM::integration_mesh(int level, PUM_FEM::function_type f) {
-    mat_scalar res = 0;
-    
+    lf::mesh::utils::MeshFunctionGlobal mf{f};
+    // mf integrated over the mesh level
+    mat_scalar res = lf::uscalfe::IntegrateMeshFunction(*(mesh_hierarchy->getMesh(level)), mf, 5);
     // traverse all triangles
-    for(auto e: mesh_hierarchy->getMesh(level)->Entities(0)){
-        Eigen::MatrixXd corners = lf::geometry::Corners(*(e->Geometry()));
-        double area = lf::geometry::Volume(*(e->Geometry()));
-        mat_scalar tmp = 0;
-        res += (f(corners.col(0)) + f(corners.col(1)) + f(corners.col(2))) * area / 3.;
-    }
+//    for(auto e: mesh_hierarchy->getMesh(level)->Entities(0)){
+//        Eigen::MatrixXd corners = lf::geometry::Corners(*(e->Geometry()));
+//        double area = lf::geometry::Volume(*(e->Geometry()));
+//        mat_scalar tmp = 0;
+//        res += (f(corners.col(0)) + f(corners.col(1)) + f(corners.col(2))) * area / 3.;
+//    }
     return res;
 }
 
@@ -346,10 +347,12 @@ void PUM_FEM::v_cycle(rhs_vec_t& u, size_type mu1, size_type mu2) {
         initial_value[i] = rhs_vec_t::Zero(Op[i].rows());
     }
     Gaussian_Seidel(A, rhs_vec[L_], initial_value[L_], mu1);  // relaxation mu1 times on finest mesh
-    for(int i = L_ - 1; i >= 0; --i) {
+    for(int i = L_ - 1; i > 0; --i) {
         rhs_vec[i] = restriction[i] * (rhs_vec[i+1] - Op[i+1] * initial_value[i+1]);
         Gaussian_Seidel(Op[i], rhs_vec[i], initial_value[i], mu1); 
     }
+    rhs_vec[0] = restriction[0] * (rhs_vec[1] - Op[1] * initial_value[1]);
+    initial_value[0] = Op[0].colPivHouseholderQr().solve(rhs_vec[0]);
     for(int i = 1; i <= L_; ++i) {
         initial_value[i] += prolongation[i] * initial_value[i-1];
         Gaussian_Seidel(Op[i], rhs_vec[i], initial_value[i], mu2);

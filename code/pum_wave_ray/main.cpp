@@ -54,7 +54,21 @@ int main(){
     };
 
     PUM_FEM pum_fem(L, k, mesh_path, g, u_sol);
+    Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1> appro_vec;
+    pum_fem.v_cycle(appro_vec, 5, 5);
     
+    // find the true vector representation
+    auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(L), {{lf::base::RefEl::kPoint(), 1}});
+    size_type N_dofs(dofh.NumDofs());
+    Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1> true_vec(N_dofs);
+    for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+        const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
+        const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
+        true_vec(dofnum) = u_sol(node_pos);
+    }
+    std::cout << (appro_vec - true_vec).norm() / true_vec.norm() << std::endl;
+    
+    /*
     std::vector<double> ndofs;
     std::vector<double> L2err;
     
@@ -86,6 +100,7 @@ int main(){
 //        std::cout << (appro_vec - true_vec).norm() / true_vec.norm() << std::endl;
         L2err.push_back((appro_vec - true_vec).norm() / true_vec.norm());
     }
+    */
     
     /*
     auto finest_mesh = pum_fem.getmesh(L);
@@ -103,13 +118,14 @@ int main(){
     */
 
     // Tabular output of the results
+    /*
     std::cout << std::left << std::setw(10) << "N" << std::setw(20)
               << "L2 err" << std::endl;
     for (int l = 0; l <= L; ++l) {
       std::cout << std::left << std::setw(10) << ndofs[l] << std::setw(20)
                 << L2err[l] << std::endl;
     }
-    
+    */
     // write to the file
     
     return 0;
