@@ -118,6 +118,7 @@ function_type Spherical_wave::get_fun() {
         double phi = std::atan2(x(1), x(0));
         return std::cyl_bessel_j(std::abs(l), k*r) * std::exp(1i * phi * l);
     };
+    return u;
 }
 
 function_type Spherical_wave::boundary_g() {
@@ -132,9 +133,9 @@ function_type Spherical_wave::boundary_g() {
         
         Scalar u = std::cyl_bessel_j(std::abs(l), k*r) * std::exp(1i * phi * l);
         Scalar dudx = (cos_ * k * cyl_bessel_j_dx(std::abs(l), k*r) -
-                       1i * sin_ * l * cyl_bessel_j(std::abs(l), k*r)) * std::exp(1i*phi*l);
+                       1i * sin_ * l * std::cyl_bessel_j(std::abs(l), k*r)) * std::exp(1i*phi*l);
         Scalar dudy = (sin_ * k * cyl_bessel_j_dx(std::abs(l), k*r) +
-                       1i * cos_ * l * cyl_bessel_j(std::abs(l), k*r)) * std::exp(1i*phi*l);
+                       1i * cos_ * l * std::cyl_bessel_j(std::abs(l), k*r)) * std::exp(1i*phi*l);
         Scalar res = -1i * k * u;
         if(y1 == 0 && x1 <= 1 && x1 >= 0) {
             // n =  (0, -1)

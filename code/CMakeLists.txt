@@ -16,7 +16,7 @@ project(PUM_Wave_Ray)
 # set compiler
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 
 # Get Dependencies
 ###############################################################################

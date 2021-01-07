@@ -75,7 +75,8 @@ void solve_directly(const std::string& mesh_path, size_type L, double wave_num, 
         auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
         vec_t true_vec = fun_in_vec(dofh, u);
 
-        double l2_err = L2_norm(dofh, appro_vec - true_vec);
+        // double l2_err = L2_norm(dofh, appro_vec - true_vec);
+        double l2_err = (appro_vec - true_vec).norm() / true_vec.norm();
         double h1_err = H1_norm(dofh, appro_vec - true_vec);
         
         ndofs.push_back(dofh.NumDofs());
