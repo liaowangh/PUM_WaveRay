@@ -32,5 +32,7 @@ double L2_norm(const lf::assemble::DofHandler&, const vec_t&);
 
 double H1_norm(const lf::assemble::DofHandler&, const vec_t&);
 
+double H1_seminorm(const lf::assemble::DofHandler&, const vec_t&);
+
 // Test the manufacture solution, directly solve the equation in finest coarse.
-void solve_directly(const std::string& mesh_path, size_type L, double wave_num, const function_type&, const function_type&, const function_type&);
+void solve_directly(const std::string& sol_name, const std::string& mesh_path, size_type L, double wave_num, const function_type&, const function_type&, const function_type&);

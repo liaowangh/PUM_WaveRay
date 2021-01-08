@@ -1,3 +1,6 @@
+#include <fstream>
+#include <string>
+
 #include "utils.h"
 #include "../pum_wave_ray/pum_fem.h"
 
@@ -51,7 +54,27 @@ double H1_norm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
     return res;
 }
 
-void solve_directly(const std::string& mesh_path, size_type L, double wave_num, const function_type& u, const function_type& g, const function_type& h) {
+double H1_seminorm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
+    double res = 0.0;
+    int N_dofs = dofh.NumDofs();
+    lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
+    
+    lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
+    lf::mesh::utils::MeshFunctionConstant<double> mf_zero(0);
+    
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(dofh.Mesh());
+    
+    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_zero)>
+        elmat_builder(fe_space, mf_identity, mf_zero);
+    
+    lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, mass_matrix);
+    
+    const Eigen::SparseMatrix<double> mass_mat = mass_matrix.makeSparse();
+    res = std::sqrt(std::abs(u.dot(mass_mat * u.conjugate())));
+    return res;
+}
+
+void solve_directly(const std::string& sol_name, const std::string& mesh_path, size_type L, double wave_num, const function_type& u, const function_type& g, const function_type& h) {
     PUM_FEM pum_fem(L, wave_num, mesh_path, g, h);
     
     std::vector<int> ndofs;
@@ -60,7 +83,7 @@ void solve_directly(const std::string& mesh_path, size_type L, double wave_num, 
     for(size_type level = 0; level <= L; ++level) {
         auto eq_pair = pum_fem.build_equation(level);
 
-        // solve linear system of equationx A*x = \phi
+        // solve linear system of equations A*x = \phi
         const Eigen::SparseMatrix<Scalar> A_crs(eq_pair.first.makeSparse());
         Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
         solver.compute(A_crs);
@@ -75,9 +98,9 @@ void solve_directly(const std::string& mesh_path, size_type L, double wave_num, 
         auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
         vec_t true_vec = fun_in_vec(dofh, u);
 
-        // double l2_err = L2_norm(dofh, appro_vec - true_vec);
-        double l2_err = (appro_vec - true_vec).norm() / true_vec.norm();
+        double l2_err = L2_norm(dofh, appro_vec - true_vec);
         double h1_err = H1_norm(dofh, appro_vec - true_vec);
+        //double h1_err = H1_seminorm(dofh, appro_vec - true_vec);
         
         ndofs.push_back(dofh.NumDofs());
         L2err.push_back(l2_err);
@@ -85,11 +108,19 @@ void solve_directly(const std::string& mesh_path, size_type L, double wave_num, 
     }
     
     // Tabular output of the results
-    
+    std::cout << sol_name << std::endl;
     std::cout << std::left << std::setw(10) << "N" << std::setw(20)
-              << "L2 err" << std::setw(20) << "H1 err" << std::endl;
+              << "L2_err" << std::setw(20) << "H1_err" << std::endl;
     for (int l = 0; l <= L; ++l) {
       std::cout << std::left << std::setw(10) << ndofs[l] << std::setw(20)
                 << L2err[l] << std::setw(20) << H1err[l] << std::endl;
     }
+    
+    // write the result to the file
+    std::string output_file = "../plot_err/" + sol_name + ".txt";
+    std::ofstream out(output_file);
+    out << "N " << "L2_err " << "H1_err" << std::endl;
+    for(int l = 0; l <= L; ++l) {
+        out << ndofs[l] << " " << L2err[l] << " " << H1err[l] << std::endl;
+    } 
 }

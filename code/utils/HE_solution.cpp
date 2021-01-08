@@ -27,12 +27,16 @@ function_type plan_wave::boundary_g() {
         double x1 = x(0), y1 = x(1);
         Scalar res = 1i * k * std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
         if(y1 == 0 && x1 <= 1 && x1 >= 0) {
-            res *= (-d1 - 1);
+            // (0,-1)
+            res *= (-d2 - 1);
         } else if(x1 == 1 && y1 >= 0 && y1 <= 1) {
+            // (1,0)
             res *= (d1 - 1);
         } else if(y1 == 1 && x1 >= 0 && x1 <= 1) {
+            //(0, 1)
             res *= (d2 - 1);
         } else if(x1 == 0 && y1 >= 0 && y1 <= 1) {
+            // (-1,0)
             res *= (-d1 - 1);
         }
         return res;
@@ -43,6 +47,18 @@ function_type plan_wave::boundary_g() {
 /*
  * Bessel functions and Hankel functions
  */
+// Jv(ix) = exp(iv\pi/2)*Iv(x), x \in R
+Scalar bessel_j_ix(double v, double x){
+    return std::exp(1i * v * std::acos(-1) / 2.) * std::cyl_bessel_i(v, x);
+}
+
+// Yv(ix) = exp(i(v+1)\pi/2)*Iv(x) - 2exp(-iv\pi/2)/pi*Kv(x)
+Scalar bessel_y_ix(double v, double x){
+    return 
+        std::exp(1i*(v+1)* std::acos(-1) / 2.) * std::cyl_bessel_i(v, x) - 
+        std::exp(-1i * v * std::acos(-1) / 2.) * std::cyl_bessel_k(v, x) * 2. / std::acos(-1);
+}
+
 Scalar cyl_bessel_j_dx(double v, double x) {
     return x == 0 ? 0 : v * std::cyl_bessel_j(v,x) / x - std::cyl_bessel_j(v+1, x);
 }
@@ -59,6 +75,16 @@ Scalar hankel_1_dx(double v, double x) {
     return cyl_bessel_j_dx(v, x) + 1i * cyl_neumann_dx(v, x);
 }
 
+// Hankel function taking pure imaginary argument
+Scalar hankel_1_ix(double v, double x){
+    return bessel_j_ix(v, x) + 1i * bessel_y_ix(v, x);
+}
+// Derivative of Hankel function taking pure imaginary argument
+Scalar hankel_1_dx_ix(double v, double x) {
+    return v * bessel_j_ix(v, x) / x - bessel_j_ix(v+1, x) + 
+            1i * (v * bessel_y_ix(v, x) / x - bessel_y_ix(v+1, x));
+}
+
 /*
  * Fundamental solution
  */
@@ -69,6 +95,7 @@ Scalar hankel_1_dx(double v, double x) {
 function_type fundamental_sol::get_fun() {
     return [this](const coordinate_t& x) -> Scalar {
         return hankel_1(0, k * (x - c).norm());
+        // return hankel_1_ix(0, k * (x - c).norm());
     };
 }
 
@@ -76,13 +103,17 @@ function_type fundamental_sol::boundary_g() {
     // u(x) = H0(k*||x-c||)
     // grad u = H' * k * (x-c)/ ||x-c||
     auto g = [this](const coordinate_t& x) -> Scalar {
-        double x1 = x(0) - c(0), y1 = x(1) - c(1);
+        double x1 = x(0), y1 = x(1);
+        double c1 = c(0), c2 = c(1);
         
         double r = (x - c).norm();
 
         Scalar u = hankel_1(0, k * r);
-        Scalar dudx = hankel_1_dx(0, k * r) * x1 / r;
-        Scalar dudy = hankel_1_dx(0, k * r) * y1 / r;
+        // Scalar u = hankel_1_ix(0, k * r);
+        Scalar dudx = hankel_1_dx(0, k * r) * k * (x1 - c1) / r;
+        Scalar dudy = hankel_1_dx(0, k * r) * k * (y1 - c2) / r;
+        // Scalar dudx = 1i * hankel_1_dx_ix(0, k * r) * k * x1 / r;
+        // Scalar dudy = 1i * hankel_1_dx_ix(0, k * r) * k * y1 / r;
         Scalar res = -1i * k * u;
         if(y1 == 0 && x1 <= 1 && x1 >= 0) {
             // n =  (0, -1)
@@ -114,7 +145,7 @@ function_type fundamental_sol::boundary_g() {
 
 function_type Spherical_wave::get_fun() {
     auto u = [this](const coordinate_t& x) -> Scalar {
-        double r = std::sqrt(x(0) * x(0) + x(1) * x(1));
+        double r = x.norm();
         double phi = std::atan2(x(1), x(0));
         return std::cyl_bessel_j(std::abs(l), k*r) * std::exp(1i * phi * l);
     };
@@ -127,15 +158,15 @@ function_type Spherical_wave::boundary_g() {
         if(x1 == 0 && y1 == 0) {
             return 0;
         }
-        double r = std::sqrt(x1 * x1 + y1 * y1);
+        double r = x.norm();
         double sin_ = y1 / r, cos_ = x1 / r;
-        double phi = std::atan2(x(1), x(0));
+        double phi = std::atan2(y1, x1);
         
         Scalar u = std::cyl_bessel_j(std::abs(l), k*r) * std::exp(1i * phi * l);
         Scalar dudx = (cos_ * k * cyl_bessel_j_dx(std::abs(l), k*r) -
-                       1i * sin_ * l * std::cyl_bessel_j(std::abs(l), k*r)) * std::exp(1i*phi*l);
+                       1i * sin_ * l * std::cyl_bessel_j(std::abs(l), k*r) / r) * std::exp(1i*phi*l);
         Scalar dudy = (sin_ * k * cyl_bessel_j_dx(std::abs(l), k*r) +
-                       1i * cos_ * l * std::cyl_bessel_j(std::abs(l), k*r)) * std::exp(1i*phi*l);
+                       1i * cos_ * l * std::cyl_bessel_j(std::abs(l), k*r) / r) * std::exp(1i*phi*l);
         Scalar res = -1i * k * u;
         if(y1 == 0 && x1 <= 1 && x1 >= 0) {
             // n =  (0, -1)

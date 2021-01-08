@@ -39,12 +39,12 @@ int main(){
     solutions[1] = std::make_shared<fundamental_sol>(k, c);
     solutions[2] = std::make_shared<Spherical_wave>(k, 2);
  
-    std::vector<std::string> sol_name{"plan wave", "fundamental sol", "spherical wave"};
+    std::vector<std::string> sol_name{"plan_wave", "fundamental_sol", "spherical_wave"};
     for(int i = 0; i < 3; ++i) {
-        std::cout << sol_name[i] << std::endl;
+        // std::cout << sol_name[i] << std::endl;
         auto u = solutions[i]->get_fun();
         auto g = solutions[i]->boundary_g();
-        solve_directly(mesh_path, L, k, u, g, u);
+        solve_directly(sol_name[i], mesh_path, L, k, u, g, u);
         std::cout << std::endl;
     }
 }

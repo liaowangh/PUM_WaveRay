@@ -223,10 +223,12 @@ PUM_FEM::build_equation(size_type level) {
     auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
     
     // assemble for <grad(u), grad(v)> - k^2 uv
-    auto identity = [](Eigen::Vector2d x) -> double { return 1.; };
-    lf::mesh::utils::MeshFunctionGlobal mf_identity{identity};
-    auto f_k = [this](Eigen::Vector2d x) -> double { return -1 * k_ * k_;}; 
-    lf::mesh::utils::MeshFunctionGlobal mf_k{f_k};
+    lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
+    lf::mesh::utils::MeshFunctionConstant<double> mf_k(-1. * k_ * k_);
+    // auto identity = [](Eigen::Vector2d x) -> double { return 1.; };
+    // lf::mesh::utils::MeshFunctionGlobal mf_identity{identity};
+    // auto f_k = [this](Eigen::Vector2d x) -> double { return -1 * k_ * k_;}; 
+    // lf::mesh::utils::MeshFunctionGlobal mf_k{f_k};
     lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_k)> 
     	elmat_builder(fe_space, mf_identity, mf_k);
     
@@ -235,8 +237,9 @@ PUM_FEM::build_equation(size_type level) {
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
     
     // assemble boundary edge matrix, -i*k*u*v over \Gamma_R (outer boundary)
-    auto f_ik = [this](Eigen::Vector2d x) -> mat_scalar { return -1i * k_;};
-    lf::mesh::utils::MeshFunctionGlobal mf_ik{f_ik};
+    lf::mesh::utils::MeshFunctionConstant<mat_scalar> mf_ik(-1i * k_);
+    // auto f_ik = [this](Eigen::Vector2d x) -> mat_scalar { return -1i * k_;};
+    // lf::mesh::utils::MeshFunctionGlobal mf_ik{f_ik};
 
     // first need to distinguish between outer and inner boundar
     auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");

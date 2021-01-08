@@ -38,10 +38,8 @@ public:
 
 
 /*
- * Plan waves: u(x) = exp(ik(d1*x(1) + d2*x(2))
+ * Plan waves: u(x) = exp(ik(d1*x(0) + d2*x(1))
  * k is the wave number, and frequency d1^2+d2^2 = 1
- * Overload the operator() to return the value a x.
- * And it should also have a member that is the g.
  */
 class plan_wave: public HE_sol {
 public:
@@ -64,10 +62,17 @@ private:
  *
  * Derivatives: https://www.boost.org/doc/libs/1_75_0/libs/math/doc/html/math_toolkit/bessel/bessel_over.html
  * d/dx Jv(x) = v/x * Jv(x) - J_{v+1}(x)
+ *            = (J_{v-1}(x) - J_{v+1}(x)) / 2
  * d/dx Yv(x) = v/x * Yv(x) - Y_{v+1}(x)
+ *            = (Y_{v-1}(x) - Y_{v+1}(x)) / 2
  * d/dx Iv(x) = v/x * Iv(x) + I_{v+1}(x)
  * d/dx Kv(x) = v/x * Kv(x) - K_{v+1}(x)
  */
+
+// Jv(ix) = exp(iv\pi/2)*Iv(x), x \in R
+Scalar bessel_j_ix(double v, double x);
+// Yv(ix) = exp(i(v+1)\pi/2)*Iv(x) - 2exp(-iv\pi/2)/pi*Kv(x)
+Scalar bessel_y_ix(double v, double x);
 
 // derivative of Jv at x
 Scalar cyl_bessel_j_dx(double v, double x);
@@ -77,6 +82,10 @@ Scalar cyl_neumann_dx(double v, double x);
 Scalar hankel_1(double v, double x);
 // derivative of Hv
 Scalar hankel_1_dx(double v, double x);
+// Hankel function taking pure imaginary argument
+Scalar hankel_1_ix(double v, double x);
+// Derivative of Hankel function taking pure imaginary argument
+Scalar hankel_1_dx_ix(double v, double x);
 
 /*
  * Fundamental solutions: u(x) = H0(k||x-c||) (not sure)
