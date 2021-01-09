@@ -34,10 +34,10 @@ hunter_add_package(Boost COMPONENTS chrono timer system filesystem program_optio
 find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_options)
 ###############################################################################
 
-set(code_sources
+set(SingleLinFEM_sources
   pum_wave_ray/pum_fem.h
   pum_wave_ray/pum_fem.cpp
-  pum_wave_ray/main.cpp
+  SingleMesh_LinearFEM/SingleLinFEM.cpp
   utils/utils.h
   utils/utils.cpp
   utils/HE_solution.h
@@ -55,12 +55,12 @@ set(Laplace_sources
 )
 
 # define executable
-add_executable(pum_wave_ray ${code_sources})
+add_executable(SingleLinFEM ${SingleLinFEM_sources})
 
 #add_executable(Laplace ${Laplace_sources})
 
 #link executable with LehrFEM++
-target_link_libraries(pum_wave_ray
+target_link_libraries(SingleLinFEM
   PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
   LF::lf.mesh
   LF::lf.mesh.utils
