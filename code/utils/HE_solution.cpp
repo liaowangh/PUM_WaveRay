@@ -185,3 +185,40 @@ function_type Spherical_wave::boundary_g() {
     };
     return g;
 }
+
+/*
+ * Harmonic function 
+ * Solution for Laplace equation (k = 0 in Helmholtz equation)
+ * We take the function u(x,y)=exp(x+iy)
+ */
+function_type Harmonic_fun::get_fun() {
+    return [](const coordinate_t& x) -> Scalar {
+        return std::exp(x(0)+1i*x(1));
+    };
+}
+
+function_type Harmonic_fun::boundary_g() {
+    auto g = [](const coordinate_t& x) -> Scalar {
+        double x1 = x(0), y1 = x(1);
+
+        Scalar u = std::exp(x1+1i*y1);
+        Scalar dudx = u;
+        Scalar dudy = 1i * u;
+        Scalar res = 0.;
+        if(y1 == 0 && x1 <= 1 && x1 >= 0) {
+            // n =  (0, -1)
+            res += -1. * dudy;
+        } else if(x1 == 1 && y1 >= 0 && y1 <= 1) {
+            // n = (1, 0)
+            res += dudx;
+        } else if(y1 == 1 && x1 >= 0 && x1 <= 1) {
+            // n = (0, 1)
+            res += dudy;
+        } else if(x1 == 0 && y1 >= 0 && y1 <= 1) {
+            // n = (-1, 0)
+            res += -1. * dudx;
+        }
+        return res;
+    };
+    return g;
+}

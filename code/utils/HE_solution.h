@@ -122,3 +122,21 @@ public:
 private:
     double l;
 };
+
+/*
+ * Manufacture solutions for Laplace equation
+ *  \Laplace u = 0 (special case for Helmholtz equation)
+ *  \partial u / \partial n - iku = g on \Gamma_R
+ *  u = h on \Gamma_D
+ 
+ * The domain is [0,1] x [0,1] \ [0.375, 0.375] x [0.375, 0.375]
+ * And \Gamma_R is the boundary of square [0,1] x [0,1]
+ *     \Gamma_D is the boundary of square [0.375, 0.375] x [0.375, 0.375]
+ */
+ class Harmonic_fun {
+ public:
+     Harmonic_fun(){};
+     function_type get_fun();
+     function_type boundary_g();
+ };
+

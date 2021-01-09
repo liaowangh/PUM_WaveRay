@@ -16,8 +16,6 @@ project(PUM_Wave_Ray)
 # set compiler
 set(CMAKE_CXX_STANDARD 17)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-
 # Get Dependencies
 ###############################################################################
 hunter_add_package(lehrfempp)
@@ -46,17 +44,20 @@ set(code_sources
   utils/HE_solution.cpp
 )
 
-#set(test_sources
-#  test/test_solve_on_finest.cpp
-#)
-
-# Libraries
-#add_library(pum_wave_ray.soulution ${code_sources})
+set(Laplace_sources
+  pum_wave_ray/pum_fem.h
+  pum_wave_ray/pum_fem.cpp
+  pum_wave_ray/main_Laplace.cpp
+  utils/utils.h
+  utils/utils.cpp
+  utils/HE_solution.h
+  utils/HE_solution.cpp
+)
 
 # define executable
 add_executable(pum_wave_ray ${code_sources})
 
-#add_executable(pum_test ${test_sources})
+#add_executable(Laplace ${Laplace_sources})
 
 #link executable with LehrFEM++
 target_link_libraries(pum_wave_ray
@@ -71,20 +72,3 @@ target_link_libraries(pum_wave_ray
   LF::lf.uscalfe
   LF::lf.base
 )
-
-#target_link_libraries(pum_test 
-#  PUBLIC Eigen3::Eigen
-#  LF::lf.mesh
-#  LF::lf.mesh.utils
-#  LF::lf.mesh.test_utils
-#  LF::lf.mesh.hybrid2d
-#  LF::lf.refinement
-#  LF::lf.assemble
-#  LF::lf.io
-#  LF::lf.uscalfe
-#  LF::lf.base
-#  GTest::Main
-#  pum_wave_ray.solution
-#)
-
-#gtest_discover_tests(pum_test)

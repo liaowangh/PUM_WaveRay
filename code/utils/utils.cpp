@@ -15,6 +15,10 @@ vec_t fun_in_vec(const lf::assemble::DofHandler& dofh, const function_type& f) {
     return res;
 }
 
+/*
+ * compute norm rely on the mass matrix which is the finite element Galerkin matrix 
+ * for the L2 inner product (u,v)->\int_\Omega uvdx 
+ */
 double L2_norm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
     double res = 0.0;
     int N_dofs = dofh.NumDofs();
@@ -33,6 +37,22 @@ double L2_norm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
     const Eigen::SparseMatrix<double> mass_mat = mass_matrix.makeSparse();
     res = std::sqrt(std::abs(u.dot(mass_mat * u.conjugate())));
     return res;
+}
+
+/*
+ * compute ||u-mu||_2, 
+ * where u (manufacture solution) is of function_type,
+ * solution is giving by vector representation mu
+ */ 
+double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const function_type& u, const vec_t& mu) {
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+    // u has to be wrapped into a mesh function for error computation
+    lf::mesh::utils::MeshFunctionGlobal mf_u{u};
+    // create mesh function representing solution 
+    auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
+    auto mf_square = (mf_u - mf_mu) * (mf_u - mf_mu);
+    double L2err = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_square, 5));
+    return std::sqrt(L2err);
 }
 
 double H1_norm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
@@ -98,9 +118,9 @@ void solve_directly(const std::string& sol_name, const std::string& mesh_path, s
         auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
         vec_t true_vec = fun_in_vec(dofh, u);
 
-        double l2_err = L2_norm(dofh, appro_vec - true_vec);
+        // double l2_err = L2_norm(dofh, appro_vec - true_vec);
+        double l2_err = L2Err_norm(pum_fem.getmesh(level), u, appro_vec);
         double h1_err = H1_norm(dofh, appro_vec - true_vec);
-        //double h1_err = H1_seminorm(dofh, appro_vec - true_vec);
         
         ndofs.push_back(dofh.NumDofs());
         L2err.push_back(l2_err);

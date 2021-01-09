@@ -30,7 +30,7 @@ int main(){
     boost::filesystem::path here = __FILE__;
     auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string(); 
     size_type L = 5; // refinement steps
-    double k = 3; // wave number
+    double k = 2; // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
     

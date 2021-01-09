@@ -27,8 +27,10 @@ using function_type = std::function<Scalar(const coordinate_t&)>;
 // vector representation of function f
 vec_t fun_in_vec(const lf::assemble::DofHandler& dofh, const function_type& f);
 
-
+// compute the L2 norm giving the vector representation
 double L2_norm(const lf::assemble::DofHandler&, const vec_t&);
+
+double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const function_type& u, const vec_t& mu);
 
 double H1_norm(const lf::assemble::DofHandler&, const vec_t&);
 
