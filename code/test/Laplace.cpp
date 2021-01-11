@@ -16,7 +16,7 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "pum_fem.h"
+#include "../pum_wave_ray/pum_fem.h"
 #include "../utils/HE_solution.h"
 #include "../utils/utils.h"
 

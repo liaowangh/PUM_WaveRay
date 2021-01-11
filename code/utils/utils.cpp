@@ -50,6 +50,12 @@ double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const function_type& u, 
     lf::mesh::utils::MeshFunctionGlobal mf_u{u};
     // create mesh function representing solution 
     auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
+
+    auto u_conj = [&u](const coordinate_t& x) -> Scalar {
+        return std::conj(u(x));};
+    lf::mesh::utils::MeshFunctionGlobal mf_u_conj{u_conj};
+    auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu.conjugate());
+    
     auto mf_square = (mf_u - mf_mu) * (mf_u - mf_mu);
     double L2err = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_square, 5));
     return std::sqrt(L2err);

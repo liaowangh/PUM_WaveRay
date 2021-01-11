@@ -15,8 +15,6 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "EdgeMat.h"
-#include "ElementMatrix.h"
 #include "pum_fem.h"
 
 using namespace std::complex_literals;
