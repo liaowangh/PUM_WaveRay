@@ -2,8 +2,8 @@
 
 using namespace std::complex_literals;
 
-PUM_ElemVec::ElemVec_t PUM_ElemVec::eval(const lf::mesh::Entity& cell) {
-    const lf::base::RefEl ref_el{edge.RefEl()};
+PUM_ElemVec::ElemVec_t PUM_ElemVec::Eval(const lf::mesh::Entity& cell) {
+    const lf::base::RefEl ref_el{cell.RefEl()};
     LF_ASSERT_MSG(ref_el == lf::base::RefEl::kTria(),
                   "Cell must be of triangle type");
     size_type N = (1 << (L + 1 - l));
@@ -16,9 +16,10 @@ PUM_ElemVec::ElemVec_t PUM_ElemVec::eval(const lf::mesh::Entity& cell) {
             d << std::cos(2*pi*t/N), std::sin(2*pi*t/N);
             return f(x) * std::exp(-1i * k * d.dot(x));
         };
-        lf::uscalfe::ScalarLoadElementVectorProvider<double, decltype(f_new)>
-        ElemVec_builder(fe_space, f_new);
-        elemVec_tmp = ElemVec_builder.eval(cell);
+        lf::mesh::utils::MeshFunctionGlobal mf_f{f_new};
+        lf::uscalfe::ScalarLoadElementVectorProvider<double, decltype(mf_f)>
+            ElemVec_builder(fe_space, mf_f);
+        ElemVec_t elemVec_tmp = ElemVec_builder.Eval(cell);
         for(int i = 0; i < 3; ++i) {
             elemVec(i*N+t) = elemVec_tmp(i);
         }

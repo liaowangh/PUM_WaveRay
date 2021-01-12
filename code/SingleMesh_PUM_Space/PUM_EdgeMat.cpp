@@ -14,6 +14,7 @@
 #include "PUM_EdgeMat.h"
 #include "../utils/triangle_integration.h"
 
+using namespace std::complex_literals;
 
 PUM_EdgeMat::ElemMat PUM_EdgeMat::Eval(const lf::mesh::Entity& edge) {
     const lf::base::RefEl ref_el{edge.RefEl()};
@@ -23,7 +24,7 @@ PUM_EdgeMat::ElemMat PUM_EdgeMat::Eval(const lf::mesh::Entity& edge) {
 
     for(int t1 = 0; t1 < N; ++t1) {
         for(int t2 = 0; t2 < N; ++t2) {
-            auto gamma = [&this, &N, &t1, &t2](const Eigen::Vector2d& x)->Scalar{
+            auto gamma = [this, &N, &t1, &t2](const Eigen::Vector2d& x)->Scalar{
                 Eigen::Matrix<std::complex<double>, 2, 1> d1, d2;
                 double pi = std::acos(-1);
                 d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t2/N);
@@ -31,9 +32,9 @@ PUM_EdgeMat::ElemMat PUM_EdgeMat::Eval(const lf::mesh::Entity& edge) {
                 return -1i * k * std::exp(1i * k * (d1-d2).dot(x));
             };
             lf::mesh::utils::MeshFunctionGlobal mf_gamma{gamma};
-            lf::uscalfe::MassEdgeMatrixProvider<double, decltype(mf_gamma), decltype(bd_flags)> 
-                edgeMat_builder(fe_space, mf_gamma, bd_flags);
-            const auto edge_mat_tmp = edgeMat_builder.eval(edge);
+            lf::uscalfe::MassEdgeMatrixProvider<double, decltype(mf_gamma), decltype(edge_selector)> 
+                edgeMat_builder(fe_space, mf_gamma, edge_selector);
+            const auto edge_mat_tmp = edgeMat_builder.Eval(edge);
             edge_mat(t1, t2) = edge_mat_tmp(0, 0);
             edge_mat(t1, t2 + N) = edge_mat_tmp(0, 1);
             edge_mat(t1 + N, t2) = edge_mat_tmp(1, 0);

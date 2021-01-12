@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 
-#include <Eigen/core>
+#include <Eigen/Core>
 
 using data_type = std::complex<double>;
 

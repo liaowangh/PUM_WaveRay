@@ -15,24 +15,24 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "pum_fem.h"
+#include "PUM_WaveRay.h"
 
 using namespace std::complex_literals;
 
-lf::assemble::UniformFEDofHandler PUM_FEM::generate_dof(unsigned int level) {
+lf::assemble::UniformFEDofHandler PUM_WaveRay::generate_dof(unsigned int level) {
     auto mesh = mesh_hierarchy->getMesh(level);
     size_type num = level == L_ ? 1 : std::pow(2, L_ + 1 - level);
     return lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), num}});
 }
 
-PUM_FEM::PUM_FEM(unsigned int L, double k, std::string mesh_path, PUM_FEM::function_type g, PUM_FEM::function_type h): 
+PUM_WaveRay::PUM_WaveRay(unsigned int L, double k, std::string mesh_path, PUM_WaveRay::function_type g, PUM_WaveRay::function_type h): 
     L_(L), k_(k), g_(g), h_(h) {
     auto mesh_factory = std::make_unique<lf::mesh::hybrid2d::MeshFactory>(2);
     reader = std::make_shared<lf::io::GmshReader>(std::move(mesh_factory), mesh_path);
     mesh_hierarchy = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(reader->mesh(), L);
 }
 
-void PUM_FEM::Prolongation_LF(){
+void PUM_WaveRay::Prolongation_LF(){
     P_LF = std::vector<elem_mat_t>(L_);
     for(int l = 0; l < L_; ++l) {
         auto coarse_mesh = mesh_hierarchy->getMesh(l);
@@ -65,7 +65,7 @@ void PUM_FEM::Prolongation_LF(){
 
 
 
-PUM_FEM::mat_scalar PUM_FEM::integration_mesh(int level, PUM_FEM::function_type f) {
+PUM_WaveRay::mat_scalar PUM_WaveRay::integration_mesh(int level, PUM_WaveRay::function_type f) {
     lf::mesh::utils::MeshFunctionGlobal mf{f};
     // mf integrated over the mesh level
     mat_scalar res = lf::uscalfe::IntegrateMeshFunction(*(mesh_hierarchy->getMesh(level)), mf, 5);
@@ -87,7 +87,7 @@ std::vector<double> generate_fre(int L, double k, int l, int t) {
     return {d1, d2};
 }
 
-void PUM_FEM::Prolongation_PW() {
+void PUM_WaveRay::Prolongation_PW() {
     P_PW = std::vector<elem_mat_t>(L_ - 1);
     
     auto identity = [](Eigen::Vector2d x)->mat_scalar{ return 1.0;};
@@ -121,7 +121,7 @@ void PUM_FEM::Prolongation_PW() {
     }
 }
 
-void PUM_FEM::Restriction_PW() {
+void PUM_WaveRay::Restriction_PW() {
     R_PW = std::vector<elem_mat_t>(L_ - 1);
     int N1 = 2;
     int N2 = 4;
@@ -139,7 +139,7 @@ void PUM_FEM::Restriction_PW() {
 /*
  * Return the linear operator that map a function from level l to level l+1 
  */
-PUM_FEM::elem_mat_t PUM_FEM::Prolongation_PUM(int l) {
+PUM_WaveRay::elem_mat_t PUM_WaveRay::Prolongation_PUM(int l) {
     LF_ASSERT_MSG((l < L_), 
         "in prolongation, level should smaller than" << L_);
     if(l == L_ - 1) {
@@ -190,7 +190,7 @@ PUM_FEM::elem_mat_t PUM_FEM::Prolongation_PUM(int l) {
 /*
  * Return the linear operator that map a function from level l+1 to level l
  */
-PUM_FEM::elem_mat_t PUM_FEM::Restriction_PUM(int l) {
+PUM_WaveRay::elem_mat_t PUM_WaveRay::Restriction_PUM(int l) {
     LF_ASSERT_MSG((l < L_), 
         "in prolongation, level should smaller than" << L_);
     if(l == L_ - 1) {
@@ -211,8 +211,8 @@ PUM_FEM::elem_mat_t PUM_FEM::Restriction_PUM(int l) {
 }
 
 
-std::pair<lf::assemble::COOMatrix<PUM_FEM::mat_scalar>, PUM_FEM::rhs_vec_t>
-PUM_FEM::build_equation(size_type level) {
+std::pair<lf::assemble::COOMatrix<PUM_WaveRay::mat_scalar>, PUM_WaveRay::rhs_vec_t>
+PUM_WaveRay::build_equation(size_type level) {
     
     auto mesh = mesh_hierarchy->getMesh(level);  // get mesh
     
@@ -312,7 +312,7 @@ PUM_FEM::build_equation(size_type level) {
 
 
 template <typename mat_type>
-void Gaussian_Seidel(mat_type& A, PUM_FEM::rhs_vec_t& phi, PUM_FEM::rhs_vec_t& u, int t) {
+void Gaussian_Seidel(mat_type& A, PUM_WaveRay::rhs_vec_t& phi, PUM_WaveRay::rhs_vec_t& u, int t) {
     // u: initial value; t: number of iterations
     int N = A.rows();
     for(int i = 0; i < t; ++i){
@@ -323,7 +323,7 @@ void Gaussian_Seidel(mat_type& A, PUM_FEM::rhs_vec_t& phi, PUM_FEM::rhs_vec_t& u
     }
 }
 
-void PUM_FEM::v_cycle(rhs_vec_t& u, size_type mu1, size_type mu2) {
+void PUM_WaveRay::v_cycle(rhs_vec_t& u, size_type mu1, size_type mu2) {
     auto eq_pair = build_equation(L_); // Equaiton Ax=f in finest mesh
     // const Eigen::SparseMatrix<mat_scalar> A(eq_pair.first.makeSparse());
     elem_mat_t A(eq_pair.first.makeDense());

@@ -2,13 +2,14 @@
 #include <vector>
 
 #include "PUM_ElementMatrix.h"
+#include "../utils/utils.h"
 #include "../utils/triangle_integration.h"
 
 using namespace std::complex_literals;
 
 // a(u,v) = (grad u, grad \bar{v}) - k^2u\bar{v}
 PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity& cell) {
-    const lf::base::RefEl ref_el{edge.RefEl()};
+    const lf::base::RefEl ref_el{cell.RefEl()};
     LF_ASSERT_MSG(ref_el == lf::base::RefEl::kTria(),
                   "Cell must be of triangle type");
     size_type N = (1 << (L + 1 - l));
@@ -37,7 +38,7 @@ PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity& c
         for(int j = 0; j < 3*N; ++j) {
             int i2 = j / N + 1;
             int t2 = j % N;
-            auto f = [&N,&X,&i1,&i2,&t1,&t2](const Eigen::Vector2d& x)->Scalar {
+            auto f = [this,&N,&X,&i1,&i2,&t1,&t2](const Eigen::Vector2d& x)->Scalar {
                 Eigen::Matrix<std::complex<double>, 2, 1> d1, d2, beta1, beta2;
                 double pi = std::acos(-1);
                 d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t2/N);
@@ -52,8 +53,7 @@ PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity& c
                 auto v_conj = lambda2 * std::exp(-1i*k*d2.dot(x));
                 return gradu.dot(gradv_conj) - k*k*u*v_conj;
             }; 
-            lf::mesh::utils::MeshFunctionGlobal mf_f{f};
-            elem_mat(i, j) = LocalIntegral(cell, 6, f};
+            elem_mat(i, j) = LocalIntegral(cell, 6, f);
         }
     }
     return elem_mat;

@@ -27,7 +27,7 @@ private:
     double d1_, d2_; // frequency
 };
 
-class PUM_FEM {
+class PUM_WaveRay {
 public:
     using size_type = unsigned int;
     using mat_scalar = std::complex<double>;
@@ -35,7 +35,7 @@ public:
     using rhs_vec_t = Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1>;
     using function_type = std::function<mat_scalar(Eigen::Vector2d)>;
     
-    PUM_FEM(size_type L, double k, std::string mesh_path, function_type g, function_type h); // constructor 
+    PUM_WaveRay(size_type L, double k, std::string mesh_path, function_type g, function_type h); // constructor 
     
     lf::assemble::UniformFEDofHandler generate_dof(size_type);
     
@@ -79,5 +79,5 @@ public:
  * t: relaxation times
  */
 template <typename mat_type>
-void Gaussian_Seidel(mat_type& A, PUM_FEM::rhs_vec_t& phi, PUM_FEM::rhs_vec_t& u, int t);
+void Gaussian_Seidel(mat_type& A, PUM_WaveRay::rhs_vec_t& phi, PUM_WaveRay::rhs_vec_t& u, int t);
 

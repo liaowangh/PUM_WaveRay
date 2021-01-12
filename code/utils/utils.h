@@ -17,6 +17,9 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
+#include "../pum_wave_ray/HE_FEM.h"
+#include "../SingleMesh_PUM_Space/HE_PUM.h"
+
 using Scalar = std::complex<double>;
 using size_type = unsigned int;
 using coordinate_t = Eigen::Vector2d;
@@ -24,10 +27,11 @@ using vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 using mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
 using function_type = std::function<Scalar(const coordinate_t&)>;
 
-// Integer throught entity e
-template <class MF>
-auto LocalIntegral(const mesh::Entity &e, int quad_degree,
-                   const MF &mf) -> mesh::utils::MeshFunctionReturnType<MF>;
+// Integer through entity e, \int_e fdx
+Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const function_type& f);
+// template <class MF>
+// auto LocalIntegral(const lf::mesh::Entity &e, int quad_degree,
+//                    const MF &mf) -> lf::mesh::utils::MeshFunctionReturnType<MF>;
 
 // vector representation of function f
 vec_t fun_in_vec(const lf::assemble::DofHandler& dofh, const function_type& f);
@@ -44,4 +48,4 @@ double H1_seminorm(const lf::assemble::DofHandler&, const vec_t&);
 // Test the manufacture solution, directly solve the equation in finest coarse.
 void solve_directly(const std::string& sol_name, const std::string& mesh_path, size_type L, double wave_num, const function_type&, const function_type&, const function_type&);
 
-void solve_directly(const PUM_FEM& pum_fem, size_type L, const function_type& u);
+void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, const function_type& u);

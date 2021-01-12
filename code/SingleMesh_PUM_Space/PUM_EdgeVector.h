@@ -19,21 +19,22 @@ class PUM_EdgeVec{
 public:
     using size_type = unsigned int;
     using Scalar = std::complex<double>;
-    using EdgeVec_t = Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1>;
+    using EdgeVec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     
     PUM_EdgeVec(std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space_,
-        lf::mesh::utils::CodimMeshDataSet<bool> &edge_selector_, size_type L_, size_type l_, FHandle_t g_): 
-        fe_space(fe_space_), edge_selector(edge_selector_), L(L_), l(l_), g(g_){}
+        lf::mesh::utils::CodimMeshDataSet<bool> &edge_selector_, size_type L_, size_type l_, double k_, FHandle_t g_): 
+        fe_space(fe_space_), edge_selector(edge_selector_), L(L_), l(l_), k(k_), g(g_){}
     
-    bool isActive(const lf::mesh::Entity& edge) { return edge_selector(ege); }
+    bool isActive(const lf::mesh::Entity& edge) { return edge_selector(edge); }
     
     EdgeVec_t Eval(const lf::mesh::Entity &edge);
 private:
     std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space;
-    lf::mesh::utils::CodimMeshDataSet<bool> &edge_selector;
+    lf::mesh::utils::CodimMeshDataSet<bool> edge_selector;
     size_type L;
     size_type l;
+    double k;
     FHandle_t g;
-}
+};
 

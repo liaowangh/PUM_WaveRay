@@ -19,7 +19,7 @@ public:
     
     PUM_EdgeMat(std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space_, 
         lf::mesh::utils::CodimMeshDataSet<bool> &edge_selector_, size_type L_, size_type l_, double k_): 
-        fe_sapce(fe_space_), edge_selector(edge_selector_), L(L_), l(l_), k(k_) {}
+        fe_space(fe_space_), edge_selector(edge_selector_), L(L_), l(l_), k(k_) {}
     virtual bool isActive(const lf::mesh::Entity &edge) {
         return edge_selector(edge);
     }
@@ -27,7 +27,7 @@ public:
     ElemMat Eval(const lf::mesh::Entity &edge);
 private:
     std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space;
-    lf::mesh::utils::CodimMeshDataSet<bool> &edge_selector;
+    lf::mesh::utils::CodimMeshDataSet<bool> edge_selector;
     size_type L;
     size_type l;
     double k;

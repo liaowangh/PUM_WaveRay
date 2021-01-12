@@ -19,11 +19,11 @@ class PUM_ElemVec{
 public:
     using size_type = unsigned int;
     using Scalar = std::complex<double>;
-    using ElemVec_t = Eigen::Matrix<mat_scalar, Eigen::Dynamic, 1>;
+    using ElemVec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     
     PUM_ElemVec(std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space_,
-        size_type L_, size_type l_, FHandle_t f_): fe_space(fe_space_), L(L_), l(l_), f(f_){}
+        size_type L_, size_type l_, double k_, FHandle_t f_): fe_space(fe_space_), L(L_), l(l_), k(k_), f(f_){}
     
     bool isActive(const lf::mesh::Entity& cell) { return true; }
     
@@ -32,6 +32,7 @@ private:
     std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space;
     size_type L;
     size_type l;
+    double k;
     FHandle_t f;
-}
+};
 

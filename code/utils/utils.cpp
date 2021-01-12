@@ -2,12 +2,27 @@
 #include <string>
 
 #include "utils.h"
-#include "../pum_wave_ray/pum_fem.h"
+#include "../pum_wave_ray/HE_FEM.h"
+#include "../pum_wave_ray/PUM_WaveRay.h"
 
+Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const function_type& f) {
+    auto qr = lf::quad::make_QuadRule(e.RefEl(), quad_degree);
+    auto global_points = e.Geometry()->Global(qr.Points());
+    auto weights_ie = (qr.Weights().cwiseProduct(e.Geometry()->IntegrationElement(qr.Points()))).eval();
+
+    Scalar temp = 0.0;
+    for (Eigen::Index i = 0; i < qr.NumPoints(); ++i) {
+        temp += weights_ie(i) * f(global_points.col(i));
+    }
+    return temp;
+
+}
+
+/*
  template <class MF>
- auto LocalIntegral(const mesh::Entity &e, int quad_degree,
-                    const MF &mf) -> mesh::utils::MeshFunctionReturnType<MF> {
-    using MfType = mesh::utils::MeshFunctionReturnType<MF>;
+ auto LocalIntegral(const lf::mesh::Entity &e, int quad_degree,
+                    const MF &mf) -> lf::mesh::utils::MeshFunctionReturnType<MF> {
+    using MfType = lf::mesh::utils::MeshFunctionReturnType<MF>;
 
     auto qr = lf::quad::make_QuadRule(e.RefEl(), quad_degree);
 
@@ -23,7 +38,7 @@
         return (value_m * weights_ie)(0);
     }
     
-    if constexpr (base::is_eigen_matrix<MfType>) {  // NOLINT
+    if constexpr (lf::base::is_eigen_matrix<MfType>) {  // NOLINT
         constexpr int size = MfType::SizeAtCompileTime;
         if constexpr (size != Eigen::Dynamic) {
         auto value_m = Eigen::Map<
@@ -44,6 +59,7 @@
     }
     return temp;
 }
+*/
 
 vec_t fun_in_vec(const lf::assemble::DofHandler& dofh, const function_type& f) {
     size_type N_dofs(dofh.NumDofs());
@@ -142,13 +158,14 @@ double H1_seminorm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
 }
 
 void solve_directly(const std::string& sol_name, const std::string& mesh_path, size_type L, double wave_num, const function_type& u, const function_type& g, const function_type& h) {
-    PUM_FEM pum_fem(L, wave_num, mesh_path, g, h);
+    
+    PUM_WaveRay pum_waveray(L, wave_num, mesh_path, g, h);
     
     std::vector<int> ndofs;
     std::vector<double> L2err, H1err;
     
     for(size_type level = 0; level <= L; ++level) {
-        auto eq_pair = pum_fem.build_equation(level);
+        auto eq_pair = pum_waveray.build_equation(level);
 
         // solve linear system of equations A*x = \phi
         const Eigen::SparseMatrix<Scalar> A_crs(eq_pair.first.makeSparse());
@@ -162,11 +179,11 @@ void solve_directly(const std::string& sol_name, const std::string& mesh_path, s
         }
 
         // find the true vector representation
-        auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
+        auto dofh = lf::assemble::UniformFEDofHandler(pum_waveray.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
         vec_t true_vec = fun_in_vec(dofh, u);
 
         // double l2_err = L2_norm(dofh, appro_vec - true_vec);
-        double l2_err = L2Err_norm(pum_fem.getmesh(level), u, appro_vec);
+        double l2_err = L2Err_norm(pum_waveray.getmesh(level), u, appro_vec);
         double h1_err = H1_norm(dofh, appro_vec - true_vec);
         
         ndofs.push_back(dofh.NumDofs());
@@ -192,12 +209,12 @@ void solve_directly(const std::string& sol_name, const std::string& mesh_path, s
     } 
 }
 
-void solve_directly(const PUM_FEM& pum_fem, size_type L, const function_type& u) {
+void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, const function_type& u) {
     std::vector<int> ndofs;
     std::vector<double> L2err, H1err;
     
     for(size_type level = 0; level <= L; ++level) {
-        auto eq_pair = pum_fem.build_equation(level);
+        auto eq_pair = he_fem.build_equation(level);
 
         // solve linear system of equations A*x = \phi
         const Eigen::SparseMatrix<Scalar> A_crs(eq_pair.first.makeSparse());
@@ -211,16 +228,17 @@ void solve_directly(const PUM_FEM& pum_fem, size_type L, const function_type& u)
         }
 
         // find the true vector representation
-        auto dofh = lf::assemble::UniformFEDofHandler(pum_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
-        vec_t true_vec = fun_in_vec(dofh, u);
+        // auto dofh = lf::assemble::UniformFEDofHandler(he_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
+        // vec_t true_vec = fun_in_vec(dofh, u);
 
         // double l2_err = L2_norm(dofh, appro_vec - true_vec);
-        double l2_err = L2Err_norm(pum_fem.getmesh(level), u, appro_vec);
-        double h1_err = H1_norm(dofh, appro_vec - true_vec);
+        double l2_err = L2Err_norm(he_fem.getmesh(level), u, appro_vec);
+        // double h1_err = H1_norm(dofh, appro_vec - true_vec);
         
         ndofs.push_back(dofh.NumDofs());
         L2err.push_back(l2_err);
-        H1err.push_back(h1_err);
+        // H1err.push_back(h1_err);
+        H1err.push_back(0.0);
     }
     
     // Tabular output of the results
