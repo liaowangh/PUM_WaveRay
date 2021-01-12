@@ -1,24 +1,50 @@
-#pragma once
-
 #include <cmath>
 #include <functional>
 #include <iostream>
 #include <string>
 
-#include <lf/assemble/assemble.h>
 #include <lf/base/base.h>
-#include <lf/io/io.h>
 #include <lf/mesh/test_utils/test_meshes.h>
 #include <lf/mesh/utils/utils.h>
-#include <lf/refinement/refinement.h>
 #include <lf/uscalfe/uscalfe.h>
 
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "EdgeMat.h"
-#include "triangle_integration.h"
+#include "PUM_EdgeMat.h"
+#include "../utils/triangle_integration.h"
 
+
+PUM_EdgeMat::ElemMat PUM_EdgeMat::Eval(const lf::mesh::Entity& edge) {
+    const lf::base::RefEl ref_el{edge.RefEl()};
+    LF_ASSERT_MSG(ref_el == lf::base::RefEl::kSegment(),"Edge must be of segment type");
+    size_type N = (1 << (L + 1 - l));
+    ElemMat edge_mat(2 * N, 2 * N);
+
+    for(int t1 = 0; t1 < N; ++t1) {
+        for(int t2 = 0; t2 < N; ++t2) {
+            auto gamma = [&this, &N, &t1, &t2](const Eigen::Vector2d& x)->Scalar{
+                Eigen::Matrix<std::complex<double>, 2, 1> d1, d2;
+                double pi = std::acos(-1);
+                d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t2/N);
+                d2 << std::cos(2*pi*t2/N), std::sin(2*pi*t2/N);
+                return -1i * k * std::exp(1i * k * (d1-d2).dot(x));
+            };
+            lf::mesh::utils::MeshFunctionGlobal mf_gamma{gamma};
+            lf::uscalfe::MassEdgeMatrixProvider<double, decltype(mf_gamma), decltype(bd_flags)> 
+                edgeMat_builder(fe_space, mf_gamma, bd_flags);
+            const auto edge_mat_tmp = edgeMat_builder.eval(edge);
+            edge_mat(t1, t2) = edge_mat_tmp(0, 0);
+            edge_mat(t1, t2 + N) = edge_mat_tmp(0, 1);
+            edge_mat(t1 + N, t2) = edge_mat_tmp(1, 0);
+            edge_mat(t1 + N, t2 + N) = edge_mat_tmp(1, 1);
+        }
+    }
+    return edge_mat;
+}
+
+
+/*
 EdgeMatProvider::elem_mat_t EdgeMatProvider::Eval(const lf::mesh::Entity &edge) {
     LF_VERIFY_MSG(edge.RefEl() == lf::base::RefEl::kSegment(),
                   "Unsupported edge type " << edge.RefEl());
@@ -67,4 +93,4 @@ EdgeMatProvider::elem_mat_t EdgeMatProvider::Eval(const lf::mesh::Entity &edge) 
     }
     return edge_mat;
 }
-
+*/

@@ -34,55 +34,5 @@ hunter_add_package(Boost COMPONENTS chrono timer system filesystem program_optio
 find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_options)
 ###############################################################################
 
-set(SingleLinFEM_sources
-  pum_wave_ray/pum_fem.h
-  pum_wave_ray/pum_fem.cpp
-  SingleMesh_LinearFEM/SingleLinFEM.cpp
-  utils/utils.h
-  utils/utils.cpp
-  utils/HE_solution.h
-  utils/HE_solution.cpp
-)
-
-set(Laplace_sources
-  pum_wave_ray/pum_fem.h
-  pum_wave_ray/pum_fem.cpp
-  test/Laplace.cpp
-  utils/utils.h
-  utils/utils.cpp
-  utils/HE_solution.h
-  utils/HE_solution.cpp
-)
-
-# define executable
-add_executable(SingleLinFEM ${SingleLinFEM_sources})
-
-add_executable(Laplace ${Laplace_sources})
-
-#link executable with LehrFEM++
-target_link_libraries(SingleLinFEM
-  PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
-  LF::lf.mesh
-  LF::lf.mesh.utils
-  LF::lf.mesh.test_utils
-  LF::lf.mesh.hybrid2d
-  LF::lf.refinement
-  LF::lf.assemble
-  LF::lf.io
-  LF::lf.uscalfe
-  LF::lf.base
-)
-
-#link executable with LehrFEM++
-target_link_libraries(Laplace
-  PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
-  LF::lf.mesh
-  LF::lf.mesh.utils
-  LF::lf.mesh.test_utils
-  LF::lf.mesh.hybrid2d
-  LF::lf.refinement
-  LF::lf.assemble
-  LF::lf.io
-  LF::lf.uscalfe
-  LF::lf.base
-)
+#add_subdirectory(SingleMesh_LinearFEM)
+add_subdirectory(test)

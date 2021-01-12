@@ -16,16 +16,17 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
+using namespace std::complex_literals;
+
 class PUM_FEElementMatrix{
 public:
     using size_type = unsigned int;
-    using mat_scalar = std::complex<double>;
-    using elem_mat_t = Eigen::Matrix<mat_scalar, Eigen::Dynamic, Eigen::Dynamic>;
-    using ElemMat = const elem_mat_t;
+    using Scalar = std::complex<double>;
+    using ElemMat = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     
     PUM_FEElementMatrix(size_type L_, size_type l_, double k_): L(L_), l(l_), k(k_){}
     
-    virtual bool isActive(const lf::mesh::Entity & /*cell*/) { return true; }
+    bool isActive(const lf::mesh::Entity & /*cell*/) { return true; }
     
     /*
      * @brief main routine for the computation of element matrices
@@ -34,7 +35,7 @@ public:
      *        which the element matrix should be computed.
      * @return a square matrix with 3*2^(L-l+1) rows.
      */
-    elem_mat_t Eval(const lf::mesh::Entity &cell);
+    ElemMat Eval(const lf::mesh::Entity &cell);
 private:
     size_type L;
     size_type l;
