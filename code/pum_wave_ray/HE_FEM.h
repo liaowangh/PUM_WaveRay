@@ -43,8 +43,12 @@ public:
     std::shared_ptr<lf::mesh::Mesh> getmesh(size_type l) { return mesh_hierarchy->getMesh(l); }
     // equation: Ax=\phi, return (A, \phi)
     virtual std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) = 0; 
-    
+    // compute the norm of a function represented by vector coefficient
+    virtual double L2_norm(size_type l, const Vec_t& mu) = 0;
+    virtual double H1_norm(size_type l, const Vec_t& mu) = 0;
+
     virtual ~HE_FEM() = default;
+
 public:
     size_type L;  // number of refinement steps
     double k;  // wave number in the Helmholtz equation

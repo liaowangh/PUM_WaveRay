@@ -18,6 +18,9 @@
 
 using namespace std::complex_literals;
 
+/*
+ * PUM spaces: {bi(x) * exp(ikdt x}
+ */
 class HE_PUM: public HE_FEM {
 public:
     using size_type = unsigned int;

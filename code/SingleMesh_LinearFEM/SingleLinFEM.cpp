@@ -18,6 +18,7 @@
 
 #include "../utils/HE_solution.h"
 #include "../utils/utils.h"
+#include "../pum_wave_ray/PUM_WaveRay.h"
 
 using namespace std::complex_literals;
 
@@ -40,10 +41,11 @@ int main(){
  
     std::vector<std::string> sol_name{"plan_wave", "fundamental_sol", "spherical_wave"};
     for(int i = 0; i < 3; ++i) {
-        // std::cout << sol_name[i] << std::endl;
         auto u = solutions[i]->get_fun();
         auto g = solutions[i]->boundary_g();
-        solve_directly(sol_name[i], mesh_path, L, k, u, g, u);
+        PUM_WaveRay pum_waveray(L, k, mesh_path, g, u);
+        // solve_directly(sol_name[i], mesh_path, L, k, u, g, u);
+        solve_directly(pum_waveray, sol_name[i], L, u);
         std::cout << std::endl;
     }
 }

@@ -227,18 +227,17 @@ void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, co
             LF_ASSERT_MSG(false, "Eigen Factorization failed")
         }
 
-        // find the true vector representation
-        // auto dofh = lf::assemble::UniformFEDofHandler(he_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
-        // vec_t true_vec = fun_in_vec(dofh, u);
+        //find the true vector representation
+        auto dofh = lf::assemble::UniformFEDofHandler(he_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
+        vec_t true_vec = fun_in_vec(dofh, u);
 
         // double l2_err = L2_norm(dofh, appro_vec - true_vec);
         double l2_err = L2Err_norm(he_fem.getmesh(level), u, appro_vec);
-        // double h1_err = H1_norm(dofh, appro_vec - true_vec);
+        double h1_err = H1_norm(dofh, appro_vec - true_vec);
         
         ndofs.push_back(dofh.NumDofs());
         L2err.push_back(l2_err);
-        // H1err.push_back(h1_err);
-        H1err.push_back(0.0);
+        H1err.push_back(h1_err);
     }
     
     // Tabular output of the results
