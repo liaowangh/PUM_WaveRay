@@ -19,7 +19,7 @@
 
 using namespace std::complex_literals;
 
-lf::assemble::UniformFEDofHandler PUM_WaveRay::generate_dof(unsigned int level) {
+lf::assemble::UniformFEDofHandler PUM_WaveRay::get_dofh(unsigned int level) {
     auto mesh = mesh_hierarchy->getMesh(level);
     size_type num = level == L ? 1 : std::pow(2, L + 1 - level);
     return lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), num}});
@@ -212,10 +212,6 @@ PUM_WaveRay::build_equation(size_type level) {
     // assemble for <grad(u), grad(v)> - k^2 uv
     lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
     lf::mesh::utils::MeshFunctionConstant<double> mf_k(-1. * k * k);
-    // auto identity = [](Eigen::Vector2d x) -> double { return 1.; };
-    // lf::mesh::utils::MeshFunctionGlobal mf_identity{identity};
-    // auto f_k = [this](Eigen::Vector2d x) -> double { return -1 * k * k;}; 
-    // lf::mesh::utils::MeshFunctionGlobal mf_k{f_k};
     lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_k)> 
     	elmat_builder(fe_space, mf_identity, mf_k);
     
@@ -225,29 +221,30 @@ PUM_WaveRay::build_equation(size_type level) {
     
     // assemble boundary edge matrix, -i*k*u*v over \Gamma_R (outer boundary)
     lf::mesh::utils::MeshFunctionConstant<Scalar> mf_ik(-1i * k);
-    // auto f_ik = [this](Eigen::Vector2d x) -> Scalar { return -1i * k;};
-    // lf::mesh::utils::MeshFunctionGlobal mf_ik{f_ik};
-
-    // first need to distinguish between outer and inner boundar
-    auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
-    auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
 
     auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)}; 
-    // modify it to classify inner and outer boundary
-    for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
-        if(outer_boundary(*edge)) {
-            // find a boundary edge, need to determine if it's outer boundary
-            const lf::mesh::Entity* parent_edge = edge;
-            for(int i = level; i > 0; --i) {
-                parent_edge = mesh_hierarchy->ParentEntity(i, *parent_edge);
-            }
-            if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
-                // it is the inner boundary
-                outer_boundary(*edge) = false;
+
+    if(hole_exist){
+        // there is a hole inside, need to distinguish between outer and inner boundar
+        auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
+        auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
+
+        // modify it to classify inner and outer boundary
+        for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
+            if(outer_boundary(*edge)) {
+                // find a boundary edge, need to determine if it's outer boundary
+                const lf::mesh::Entity* parent_edge = edge;
+                for(int i = level; i > 0; --i) {
+                    parent_edge = mesh_hierarchy->ParentEntity(i, *parent_edge);
+                }
+                if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
+                    // it is the inner boundary
+                    outer_boundary(*edge) = false;
+                }
             }
         }
     }
-                                                   
+                                             
     lf::uscalfe::MassEdgeMatrixProvider<double, decltype(mf_ik), decltype(outer_boundary)>
     	edge_mat_builder(fe_space, mf_ik, outer_boundary);
     lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
@@ -261,41 +258,42 @@ PUM_WaveRay::build_equation(size_type level) {
     	edgeVec_builder(fe_space, mf_g, outer_boundary);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
     
-
-    // Treatment of Dirichlet boundary conditions h = u|_{\Gamma_D} (inner boundary condition)
-    // flag all nodes on the boundary
-    auto inner_point{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 2)};
-    // flag all nodes on the inner boundary
-    for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
-        if(outer_boundary(*edge)) {
-            // mark the points associated with outer boundary edge to false
-            for(const lf::mesh::Entity* subent: edge->SubEntities(1)) {
-                inner_point(*subent) = false;
+    if(hole_exist) {
+        // Treatment of Dirichlet boundary conditions h = u|_{\Gamma_D} (inner boundary condition)
+        // flag all nodes on the boundary
+        auto inner_point{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 2)};
+        // flag all nodes on the inner boundary
+        for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
+            if(outer_boundary(*edge)) {
+                // mark the points associated with outer boundary edge to false
+                for(const lf::mesh::Entity* subent: edge->SubEntities(1)) {
+                    inner_point(*subent) = false;
+                }
             }
         }
-    }
-    // Set up predicate: Run through all global shape functions and check whether
-    // they are associated with an entity on the boundary, store Dirichlet data.
-    std::vector<std::pair<bool, Scalar>> ess_dof_select{};
-    for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
-        const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
-        const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
-        const Scalar h_val = h(node_pos);
-        if(inner_point(dof_node)) {
-            // Dof associated with a entity on the boundary: "essential dof"
-            // The value of the dof should be set to the value of the function h
-            // at the location of the node.
-            ess_dof_select.push_back({true, h_val});
-        } else {
-            ess_dof_select.push_back({false, h_val});
+        // Set up predicate: Run through all global shape functions and check whether
+        // they are associated with an entity on the boundary, store Dirichlet data.
+        std::vector<std::pair<bool, Scalar>> ess_dof_select{};
+        for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+            const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
+            const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
+            const Scalar h_val = h(node_pos);
+            if(inner_point(dof_node)) {
+                // Dof associated with a entity on the boundary: "essential dof"
+                // The value of the dof should be set to the value of the function h
+                // at the location of the node.
+                ess_dof_select.push_back({true, h_val});
+            } else {
+                ess_dof_select.push_back({false, h_val});
+            }
         }
-    }
 
-    // modify linear system of equations
-    lf::assemble::FixFlaggedSolutionCompAlt<Scalar>(
-        [&ess_dof_select](size_type dof_idx)->std::pair<bool, Scalar> {
-            return ess_dof_select[dof_idx];},
-    A, phi);
+        // modify linear system of equations
+        lf::assemble::FixFlaggedSolutionCompAlt<Scalar>(
+            [&ess_dof_select](size_type dof_idx)->std::pair<bool, Scalar> {
+                return ess_dof_select[dof_idx];},
+        A, phi);
+    }
     return std::make_pair(A, phi);
 }
 
@@ -350,40 +348,49 @@ void PUM_WaveRay::v_cycle(Vec_t& u, size_type mu1, size_type mu2) {
     u = initiaLvalue[L];
 }
 
-double PUM_WaveRay::L2_norm(size_type level, const Vec_t& mu) {
-    if(level != L) {
-        std::cout << "Currently can only compute norm on S1 space" << std::endl;
-        return 0;
-    }
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(getmesh(l));
+double PUM_WaveRay::L2_norm(size_type l, const Vec_t& mu) {
+    auto mesh = mesh_hierarchy->getMesh(l);
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
 
     auto mu_conj = mu.conjugate();
     // create mesh function represented by coefficient vector
     auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
     auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
 
-    auto mf_norm = mf_mu * mf_mu_conj;
-    double res = std::abs(lf::uscalfe::IntegrateMeshFunction(*getmesh(l), mf_norm, 5));
+    double res = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_mu * mf_mu_conj, 5));
     return std::sqrt(res);
 }
-/*
-double PUM_WaveRay::L2_norm(size_type level, const Vec_t& mu) {
-   double res = 0.0;
+
+double PUM_WaveRay::H1_norm(size_type l, const Vec_t& mu) {
+    auto mesh = mesh_hierarchy->getMesh(l);
+
+    auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
+
     int N_dofs = dofh.NumDofs();
     lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
     
     lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
-    lf::mesh::utils::MeshFunctionConstant<double> mf_zero(0);
     
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(dofh.Mesh());
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     
-    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_zero), decltype(mf_identity)>
-        elmat_builder(fe_space, mf_zero, mf_identity);
+    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_identity)>
+        elmat_builder(fe_space, mf_identity, mf_identity);
     
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, mass_matrix);
     
     const Eigen::SparseMatrix<double> mass_mat = mass_matrix.makeSparse();
-    res = std::sqrt(std::abs(u.dot(mass_mat * u.conjugate())));
+    double res = std::abs(mu.dot(mass_mat * mu.conjugate()));
+    return std::sqrt(res);
+}
+
+PUM_WaveRay::Vec_t PUM_WaveRay::fun_in_vec(size_type l, const FHandle_t& f) {
+    auto dofh = lf::assemble::UniformFEDofHandler(getmesh(l), {{lf::base::RefEl::kPoint(), 1}});
+    size_type N_dofs(dofh.NumDofs());
+    Vec_t res(N_dofs);
+    for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+        const lf::mesh::Entity& dof_node{dofh.Entity(dofnum)};
+        const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
+        res(dofnum) = f(node_pos);
+    }
     return res;
 }
-*/

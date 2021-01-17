@@ -29,17 +29,19 @@ public:
     using Scalar = std::complex<double>;
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
-    using FHandle_t = std::function<Scalar(Eigen::Vector2d)>;
+    using FHandle_t = std::function<Scalar(const Eigen::Vector2d&)>;
 
-    PUM_WaveRay(size_type L_, double k_, std::string mesh_path, FHandle_t g_, FHandle_t h_):
-        HE_FEM(L_, k_, mesh_path, g_, h_){}; // constructor 
+    PUM_WaveRay(size_type L_, double k_, std::string mesh_path, FHandle_t g_, FHandle_t h_, bool hole):
+        HE_FEM(L_, k_, mesh_path, g_, h_, hole){}; // constructor 
 
-    lf::assemble::UniformFEDofHandler generate_dof(size_type);
+    lf::assemble::UniformFEDofHandler get_dofh(size_type);
     
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) override; 
-
     double L2_norm(size_type l, const Vec_t& mu) override;
     double H1_norm(size_type l, const Vec_t& mu) override;
+    Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
+
+    size_type Dofs_perNode(size_type l) { return 1 ;};
 
     void Prolongation_LF(); // generate P_LF
     void Prolongation_PW(); // generate P_PW

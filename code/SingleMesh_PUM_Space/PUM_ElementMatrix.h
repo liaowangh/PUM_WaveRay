@@ -18,13 +18,25 @@
 
 using namespace std::complex_literals;
 
+/* 
+ * This class is for local quadrature based computations for PUM spaces.
+ * PUM spaces: {{bi(x) * exp(ikdt x}}
+ * 
+ * The element matrix is correspoinds to the (local) bilinear form
+ * (u, v) -> \int_K \alpha grad u grad v.conj + \gamma * u v.conj dx
+ * 
+ * Member N is the number of waves
+ * plan wave: e_t = exp(i*k*(dt1 * x(0) + dt2 * x(1))),
+ * frequency: dt1 = cos(t/N * 2pi), dt2 = sin(t/N * 2pi)
+ */
 class PUM_FEElementMatrix{
 public:
     using size_type = unsigned int;
     using Scalar = std::complex<double>;
-    using ElemMat = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     
-    PUM_FEElementMatrix(size_type L_, size_type l_, double k_): L(L_), l(l_), k(k_){}
+    PUM_FEElementMatrix(size_type N_, double k_, double alpha_, double gamma_): 
+        N(N_), k(k_), alpha(alpha_), gamma(gamma_){}
     
     bool isActive(const lf::mesh::Entity & /*cell*/) { return true; }
     
@@ -35,10 +47,11 @@ public:
      *        which the element matrix should be computed.
      * @return a square matrix with 3*2^(L-l+1) rows.
      */
-    ElemMat Eval(const lf::mesh::Entity &cell);
+    Mat_t Eval(const lf::mesh::Entity &cell);
 private:
-    size_type L;
-    size_type l;
+    size_type N; // number of planner waves
     double k;
+    double alpha;
+    double gamma;
 };
 

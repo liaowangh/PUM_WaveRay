@@ -16,24 +16,27 @@
 
 using namespace std::complex_literals;
 
-PUM_EdgeMat::ElemMat PUM_EdgeMat::Eval(const lf::mesh::Entity& edge) {
+// gamma * u * v.conj = gamma * exp(ik(d1-d2) x) * bi * bj
+PUM_EdgeMat::Mat_t PUM_EdgeMat::Eval(const lf::mesh::Entity& edge) {
     const lf::base::RefEl ref_el{edge.RefEl()};
     LF_ASSERT_MSG(ref_el == lf::base::RefEl::kSegment(),"Edge must be of segment type");
-    size_type N = (1 << (L + 1 - l));
-    ElemMat edge_mat(2 * N, 2 * N);
+    Mat_t edge_mat(2 * N, 2 * N);
 
+    double pi = std::acos(-1.);
+    Eigen::Matrix<std::complex<double>, 2, 1> d1, d2;
     for(int t1 = 0; t1 < N; ++t1) {
+        d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t1/N);
+        
         for(int t2 = 0; t2 < N; ++t2) {
-            auto gamma = [this, &N, &t1, &t2](const Eigen::Vector2d& x)->Scalar{
-                Eigen::Matrix<std::complex<double>, 2, 1> d1, d2;
-                double pi = std::acos(-1);
-                d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t2/N);
-                d2 << std::cos(2*pi*t2/N), std::sin(2*pi*t2/N);
-                return -1i * k * std::exp(1i * k * (d1-d2).dot(x));
+            // edge_mat(i,j) = \int_e gamma * exp(ikdj x) * bj * exp(-ikdi x) * bi
+            d2 << std::cos(2*pi*t2/N), std::sin(2*pi*t2/N);
+
+            auto new_gamma = [this, &d1, &d2](const Eigen::Vector2d& x)->Scalar{
+                return gamma * std::exp(1i * k * (d2-d1).dot(x));
             };
-            lf::mesh::utils::MeshFunctionGlobal mf_gamma{gamma};
+            lf::mesh::utils::MeshFunctionGlobal mf_gamma{new_gamma};
             lf::uscalfe::MassEdgeMatrixProvider<double, decltype(mf_gamma), decltype(edge_selector)> 
-                edgeMat_builder(fe_space, mf_gamma, edge_selector);
+                edgeMat_builder(fe_space, mf_gamma, lf::quad::make_QuadRule(ref_el, 10), edge_selector);
             const auto edge_mat_tmp = edgeMat_builder.Eval(edge);
             edge_mat(t1, t2) = edge_mat_tmp(0, 0);
             edge_mat(t1, t2 + N) = edge_mat_tmp(0, 1);

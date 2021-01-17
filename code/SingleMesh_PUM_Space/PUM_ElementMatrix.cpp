@@ -7,13 +7,12 @@
 
 using namespace std::complex_literals;
 
-// a(u,v) = (grad u, grad \bar{v}) - k^2u\bar{v}
-PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity& cell) {
+// a(u,v) = alpha * (grad u, grad v) + gamma * (u, v)
+PUM_FEElementMatrix::Mat_t PUM_FEElementMatrix::Eval(const lf::mesh::Entity& cell) {
     const lf::base::RefEl ref_el{cell.RefEl()};
     LF_ASSERT_MSG(ref_el == lf::base::RefEl::kTria(),
                   "Cell must be of triangle type");
-    size_type N = (1 << (L + 1 - l));
-    ElemMat elem_mat(3 * N, 3 * N);
+    Mat_t elem_mat(3 * N, 3 * N);
 
     // Obtain the vertex coordinates of the cell, which completely
     // describe its shape.
@@ -33,35 +32,37 @@ PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity& c
     X = tmp.inverse();
     
     for(int i = 0; i < 3*N; ++i){
-        int i1 = i / N + 1;
+        int i1 = i / N;
         int t1 = i % N;
         for(int j = 0; j < 3*N; ++j) {
-            int i2 = j / N + 1;
+            // elem_mat(i,j) = aK(b_i2 * e_t2, b_i1 * e_t1)
+            int i2 = j / N;
             int t2 = j % N;
-            auto f = [this,&N,&X,&i1,&i2,&t1,&t2](const Eigen::Vector2d& x)->Scalar {
-                Eigen::Matrix<std::complex<double>, 2, 1> d1, d2, beta1, beta2;
+            auto f = [this,&X,&i1,&i2,&t1,&t2](const Eigen::Vector2d& x)->Scalar {
+                Eigen::Matrix<std::complex<double>, 2, 1> d1, d2;
+                Eigen::Vector2d beta1, beta2;
                 double pi = std::acos(-1);
-                d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t2/N);
+                d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t1/N);
                 d2 << std::cos(2*pi*t2/N), std::sin(2*pi*t2/N);
                 beta1 << X(1, i1), X(2, i1);
                 beta2 << X(1, i2), X(2, i2);
-                double lambda1 = X(0,i1) + X(1,i1)*x(0) + X(2,i1)*x(1);
-                double lambda2 = X(0,i2) + X(1,i2)*x(0) + X(2,i2)*x(1);
-                auto gradu = std::exp(1i*k*d1.dot(x)) * (beta1 + 1i * k * lambda1 * d1);
-                auto gradv_conj = std::exp(-1i*k*d2.dot(x)) * (beta2 - 1i*k*lambda2 * d2);
-                auto u = lambda1 * std::exp(1i*k*d1.dot(x));
-                auto v_conj = lambda2 * std::exp(-1i*k*d2.dot(x));
-                return gradu.dot(gradv_conj) - k*k*u*v_conj;
+                double lambda1 = X(0,i1) + beta1.dot(x);
+                double lambda2 = X(0,i2) + beta2.dot(x);
+
+                auto gradu_conj = std::exp(-1i*k*d1.dot(x)) * (beta1 - 1i*k*lambda1*d1);
+                auto gradv      = std::exp( 1i*k*d2.dot(x)) * (beta2 + 1i*k*lambda2*d2);
+                auto u_conj = lambda1 * std::exp(-1i*k*d1.dot(x));
+                auto v      = lambda2 * std::exp( 1i*k*d2.dot(x));
+                return alpha * gradu_conj.dot(gradv) + gamma * u_conj * v;
             }; 
-            elem_mat(i, j) = LocalIntegral(cell, 6, f);
+            elem_mat(i, j) = LocalIntegral(cell, 10, f);
         }
     }
     return elem_mat;
 }
 
+// analytic formulation
 /*
-
-
 std::vector<std::complex<double>> coefficient_comp(std::vector<std::complex<double>> a, std::vector<std::complex<double>> b) {
     // (a[0]*x+a[1]*y+a[2]) * (b[0]*x+b[1]*y+b[2])
     // = a[0]*b[0]*x^2 + a[1]*b[1]*y^2 + a[0]*b[1]+a[1]*b[0]*xy
@@ -70,7 +71,7 @@ std::vector<std::complex<double>> coefficient_comp(std::vector<std::complex<doub
             a[0]*b[2]+a[2]*b[0], a[1]*b[2]+a[2]*b[1], a[2]*b[2]};
 }
 
-PUM_FEElementMatrix::ElemMat PUM_FEElementMatrix::Eval(const lf::mesh::Entity &cell) {
+PUM_FEElementMatrix::Mat_t PUM_FEElementMatrix::Eval(const lf::mesh::Entity &cell) {
     // cell contribution only, for l < L. for l == L, just the reaction diffusion element matrix provider
     
     size_type N = (1 << (L + 1 - l));

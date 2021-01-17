@@ -1,7 +1,7 @@
 
 set(SingleLinFEM_sources
-  ../pum_wave_ray/PUM_WaveRay.h
-  ../pum_wave_ray/PUM_WaveRay.cpp
+  HE_LagrangeO1.h
+  HE_LagrangeO1.cpp
   SingleLinFEM.cpp
   ../utils/utils.h
   ../utils/utils.cpp

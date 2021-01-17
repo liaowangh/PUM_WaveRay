@@ -113,7 +113,7 @@ double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const function_type& u, 
     lf::mesh::utils::MeshFunctionGlobal mf_u_conj{u_conj};
     auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu.conjugate());
     
-    auto mf_square = (mf_u - mf_mu) * (mf_u - mf_mu);
+    auto mf_square = (mf_u - mf_mu) * (mf_u_conj - mf_mu_conj);
     double L2err = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_square, 5));
     return std::sqrt(L2err);
 }
@@ -157,58 +157,6 @@ double H1_seminorm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
     return res;
 }
 
-void solve_directly(const std::string& sol_name, const std::string& mesh_path, size_type L, double wave_num, const function_type& u, const function_type& g, const function_type& h) {
-    
-    PUM_WaveRay pum_waveray(L, wave_num, mesh_path, g, h);
-    
-    std::vector<int> ndofs;
-    std::vector<double> L2err, H1err;
-    
-    for(size_type level = 0; level <= L; ++level) {
-        auto eq_pair = pum_waveray.build_equation(level);
-
-        // solve linear system of equations A*x = \phi
-        const Eigen::SparseMatrix<Scalar> A_crs(eq_pair.first.makeSparse());
-        Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
-        solver.compute(A_crs);
-        Eigen::Matrix<Scalar, Eigen::Dynamic, 1> appro_vec;
-        if(solver.info() == Eigen::Success) {
-            appro_vec = solver.solve(eq_pair.second);
-        } else {
-            LF_ASSERT_MSG(false, "Eigen Factorization failed")
-        }
-
-        // find the true vector representation
-        auto dofh = lf::assemble::UniformFEDofHandler(pum_waveray.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
-        vec_t true_vec = fun_in_vec(dofh, u);
-
-        // double l2_err = L2_norm(dofh, appro_vec - true_vec);
-        double l2_err = L2Err_norm(pum_waveray.getmesh(level), u, appro_vec);
-        double h1_err = H1_norm(dofh, appro_vec - true_vec);
-        
-        ndofs.push_back(dofh.NumDofs());
-        L2err.push_back(l2_err);
-        H1err.push_back(h1_err);
-    }
-    
-    // Tabular output of the results
-    std::cout << sol_name << std::endl;
-    std::cout << std::left << std::setw(10) << "N" << std::setw(20)
-              << "L2_err" << std::setw(20) << "H1_err" << std::endl;
-    for (int l = 0; l <= L; ++l) {
-      std::cout << std::left << std::setw(10) << ndofs[l] << std::setw(20)
-                << L2err[l] << std::setw(20) << H1err[l] << std::endl;
-    }
-    
-    // write the result to the file
-    std::string output_file = "../plot_err/" + sol_name + ".txt";
-    std::ofstream out(output_file);
-    out << "N " << "L2_err " << "H1_err" << std::endl;
-    for(int l = 0; l <= L; ++l) {
-        out << ndofs[l] << " " << L2err[l] << " " << H1err[l] << std::endl;
-    } 
-}
-
 void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, const function_type& u) {
     std::vector<int> ndofs;
     std::vector<double> L2err, H1err;
@@ -228,14 +176,15 @@ void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, co
         }
 
         //find the true vector representation
-        auto dofh = lf::assemble::UniformFEDofHandler(he_fem.getmesh(level), {{lf::base::RefEl::kPoint(), 1}});
-        vec_t true_vec = fun_in_vec(dofh, u);
-
-        // double l2_err = L2_norm(dofh, appro_vec - true_vec);
-        double l2_err = L2Err_norm(he_fem.getmesh(level), u, appro_vec);
-        double h1_err = H1_norm(dofh, appro_vec - true_vec);
+        auto true_vec = he_fem.fun_in_vec(level, u);
         
-        ndofs.push_back(dofh.NumDofs());
+        // norm computational
+        auto dofh = he_fem.get_dofh(level);
+        // double l2_err = he_fem.L2_norm(level, appro_vec - true_vec);
+        double l2_err = L2Err_norm(he_fem.getmesh(level), u, appro_vec);
+        double h1_err = he_fem.H1_norm(level, appro_vec - true_vec);
+        
+        ndofs.push_back(eq_pair.second.size());
         L2err.push_back(l2_err);
         H1err.push_back(h1_err);
     }
