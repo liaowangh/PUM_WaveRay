@@ -32,8 +32,9 @@ public:
         HE_FEM(levels, wave_num, mesh_path, g, h, hole), num_planwaves(num_waves){};
 
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) override;
-    double L2_norm(size_type l, const Vec_t& mu) override;
-    double H1_norm(size_type l, const Vec_t& mu) override;
+    double L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) override;
+    double H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) override;
+    double H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const FunGradient_t& grad_u) override;
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
 
     size_type Dofs_perNode(size_type l) override { return num_planwaves[l]; }

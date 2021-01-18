@@ -39,14 +39,18 @@ int main(){
     std::vector<std::string> sol_name{"pum_plan_wave", "pum_fundamental_sol", "pum_spherical_wave"};
     // std::vector<std::string> sol_name{"wave_0_4", "wave_1_4", "wave_2_4"};
     for(int i = 0; i < solutions.size(); ++i) {
-        if(i > 0){
-            continue;
-        }
+        // if(i > 0){
+        //     continue;
+        // }
         auto u = solutions[i]->get_fun();
+        auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();
         HE_PUM he_pum(L, k, mesh_path, g, u, num_waves, false);
+        auto vec_coeff = he_pum.fun_in_vec(L, u);
+        std::cout << std::left << std::setw(20) << he_pum.L2_Err(L, vec_coeff, u) << std::setw(20)
+                  << he_pum.H1_Err(L, vec_coeff, u, grad_u);
         //  std::cout << he_pum.fun_in_vec(0, u) << std::endl;
-        solve_directly(he_pum, sol_name[i], L, u);
+        // solve_directly(he_pum, sol_name[i], L, u);
         std::cout << std::endl;
     }
 }
