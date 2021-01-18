@@ -12,17 +12,22 @@ using namespace std::complex_literals;
 /*
  * Plan waves
  */
-//Scalar plan_wave::operator()(const coordinate_t& x) {
-//    return std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
-//}
-
-function_type plan_wave::get_fun() {
+FHandle_t plan_wave::get_fun() {
     return [this](const coordinate_t& x)-> Scalar {
         return std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
     };
 }
 
-function_type plan_wave::boundary_g() {
+FunGradient_t plan_wave::get_gradient() {
+    return [this](const coordinate_t& x) {
+        auto tmp = 1i * k * std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
+        Eigen::Matrix<Scalar, 2, 1> res;
+        res << tmp * d1, tmp * d2;
+        return res;
+    };
+}
+
+FHandle_t plan_wave::boundary_g() {
     auto g = [this](const coordinate_t& x) -> Scalar {
         double x1 = x(0), y1 = x(1);
         Scalar res = 1i * k * std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
@@ -92,14 +97,28 @@ Scalar hankel_1_dx_ix(double v, double x) {
 //    return hankel_1(k * (x - c).norm());
 //}
 
-function_type fundamental_sol::get_fun() {
+FHandle_t fundamental_sol::get_fun() {
     return [this](const coordinate_t& x) -> Scalar {
         return hankel_1(0, k * (x - c).norm());
-        // return hankel_1_ix(0, k * (x - c).norm());
     };
 }
 
-function_type fundamental_sol::boundary_g() {
+// grad u = H' * k * (x-c)/ ||x-c||
+FunGradient_t fundamental_sol::get_gradient() {
+    return [this](const coordinate_t& x) {
+        double x1 = x(0), y1 = x(1);
+        double c1 = c(0), c2 = c(1);
+        
+        double r = (x - c).norm();
+
+        Scalar u = hankel_1(0, k * r);
+        Scalar dudx = hankel_1_dx(0, k * r) * k * (x1 - c1) / r;
+        Scalar dudy = hankel_1_dx(0, k * r) * k * (y1 - c2) / r;
+        return (Eigen::Matrix<Scalar, 2, 1>() << dudx, dudy).finished();
+    };
+}
+
+FHandle_t fundamental_sol::boundary_g() {
     // u(x) = H0(k*||x-c||)
     // grad u = H' * k * (x-c)/ ||x-c||
     auto g = [this](const coordinate_t& x) -> Scalar {
@@ -109,11 +128,9 @@ function_type fundamental_sol::boundary_g() {
         double r = (x - c).norm();
 
         Scalar u = hankel_1(0, k * r);
-        // Scalar u = hankel_1_ix(0, k * r);
         Scalar dudx = hankel_1_dx(0, k * r) * k * (x1 - c1) / r;
         Scalar dudy = hankel_1_dx(0, k * r) * k * (y1 - c2) / r;
-        // Scalar dudx = 1i * hankel_1_dx_ix(0, k * r) * k * x1 / r;
-        // Scalar dudy = 1i * hankel_1_dx_ix(0, k * r) * k * y1 / r;
+
         Scalar res = -1i * k * u;
         if(y1 == 0 && x1 <= 1 && x1 >= 0) {
             // n =  (0, -1)
@@ -143,7 +160,7 @@ function_type fundamental_sol::boundary_g() {
 //    return std::cyl_bessel_j(std::abs(l), k*r) * std::exp(1i * l * phi);
 //}
 
-function_type Spherical_wave::get_fun() {
+FHandle_t Spherical_wave::get_fun() {
     auto u = [this](const coordinate_t& x) -> Scalar {
         double r = x.norm();
         double phi = std::atan2(x(1), x(0));
@@ -152,7 +169,23 @@ function_type Spherical_wave::get_fun() {
     return u;
 }
 
-function_type Spherical_wave::boundary_g() {
+FunGradient_t Spherical_wave::get_gradient() {
+    return [this](const coordinate_t& x) {
+        double x1 = x(0), y1 = x(1);
+        double r = x.norm();
+        double sin_ = y1 / r, cos_ = x1 / r;
+        double phi = std::atan2(y1, x1);
+        
+        Scalar u = std::cyl_bessel_j(std::abs(l), k*r) * std::exp(1i * phi * l);
+        Scalar dudx = (cos_ * k * cyl_bessel_j_dx(std::abs(l), k*r) -
+                       1i * sin_ * l * std::cyl_bessel_j(std::abs(l), k*r) / r) * std::exp(1i*phi*l);
+        Scalar dudy = (sin_ * k * cyl_bessel_j_dx(std::abs(l), k*r) +
+                       1i * cos_ * l * std::cyl_bessel_j(std::abs(l), k*r) / r) * std::exp(1i*phi*l);
+        return (Eigen::Matrix<Scalar, 2, 1>() << dudx, dudy).finished();
+    };
+}
+
+FHandle_t Spherical_wave::boundary_g() {
     auto g = [this](const coordinate_t& x) -> Scalar {
         double x1 = x(0), y1 = x(1);
         if(x1 == 0 && y1 == 0) {
@@ -191,13 +224,24 @@ function_type Spherical_wave::boundary_g() {
  * Solution for Laplace equation (k = 0 in Helmholtz equation)
  * We take the function u(x,y)=exp(x+iy)
  */
-function_type Harmonic_fun::get_fun() {
+FHandle_t Harmonic_fun::get_fun() {
     return [](const coordinate_t& x) -> Scalar {
         return std::exp(x(0)+1i*x(1));
     };
 }
 
-function_type Harmonic_fun::boundary_g() {
+FunGradient_t Harmonic_fun::get_gradient() {
+    return [](const coordinate_t& x) {
+        double x1 = x(0), y1 = x(1);
+
+        Scalar u = std::exp(x1+1i*y1);
+        Scalar dudx = u;
+        Scalar dudy = 1i * u;
+        return (Eigen::Matrix<Scalar, 2, 1>() << dudx, dudy).finished();
+    };
+}
+
+FHandle_t Harmonic_fun::boundary_g() {
     auto g = [](const coordinate_t& x) -> Scalar {
         double x1 = x(0), y1 = x(1);
 

@@ -5,7 +5,7 @@
 #include "../pum_wave_ray/HE_FEM.h"
 #include "../pum_wave_ray/PUM_WaveRay.h"
 
-Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const function_type& f) {
+Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const FHandle_t& f) {
     auto qr = lf::quad::make_QuadRule(e.RefEl(), quad_degree);
     auto global_points = e.Geometry()->Global(qr.Points());
     auto weights_ie = (qr.Weights().cwiseProduct(e.Geometry()->IntegrationElement(qr.Points()))).eval();
@@ -61,9 +61,9 @@ Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const function_
 }
 */
 
-vec_t fun_in_vec(const lf::assemble::DofHandler& dofh, const function_type& f) {
+Vec_t fun_in_vec(const lf::assemble::DofHandler& dofh, const FHandle_t& f) {
     size_type N_dofs(dofh.NumDofs());
-    vec_t res(N_dofs);
+    Vec_t res(N_dofs);
     for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
         const lf::mesh::Entity& dof_node{dofh.Entity(dofnum)};
         const coordinate_t node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
@@ -76,7 +76,7 @@ vec_t fun_in_vec(const lf::assemble::DofHandler& dofh, const function_type& f) {
  * compute norm rely on the mass matrix which is the finite element Galerkin matrix 
  * for the L2 inner product (u,v)->\int_\Omega uvdx 
  */
-double L2_norm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
+double L2_norm(const lf::assemble::DofHandler& dofh, const Vec_t& u) {
     double res = 0.0;
     int N_dofs = dofh.NumDofs();
     lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
@@ -98,10 +98,10 @@ double L2_norm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
 
 /*
  * compute ||u-mu||_2, 
- * where u (manufacture solution) is of function_type,
+ * where u (manufacture solution) is of FHandle_t,
  * solution is giving by vector representation mu
  */ 
-double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const function_type& u, const vec_t& mu) {
+double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& u, const Vec_t& mu) {
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     // u has to be wrapped into a mesh function for error computation
     lf::mesh::utils::MeshFunctionGlobal mf_u{u};
@@ -118,7 +118,7 @@ double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const function_type& u, 
     return std::sqrt(L2err);
 }
 
-double H1_norm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
+double H1_norm(const lf::assemble::DofHandler& dofh, const Vec_t& u) {
     double res = 0.0;
     int N_dofs = dofh.NumDofs();
     lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
@@ -137,7 +137,7 @@ double H1_norm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
     return res;
 }
 
-double H1_seminorm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
+double H1_seminorm(const lf::assemble::DofHandler& dofh, const Vec_t& u) {
     double res = 0.0;
     int N_dofs = dofh.NumDofs();
     lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
@@ -157,9 +157,10 @@ double H1_seminorm(const lf::assemble::DofHandler& dofh, const vec_t& u) {
     return res;
 }
 
-void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, const function_type& u) {
+void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, 
+                    const FHandle_t& u, const FunGradient_t& grad_u) {
     std::vector<int> ndofs;
-    std::vector<double> L2err, H1err;
+    std::vector<double> L2err, H1serr, H1err;
     
     for(size_type level = 0; level <= L; ++level) {
         auto eq_pair = he_fem.build_equation(level);
@@ -168,34 +169,41 @@ void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, co
         const Eigen::SparseMatrix<Scalar> A_crs(eq_pair.first.makeSparse());
         Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
         solver.compute(A_crs);
-        Eigen::Matrix<Scalar, Eigen::Dynamic, 1> appro_vec;
+        Eigen::Matrix<Scalar, Eigen::Dynamic, 1> fe_sol;
         if(solver.info() == Eigen::Success) {
-            appro_vec = solver.solve(eq_pair.second);
+            fe_sol = solver.solve(eq_pair.second);
         } else {
             LF_ASSERT_MSG(false, "Eigen Factorization failed")
         }
 
         //find the true vector representation
-        auto true_vec = he_fem.fun_in_vec(level, u);
+        //auto true_vec = he_fem.fun_in_vec(level, u);
         
         // norm computational
-        auto dofh = he_fem.get_dofh(level);
-        // double l2_err = he_fem.L2_norm(level, appro_vec - true_vec);
-        double l2_err = L2Err_norm(he_fem.getmesh(level), u, appro_vec);
-        double h1_err = he_fem.H1_norm(level, appro_vec - true_vec);
+        //auto dofh = he_fem.get_dofh(level);
+        // double l2_err = he_fem.L2_norm(level, fe_sol - true_vec);
+        // double l2_err = L2Err_norm(he_fem.getmesh(level), u, fe_sol);
+        // double h1_err = he_fem.H1_norm(level, fe_sol - true_vec);
+
+        double l2_err = he_fem.L2_Err(level, fe_sol, u);
+        double h1_serr = he_fem.H1_semiErr(level, fe_sol, grad_u);
+        double h1_err = std::sqrt(l2_err*l2_err + h1_serr*h1_serr);
         
         ndofs.push_back(eq_pair.second.size());
         L2err.push_back(l2_err);
+        H1serr.push_back(h1_serr);
         H1err.push_back(h1_err);
     }
     
     // Tabular output of the results
     std::cout << sol_name << std::endl;
     std::cout << std::left << std::setw(10) << "N" << std::setw(20)
-              << "L2_err" << std::setw(20) << "H1_err" << std::endl;
+              << "L2_err" << std::setw(20) << "H1_serr" << std::setw(20) 
+              << "H1_err" << std::endl;
     for (int l = 0; l <= L; ++l) {
       std::cout << std::left << std::setw(10) << ndofs[l] << std::setw(20)
-                << L2err[l] << std::setw(20) << H1err[l] << std::endl;
+                << L2err[l] << std::setw(20) << H1serr[l] << std::setw(20)
+                << H1err[l] << std::endl;
     }
     
     // write the result to the file

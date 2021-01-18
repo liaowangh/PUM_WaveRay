@@ -20,7 +20,9 @@
 using coordinate_t = Eigen::Vector2d;
 using Scalar = std::complex<double>;
 using size_type = unsigned int;
-using function_type = std::function<Scalar(const coordinate_t&)>;
+using FHandle_t = std::function<Scalar(const coordinate_t&)>;
+using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
+
 using namespace std::complex_literals;
 
 class HE_sol {
@@ -28,8 +30,9 @@ public:
     HE_sol(double wave_num): k(wave_num){};
     
     //virtual Scalar operator()(const coordinate_t&) = 0;
-    virtual function_type get_fun() = 0;
-    virtual function_type boundary_g() = 0;
+    virtual FHandle_t get_fun() = 0;
+    virtual FunGradient_t get_gradient() = 0;
+    virtual FHandle_t boundary_g() = 0;
     virtual ~HE_sol() = default;
 
 public:
@@ -40,13 +43,16 @@ public:
 /*
  * Plan waves: u(x) = exp(ik(d1*x(0) + d2*x(1))
  * k is the wave number, and frequency d1^2+d2^2 = 1
+ * 
+ * grad u = ik * u(x) * [d1, d1]
  */
 class plan_wave: public HE_sol {
 public:
     plan_wave(double k_, double d1_, double d2_): HE_sol(k_), d1(d1_), d2(d2_){}
 //    Scalar operator()(const coordinate_t& x) override;
-    function_type get_fun() override;
-    function_type boundary_g() override;
+    FHandle_t get_fun() override;
+    FunGradient_t get_gradient() override;
+    FHandle_t boundary_g() override;
 private:
     double d1;
     double d2;
@@ -99,9 +105,9 @@ Scalar hankel_1_dx_ix(double v, double x);
 class fundamental_sol: public HE_sol {
 public:
     fundamental_sol(double wave_num, coordinate_t c_): HE_sol(wave_num), c(c_){}
-//    Scalar operator()(const coordinate_t& x) override;
-    function_type get_fun() override;
-    function_type boundary_g() override;
+    FHandle_t get_fun() override;
+    FunGradient_t get_gradient() override;
+    FHandle_t boundary_g() override;
 private:
     coordinate_t c;
 };
@@ -116,9 +122,9 @@ private:
 class Spherical_wave: public HE_sol {
 public:
     Spherical_wave(double wave_num, double l_): HE_sol(wave_num), l(l_){}
-//    Scalar operator()(const coordinate_t& x) override;
-    function_type get_fun() override;
-    function_type boundary_g() override;
+    FHandle_t get_fun() override;
+    FunGradient_t get_gradient() override;
+    FHandle_t boundary_g() override;
 private:
     double l;
 };
@@ -135,8 +141,9 @@ private:
  */
  class Harmonic_fun {
  public:
-     Harmonic_fun(){};
-     function_type get_fun();
-     function_type boundary_g();
+    Harmonic_fun(){};
+    FHandle_t get_fun();
+    FunGradient_t get_gradient();
+    FHandle_t boundary_g();
  };
 
