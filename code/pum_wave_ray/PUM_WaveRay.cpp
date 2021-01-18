@@ -347,7 +347,7 @@ void PUM_WaveRay::v_cycle(Vec_t& u, size_type mu1, size_type mu2) {
     }
     u = initiaLvalue[L];
 }
-
+/*
 double PUM_WaveRay::L2_norm(size_type l, const Vec_t& mu) {
     auto mesh = mesh_hierarchy->getMesh(l);
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
@@ -382,7 +382,7 @@ double PUM_WaveRay::H1_norm(size_type l, const Vec_t& mu) {
     double res = std::abs(mu.dot(mass_mat * mu.conjugate()));
     return std::sqrt(res);
 }
-
+*/
 PUM_WaveRay::Vec_t PUM_WaveRay::fun_in_vec(size_type l, const FHandle_t& f) {
     auto dofh = lf::assemble::UniformFEDofHandler(getmesh(l), {{lf::base::RefEl::kPoint(), 1}});
     size_type N_dofs(dofh.NumDofs());

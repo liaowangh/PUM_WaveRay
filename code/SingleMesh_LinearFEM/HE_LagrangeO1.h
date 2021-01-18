@@ -28,15 +28,16 @@ public:
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
+    using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
     HE_LagrangeO1(size_type levels, double wave_num, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole): 
         HE_FEM(levels, wave_num, mesh_path, g, h, hole){};
 
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) override;
-    double L2_norm(size_type l, const Vec_t& mu) override;
-    // double L2Err_norm(size_type l, const function_type& u, const vec_t& mu)
-    double H1_norm(size_type l, const Vec_t& mu) override;
+    double L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) override;
+    double H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) override;
+    double H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const FunGradient_t& grad_u) override;
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
 
     lf::assemble::UniformFEDofHandler get_dofh(size_type l) override {

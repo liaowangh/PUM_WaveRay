@@ -44,8 +44,9 @@ int main(){
     for(int i = 0; i < 3; ++i) {
         auto u = solutions[i]->get_fun();
         auto g = solutions[i]->boundary_g();
+        auto grad_u = solutions[i]->get_gradient();
         HE_LagrangeO1 he_O1(L, k, mesh_path, g, u, true);
-        solve_directly(he_O1, sol_name[i], L, u);
+        solve_directly(he_O1, sol_name[i], L, u, grad_u);
         std::cout << std::endl;
     }
 }

@@ -1,7 +1,7 @@
-set(PUM_Numbering_sources
-  ../pum_wave_ray/pum_fem.h
-  ../pum_wave_ray/pum_fem.cpp
-  PUM_BasisNumbering.cpp
+set(Laplace_sources
+  ../SingleMesh_LinearFEM/HE_LagrangeO1.h
+  ../SingleMesh_LinearFEM/HE_LagrangeO1.cpp
+  Laplace.cpp
   ../utils/utils.h
   ../utils/utils.cpp
   ../utils/HE_solution.h
@@ -9,10 +9,10 @@ set(PUM_Numbering_sources
 )
 
 # define executable
-add_executable(PUM_Numbering ${PUM_Numbering_sources})
+add_executable(Laplace ${Laplace_sources})
 
 #link executable with LehrFEM++
-target_link_libraries(PUM_Numbering
+target_link_libraries(Laplace
   PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
   LF::lf.mesh
   LF::lf.mesh.utils

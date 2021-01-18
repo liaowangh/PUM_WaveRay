@@ -16,6 +16,7 @@
 #include <Eigen/SparseCore>
 
 #include "HE_LagrangeO1.h"
+#include "../utils/utils.h"
 
 using namespace std::complex_literals;
 
@@ -75,7 +76,8 @@ HE_LagrangeO1::build_equation(size_type level) {
     lf::mesh::utils::MeshFunctionGlobal mf_g{g};
     lf::mesh::utils::MeshFunctionGlobal mf_h{h};
     lf::uscalfe::ScalarLoadEdgeVectorProvider<double, decltype(mf_g), decltype(outer_boundary)>
-    	edgeVec_builder(fe_space, mf_g, outer_boundary);
+    	edgeVec_builder(fe_space, mf_g, 
+        lf::quad::make_QuadRule(lf::base::RefEl::kSegment(), 10), outer_boundary);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
     
     if(hole_exist) {
@@ -117,76 +119,74 @@ HE_LagrangeO1::build_equation(size_type level) {
     return std::make_pair(A, phi);
 }
 
-double HE_LagrangeO1::L2_norm(size_type l, const Vec_t& mu) {
-    // auto mesh = getmesh(l);
-    // auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+double HE_LagrangeO1::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u){
+    auto mesh = mesh_hierarchy->getMesh(l);
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+    // u has to be wrapped into a mesh function for error computation
+    lf::mesh::utils::MeshFunctionGlobal mf_u{u};
+    // create mesh function representing finite element solution 
+    auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
 
-    // // create mesh function represented by coefficient vector
-    // auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
-    // auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu.conjugate());
+    // conjugate functions
+    auto u_conj = [&u](const Eigen::Vector2d& x) -> Scalar {
+        return std::conj(u(x));};
+    lf::mesh::utils::MeshFunctionGlobal mf_u_conj{u_conj};
+    auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu.conjugate());
+    
+    auto mf_square = (mf_u - mf_mu) * (mf_u_conj - mf_mu_conj);
+    double L2err = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_square, 10));
+    return std::sqrt(L2err);
+}
 
-    // double res = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_mu * mf_mu_conj, 10));
-    // return std::sqrt(res);
+double HE_LagrangeO1::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) {
+    auto mesh = mesh_hierarchy->getMesh(l);
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+    double res = 0.0;
+
     auto dofh = get_dofh(l);
 
-    int N_dofs = dofh.NumDofs();
-    lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
+    for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
+         const lf::geometry::Geometry *geo_ptr = cell->Geometry();
     
-    lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
-    lf::mesh::utils::MeshFunctionConstant<double> mf_zero(0);
-    
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(getmesh(l));
-    // (u,v)->(grad u, grad v) + (u,v)
-    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_identity)>
-        elmat_builder(fe_space, mf_zero, mf_identity);
-    
-    lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, mass_matrix);
-    
-    const Eigen::SparseMatrix<double> mass_mat = mass_matrix.makeSparse();
-    double res = std::abs(mu.dot(mass_mat * mu.conjugate()));
+        // Matrix storing corner coordinates in its columns(2x3 in this case)
+        auto vertices = geo_ptr->Global(cell->RefEl().NodeCoords());
+        
+        // suppose that the barycentric coordinate functions have the form
+        // \lambda_i = a + b1*x+b2*y, then
+        // \lambda_i = X(0,i) + X(1,i)*x + X(2,i)*y
+        // grad \lambda_i = [X(1,i), X(2,i)]^T
+        // grad \lambda_1_2_3 = X.block<2,3>(1,0)
+        Eigen::Matrix3d X, tmp;
+        tmp.block<3,1>(0,0) = Eigen::Vector3d::Ones();
+        tmp.block<3,2>(0,1) = vertices.transpose();
+        X = tmp.inverse();
+
+        // Number of shape functions covering current entity
+        const lf::assemble::size_type no_dofs(dofh.NumLocalDofs(*cell));
+        //obtain global indices of those shape functions
+        nonstd::span<const lf::assemble::gdof_idx_t> dofarray{dofh.GlobalDofIndices(*cell)};
+        // then uh(FE solution) restricted in cell is \sum_i \lambda_i * mu(dofarray(i))
+
+        auto grad_uh = (Eigen::Matrix<Scalar,2,1>() << 0.0, 0.0).finished();
+        for(size_type i = 0; i < no_dofs; ++i) {
+            grad_uh += mu(dofarray[i]) * X.block<2,1>(1,i);
+        }
+        // construct ||grad uh - grad u||^2_{cell}
+        auto integrand = [&grad_uh, &grad_u](const Eigen::Vector2d& x)->Scalar {
+            return std::abs((grad_uh - grad_u(x)).dot((grad_uh - grad_u(x)).conjugate()));
+        };
+        res += std::abs(LocalIntegral(*cell, 10, integrand));
+    }
     return std::sqrt(res);
 }
 
-// return ||u-mu||_2, mu is represented by vector
-// double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const function_type& u, const vec_t& mu) {
-//     auto mesh = mesh_hierarchy->getMesh(l);
-//     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
-//     // u has to be wrapped into a mesh function for error computation
-//     lf::mesh::utils::MeshFunctionGlobal mf_u{u};
-//     // create mesh function representing solution 
-//     auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
-
-//     // conjugate functions
-//     auto u_conj = [&u](const Eigen::Vector2d& x) -> Scalar {
-//         return std::conj(u(x));};
-//     lf::mesh::utils::MeshFunctionGlobal mf_u_conj{u_conj};
-//     auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu.conjugate());
-    
-//     auto mf_square = (mf_u - mf_mu) * (mf_u_conj - mf_mu_conj);
-//     double L2err = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_square, 10));
-//     return std::sqrt(L2err);
-// }
-
-double HE_LagrangeO1::H1_norm(size_type l, const Vec_t& mu) {
-    auto dofh = get_dofh(l);
-
-    int N_dofs = dofh.NumDofs();
-    lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
-    
-    lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
-    
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(getmesh(l));
-    // (u,v)->(grad u, grad v) + (u,v)
-    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_identity)>
-        elmat_builder(fe_space, mf_identity, mf_identity);
-    
-    lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, mass_matrix);
-    
-    const Eigen::SparseMatrix<double> mass_mat = mass_matrix.makeSparse();
-    double res = std::abs(mu.dot(mass_mat * mu.conjugate()));
-    return std::sqrt(res);
+double HE_LagrangeO1::H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const FunGradient_t& grad_u) {
+    double l2err = L2_Err(l, mu, u);
+    double h1serr = H1_semiErr(l, mu, grad_u);
+    return std::sqrt(l2err * l2err + h1serr * h1serr);
 }
 
+// Interpolation, may not be the best ideal method.
 HE_LagrangeO1::Vec_t HE_LagrangeO1::fun_in_vec(size_type l, const FHandle_t& f) {
     auto dofh = get_dofh(l);
     size_type N_dofs(dofh.NumDofs());
