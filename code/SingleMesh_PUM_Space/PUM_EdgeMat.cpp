@@ -23,7 +23,7 @@ PUM_EdgeMat::Mat_t PUM_EdgeMat::Eval(const lf::mesh::Entity& edge) {
     Mat_t edge_mat(2 * N, 2 * N);
 
     double pi = std::acos(-1.);
-    Eigen::Matrix<std::complex<double>, 2, 1> d1, d2;
+    Eigen::Matrix<Scalar, 2, 1> d1, d2;
     for(int t1 = 0; t1 < N; ++t1) {
         d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t1/N);
         

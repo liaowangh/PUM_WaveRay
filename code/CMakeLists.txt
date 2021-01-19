@@ -35,5 +35,5 @@ find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_option
 ###############################################################################
 
 #add_subdirectory(SingleMesh_LinearFEM)
-#add_subdirectory(test)
-add_subdirectory(SingleMesh_PUM_Space)
+add_subdirectory(test)
+#add_subdirectory(SingleMesh_PUM_Space)

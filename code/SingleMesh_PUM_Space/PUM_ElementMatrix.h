@@ -22,8 +22,8 @@ using namespace std::complex_literals;
  * This class is for local quadrature based computations for PUM spaces.
  * PUM spaces: {{bi(x) * exp(ikdt x}}
  * 
- * The element matrix is correspoinds to the (local) bilinear form
- * (u, v) -> \int_K \alpha grad u grad v.conj + \gamma * u v.conj dx
+ * The element matrix is corresponding to the (local) bilinear form
+ * (u, v) -> \int_K alpha*(grad u, grad v) + gamma * (u,v)dx
  * 
  * Member N is the number of waves
  * plan wave: e_t = exp(i*k*(dt1 * x(0) + dt2 * x(1))),
@@ -45,7 +45,7 @@ public:
      *
      * @param cell reference to the triangular cell for
      *        which the element matrix should be computed.
-     * @return a square matrix with 3*2^(L-l+1) rows.
+     * @return a square matrix with 3*N rows.
      */
     Mat_t Eval(const lf::mesh::Entity &cell);
 private:

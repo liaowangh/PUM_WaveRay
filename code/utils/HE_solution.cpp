@@ -43,7 +43,11 @@ FHandle_t plan_wave::boundary_g() {
         } else if(x1 == 0 && y1 >= 0 && y1 <= 1) {
             // (-1,0)
             res *= (-d1 - 1);
-        }
+        } 
+        // else if(x1 + y1 == 1) {
+        //     // \sqrt(2) * (1,1)
+        //     res *= (std::sqrt(2)*(d1 + d2)/2 - 1);
+        // }
         return res;
     };
     return g;

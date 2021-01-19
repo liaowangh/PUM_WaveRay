@@ -34,7 +34,7 @@ PUM_ElemVec::Vec_t PUM_ElemVec::Eval(const lf::mesh::Entity& cell) {
         int t = j % N;
         // integrand: f(x) * bi * exp(-ikdt x)
         auto new_f = [this, &X, &i, &t](const Eigen::Vector2d& x)->Scalar {
-            Eigen::Matrix<std::complex<double>, 2, 1> d;
+            Eigen::Matrix<Scalar, 2, 1> d;
             Eigen::Vector2d beta;
             double pi = std::acos(-1);
             d << std::cos(2*pi*t/N), std::sin(2*pi*t/N);
@@ -49,7 +49,6 @@ PUM_ElemVec::Vec_t PUM_ElemVec::Eval(const lf::mesh::Entity& cell) {
 }
 */
 
-// not 
 // make use of ScalarLoadElementVectorProvider
 PUM_ElemVec::Vec_t PUM_ElemVec::Eval(const lf::mesh::Entity& cell) {
     const lf::base::RefEl ref_el{cell.RefEl()};
@@ -65,7 +64,7 @@ PUM_ElemVec::Vec_t PUM_ElemVec::Eval(const lf::mesh::Entity& cell) {
 
     for(int t = 0; t < N; ++t) {
         auto f_new = [this, &t](const Eigen::Vector2d& x)->Scalar {
-            Eigen::Matrix<std::complex<double>, 2, 1> d;
+            Eigen::Matrix<double, 2, 1> d;
             double pi = std::acos(-1);
             d << std::cos(2*pi*t/N), std::sin(2*pi*t/N);
             return f(x) * std::exp(-1i * k * d.dot(x));

@@ -175,6 +175,8 @@ void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L,
         } else {
             LF_ASSERT_MSG(false, "Eigen Factorization failed")
         }
+        // if(level == 0)
+        //     std::cout << fe_sol << std::endl << std::endl;
 
         //find the true vector representation
         //auto true_vec = he_fem.fun_in_vec(level, u);

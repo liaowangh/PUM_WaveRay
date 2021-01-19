@@ -5,4 +5,5 @@ gmesh/
 code_test/
 .DS_Store/
 *.vscode/
+*.ipynb_checkpoints/
 

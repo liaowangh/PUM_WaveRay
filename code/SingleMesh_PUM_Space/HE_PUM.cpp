@@ -29,11 +29,11 @@ HE_PUM::build_equation(size_type level) {
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
 
     size_type N_wave(num_planwaves[level]);
-    auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), N_wave}});
+    auto dofh = get_dofh(level);
     size_type N_dofs(dofh.NumDofs());
 
     // assemble for <grad(u), grad(v)> - k^2 <u,v>
-    // (u, v) -> \int_K \alpha grad u grad v.conj + \gamma * u v.conj dx
+    // (u, v) -> \int_K \alpha * (grad u, grad v) + \gamma * (u, v) dx
     PUM_FEElementMatrix elmat_builder(N_wave, k, 1., -1. * k * k);
 
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
@@ -62,16 +62,55 @@ HE_PUM::build_equation(size_type level) {
         }
     }
 
-    // (u,v) -> \int_e gamma * u * v.conj dS
+    // (u,v) -> \int_e gamma * (u,v) dS
     PUM_EdgeMat edge_mat_builder(fe_space, outer_boundary, N_wave, k, -1i * k);                                  
     lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
            
-    // Assemble RHS vector, \int_{\Gamma_R} gvdS
+    // Assemble RHS vector, \int_{\Gamma_R} gv.conj dS
     Vec_t phi(N_dofs);
     phi.setZero();
     // l(v) = \int_e g * v.conj dS(x)
     PUM_EdgeVec edgeVec_builder(fe_space, outer_boundary, N_wave, k, g);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
+
+    if(hole_exist) {
+        // Treatment of Dirichlet boundary conditions h = u|_{\Gamma_D} (inner boundary condition)
+        // flag all nodes on the boundary
+        auto inner_point{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 2)};
+        // flag all nodes on the inner boundary
+        for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
+            if(outer_boundary(*edge)) {
+                // mark the points associated with outer boundary edge to false
+                for(const lf::mesh::Entity* subent: edge->SubEntities(1)) {
+                    inner_point(*subent) = false;
+                }
+            }
+        }
+
+        // Set up predicate: Run through all global shape functions and check whether
+        // they are associated with an entity on the boundary, store Dirichlet data.
+        // A L2 projection is used to get Dirichlet data
+        auto h_in_vec = fun_in_vec(level, h);
+        std::vector<std::pair<bool, Scalar>> ess_dof_select{};
+        for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+            const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
+            const Scalar h_val = h_in_vec(dofnum);
+            if(inner_point(dof_node)) {
+                // Dof associated with an entity on the boundary: "essential dof"
+                // The value of the dof should be set to the correspoinding value of the 
+                // vector representation of h
+                ess_dof_select.push_back({true, h_val});
+            } else {
+                ess_dof_select.push_back({false, h_val});
+            }
+        }
+
+        // modify linear system of equations
+        lf::assemble::FixFlaggedSolutionCompAlt<Scalar>(
+            [&ess_dof_select](size_type dof_idx)->std::pair<bool, Scalar> {
+                return ess_dof_select[dof_idx];},
+        A, phi);
+    }
 
     return std::make_pair(A, phi);
 }

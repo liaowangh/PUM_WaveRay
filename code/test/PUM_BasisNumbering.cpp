@@ -12,7 +12,6 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "../pum_wave_ray/pum_fem.h"
 #include "../utils/HE_solution.h"
 #include "../utils/utils.h"
 
@@ -32,6 +31,19 @@ int main(){
 
     // number of degrees of freedom managed by the DofhHandler object
     const lf::assemble::size_type N_dofs(dofh.NumDofs());
+
+    auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)};
+    auto inner_point{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 2)};
+    for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+        const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
+        const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
+        if(inner_point(dof_node)) {
+            std::cout << dofnum << ": [" << node_pos(0) << ", " 
+                  << node_pos(1) << "]" << std::endl;
+        }
+    }
+
+    /*
     std::cout << "DofHandler(" << N_dofs << " dofs):" << std::endl;
     // output information about dofs for entities of all co-dimensions
     for(int codim = 0; codim <= mesh->DimMesh(); ++codim) {
@@ -58,5 +70,6 @@ int main(){
             std::cout << "]" << std::endl;
         }
     }
+    */
     return 0;
 }

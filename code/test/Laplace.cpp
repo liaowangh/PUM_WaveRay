@@ -38,6 +38,6 @@ int main(){
     auto u = hf.get_fun();
     auto g = hf.boundary_g();
     HE_LagrangeO1 he_O1(L, k, mesh_path, g, u, true);
-    solve_directly(he_O1, sol_name, L, u);
+    // solve_directly(he_O1, sol_name, L, u);
     return 0;
 }

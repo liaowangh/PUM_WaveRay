@@ -32,28 +32,32 @@ PUM_FEElementMatrix::Mat_t PUM_FEElementMatrix::Eval(const lf::mesh::Entity& cel
     X = tmp.inverse();
     
     for(int i = 0; i < 3*N; ++i){
+        // ci = b_i1 * e_t1
         int i1 = i / N;
         int t1 = i % N;
         for(int j = 0; j < 3*N; ++j) {
-            // elem_mat(i,j) = aK(b_i2 * e_t2, b_i1 * e_t1)
-            int i2 = j / N;
+            // cj = b_j2 * e_t2
+            // elem_mat(i,j) = aK(cj, ci)
+            int j2 = j / N;
             int t2 = j % N;
-            auto f = [this,&X,&i1,&i2,&t1,&t2](const Eigen::Vector2d& x)->Scalar {
-                Eigen::Matrix<std::complex<double>, 2, 1> d1, d2;
-                Eigen::Vector2d beta1, beta2;
+            auto f = [this,&X,&i1,&j2,&t1,&t2](const Eigen::Vector2d& x)->Scalar {
+                Eigen::Vector2d di, dj, betai, betaj; 
                 double pi = std::acos(-1);
-                d1 << std::cos(2*pi*t1/N), std::sin(2*pi*t1/N);
-                d2 << std::cos(2*pi*t2/N), std::sin(2*pi*t2/N);
-                beta1 << X(1, i1), X(2, i1);
-                beta2 << X(1, i2), X(2, i2);
-                double lambda1 = X(0,i1) + beta1.dot(x);
-                double lambda2 = X(0,i2) + beta2.dot(x);
+                di << std::cos(2*pi*t1/N), std::sin(2*pi*t1/N);
+                dj << std::cos(2*pi*t2/N), std::sin(2*pi*t2/N);
+                betai << X(1, i1), X(2, i1);
+                betaj << X(1, j2), X(2, j2);
+                double lambdai = X(0,i1) + betai.dot(x);
+                double lambdaj = X(0,j2) + betaj.dot(x);
 
-                auto gradu_conj = std::exp(-1i*k*d1.dot(x)) * (beta1 - 1i*k*lambda1*d1);
-                auto gradv      = std::exp( 1i*k*d2.dot(x)) * (beta2 + 1i*k*lambda2*d2);
-                auto u_conj = lambda1 * std::exp(-1i*k*d1.dot(x));
-                auto v      = lambda2 * std::exp( 1i*k*d2.dot(x));
-                return alpha * gradu_conj.dot(gradv) + gamma * u_conj * v;
+                auto gradci = std::exp(1i*k*di.dot(x)) * (betai + 1i*k*lambdai*di);
+                auto gradcj = std::exp(1i*k*dj.dot(x)) * (betaj + 1i*k*lambdaj*dj);
+                auto val_ci = lambdai * std::exp(1i*k*di.dot(x));
+                auto val_cj = lambdaj * std::exp(1i*k*dj.dot(x));
+
+                // !!!! in Eigen, u.dot(v) return the hermitian dot product (equals to u.adjoint()*v)
+                return alpha * gradci.dot(gradcj) + gamma * val_cj * std::conj(val_ci);
+                // return alpha * gradcj.dot(gradci.conjugate()) + gamma * val_cj * std::conj(val_ci);
             }; 
             elem_mat(i, j) = LocalIntegral(cell, 10, f);
         }
@@ -63,7 +67,7 @@ PUM_FEElementMatrix::Mat_t PUM_FEElementMatrix::Eval(const lf::mesh::Entity& cel
 
 // analytic formulation
 /*
-std::vector<std::complex<double>> coefficient_comp(std::vector<std::complex<double>> a, std::vector<std::complex<double>> b) {
+std::vector<Scalar> coefficient_comp(std::vector<Scalar> a, std::vector<Scalar> b) {
     // (a[0]*x+a[1]*y+a[2]) * (b[0]*x+b[1]*y+b[2])
     // = a[0]*b[0]*x^2 + a[1]*b[1]*y^2 + a[0]*b[1]+a[1]*b[0]*xy
     // + (a[0]*b[2]+a[2]*b[0])*x + a[1]*b[2]+a[2]*b[1]*y + a[2]*b[2]

@@ -1,11 +1,7 @@
 #include <cmath>
 #include <functional>
-#include <iostream>
-#include <string>
 
-#include <lf/assemble/assemble.h>
 #include <lf/base/base.h>
-#include <lf/mesh/test_utils/test_meshes.h>
 #include <lf/mesh/utils/utils.h>
 #include <lf/uscalfe/uscalfe.h>
 
@@ -25,7 +21,7 @@ PUM_EdgeVec::Vec_t PUM_EdgeVec::Eval(const lf::mesh::Entity &edge) {
 
     for(int t = 0; t < N; ++t) {
         auto new_g = [this, &t](const Eigen::Vector2d& x)->Scalar {
-            Eigen::Matrix<std::complex<double>, 2, 1> d;
+            Eigen::Matrix<Scalar, 2, 1> d;
             double pi = std::acos(-1);
             d << std::cos(2*pi*t/N), std::sin(2*pi*t/N);
             return g(x) * std::exp(-1i * k * d.dot(x));

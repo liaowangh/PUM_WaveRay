@@ -11,7 +11,7 @@
 
 
 /*
- * (Local) bilinear form (u,v) -> \int_e gamma * u * v.conj dS
+ * (Local) bilinear form (u,v) -> \int_e gamma * (u,v) dS
  * where gamma is a complex number, 
  * u = bi(x) * exp(ikd1 x), v.conj = bj(x) * exp(-ikd2 x)
  * and gamma * u * v.conj = gamma * exp(ik(d1-d2) x) * bi * bj
