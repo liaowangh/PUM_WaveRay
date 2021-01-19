@@ -27,7 +27,6 @@ HE_LagrangeO1::build_equation(size_type level) {
     
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     
-    // auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
     auto dofh = get_dofh(level);
     
     // assemble for <grad(u), grad(v)> - k^2 uv
