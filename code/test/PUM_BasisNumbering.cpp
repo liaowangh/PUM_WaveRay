@@ -33,7 +33,32 @@ int main(){
     const lf::assemble::size_type N_dofs(dofh.NumDofs());
 
     auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)};
+
+    auto outer_nr = reader.PhysicalEntityName2Nr("outer_boundary");
+    auto inner_nr = reader.PhysicalEntityName2Nr("inner_boundary");
+
+    // modify it to classify inner and outer boundary
+    for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
+        if(outer_boundary(*edge)) {
+            // find a boundary edge, need to determine if it's outer boundary
+            if(reader.IsPhysicalEntity(*edge, inner_nr)) {
+                // it is the inner boundary
+                outer_boundary(*edge) = false;
+            }
+        }
+    }
+
     auto inner_point{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 2)};
+    // flag all nodes on the inner boundary
+    for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
+        if(outer_boundary(*edge)) {
+            // mark the points associated with outer boundary edge to false
+            for(const lf::mesh::Entity* subent: edge->SubEntities(1)) {
+                inner_point(*subent) = false;
+            }
+        }
+    }
+
     for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
         const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
         const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};

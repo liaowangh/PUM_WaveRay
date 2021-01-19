@@ -172,7 +172,7 @@ double HE_LagrangeO1::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient
         }
         // construct ||grad uh - grad u||^2_{cell}
         auto integrand = [&grad_uh, &grad_u](const Eigen::Vector2d& x)->Scalar {
-            return std::abs((grad_uh - grad_u(x)).dot((grad_uh - grad_u(x)).conjugate()));
+            return std::abs((grad_uh - grad_u(x)).dot(grad_uh - grad_u(x)));
         };
         res += std::abs(LocalIntegral(*cell, 10, integrand));
     }
@@ -185,7 +185,7 @@ double HE_LagrangeO1::H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, c
     return std::sqrt(l2err * l2err + h1serr * h1serr);
 }
 
-// Interpolation, may not be the best ideal method.
+// Nodal projection, may not be the best ideal method.
 HE_LagrangeO1::Vec_t HE_LagrangeO1::fun_in_vec(size_type l, const FHandle_t& f) {
     auto dofh = get_dofh(l);
     size_type N_dofs(dofh.NumDofs());

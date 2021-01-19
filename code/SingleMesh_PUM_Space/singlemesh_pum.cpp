@@ -48,7 +48,7 @@ int main(){
         auto u = solutions[i]->get_fun();
         auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();
-        HE_PUM he_pum(L, k, mesh_path, g, u, num_waves, false);
+        HE_PUM he_pum(L, k, mesh_path, g, u, num_waves, true);
         // test_localcomputation(he_pum, 0, k);
         // auto vec_coeff = he_pum.fun_in_vec(0, u);
         // std::cout << std::left << std::setw(20) << he_pum.L2_Err(0, vec_coeff, u) << std::setw(20)

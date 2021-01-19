@@ -175,18 +175,7 @@ void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L,
         } else {
             LF_ASSERT_MSG(false, "Eigen Factorization failed")
         }
-        // if(level == 0)
-        //     std::cout << fe_sol << std::endl << std::endl;
-
-        //find the true vector representation
-        //auto true_vec = he_fem.fun_in_vec(level, u);
         
-        // norm computational
-        //auto dofh = he_fem.get_dofh(level);
-        // double l2_err = he_fem.L2_norm(level, fe_sol - true_vec);
-        // double l2_err = L2Err_norm(he_fem.getmesh(level), u, fe_sol);
-        // double h1_err = he_fem.H1_norm(level, fe_sol - true_vec);
-
         double l2_err = he_fem.L2_Err(level, fe_sol, u);
         double h1_serr = he_fem.H1_semiErr(level, fe_sol, grad_u);
         double h1_err = std::sqrt(l2_err*l2_err + h1_serr*h1_serr);

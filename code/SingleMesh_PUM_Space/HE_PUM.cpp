@@ -252,7 +252,7 @@ double HE_PUM::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& gra
                     val_grad_uh += mu(dofarray[i*N_wave+t]) * std::exp(1i*k*d.dot(x)) * (beta + 1i*k*lambda*d);
                 }
             }
-            return std::abs((val_grad_uh - val_grad_u).dot((val_grad_uh - val_grad_u).conjugate()));
+            return std::abs((val_grad_uh - val_grad_u).dot((val_grad_uh - val_grad_u)));
         };
         res += std::abs(LocalIntegral(*cell, 10, integrand));
     }
