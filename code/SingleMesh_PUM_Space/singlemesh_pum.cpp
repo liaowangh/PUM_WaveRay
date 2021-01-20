@@ -29,7 +29,7 @@ int main(){
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
 
-    std::vector<int> num_waves(L+1, 4);
+    std::vector<int> num_waves(L+1, 5);
     
     std::vector<std::shared_ptr<HE_sol>> solutions(3);
     solutions[0] = std::make_shared<plan_wave>(k, 0.6, 0.8);
@@ -39,7 +39,7 @@ int main(){
     // solutions[1] = std::make_shared<plan_wave>(k, 0, 1.);
     // solutions[2] = std::make_shared<plan_wave>(k, -1., 0);
  
-    std::vector<std::string> sol_name{"pum_plan_wave", "pum_fundamental_sol", "pum_spherical_wave"};
+    std::vector<std::string> sol_name{"pum5_plan_wave", "pum5_fundamental_sol", "pum5_spherical_wave"};
     // std::vector<std::string> sol_name{"wave_0_4", "wave_1_4", "wave_2_4"};
     for(int i = 0; i < solutions.size(); ++i) {
         // if(i > 0){

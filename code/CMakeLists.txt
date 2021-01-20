@@ -34,6 +34,6 @@ hunter_add_package(Boost COMPONENTS chrono timer system filesystem program_optio
 find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_options)
 ###############################################################################
 
-add_subdirectory(SingleMesh_LinearFEM)
+#add_subdirectory(SingleMesh_LinearFEM)
 #add_subdirectory(test)
-#add_subdirectory(SingleMesh_PUM_Space)
+add_subdirectory(SingleMesh_PUM_Space)
