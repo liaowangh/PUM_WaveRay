@@ -4,6 +4,7 @@ reference/
 gmesh/
 code_test/
 .DS_Store/
+*.DS_Store
 *.vscode/
 *.ipynb_checkpoints/
 
