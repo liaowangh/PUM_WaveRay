@@ -10,7 +10,7 @@ set(singlePUM_sources
   PUM_ElemVector.cpp
   HE_PUM.h
   HE_PUM.cpp
-  singlemesh_pum.cpp
+  planwave_pum.cpp
   ../utils/utils.h
   ../utils/utils.cpp
   ../utils/HE_solution.h
