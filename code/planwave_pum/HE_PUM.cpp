@@ -102,7 +102,7 @@ HE_PUM::build_equation(size_type level) {
         auto h_vec = fun_in_vec(level, h);
         // auto h_vec_2 = h_in_vec(level, inner_boundary, inner_point);
 
-        // if(level == 0){
+        // if(level <= 1){
         //     std::cout << L2_BoundaryErr(level, h_vec, h, inner_boundary) << std::endl;
         //     std::cout << L2_BoundaryErr(level, h_vec_2, h, inner_boundary) << std::endl;
         //     std::cout << h_vec << std::endl << std::endl;
@@ -113,6 +113,7 @@ HE_PUM::build_equation(size_type level) {
         for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
             const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
             const Scalar h_val = h_vec(dofnum);
+            // const Scalar h_val = h_vec_2(dofnum);
             if(inner_point(dof_node)) {
                 // Dof associated with an entity on the boundary: "essential dof"
                 // The value of the dof should be set to the correspoinding value of the 
@@ -202,7 +203,7 @@ HE_PUM::Vec_t HE_PUM::h_in_vec(size_type l, lf::mesh::utils::CodimMeshDataSet<bo
             if(inner_point(dof_node)) {
                 ess_dof_select.push_back({false, 0.0});
             } else {
-                ess_dof_select.push_back({true, 1.0});
+                ess_dof_select.push_back({true, 0.0});
             }
         }
 
