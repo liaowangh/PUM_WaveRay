@@ -18,7 +18,7 @@
 #include <Eigen/SparseCore>
 
 #include "../pum_wave_ray/HE_FEM.h"
-#include "../SingleMesh_PUM_Space/HE_PUM.h"
+#include "../planwave_pum/HE_PUM.h"
 
 using Scalar = std::complex<double>;
 using size_type = unsigned int;

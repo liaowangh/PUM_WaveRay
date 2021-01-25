@@ -1,12 +1,11 @@
 #pragma once
 
-#include <vector>
 #include <functional>
+#include <vector>
+#include <memory>
 
-#include <lf/assemble/assemble.h>
 #include <lf/base/base.h>
 #include <lf/io/io.h>
-#include <lf/mesh/test_utils/test_meshes.h>
 #include <lf/mesh/utils/utils.h>
 #include <lf/refinement/refinement.h>
 #include <lf/uscalfe/uscalfe.h>
@@ -15,62 +14,78 @@
 #include <Eigen/SparseCore>
 
 #include "HE_FEM.h"
+#include "../LagrangeO1/HE_LagrangeO1.h"
+#include "../planwave_pum/HE_PUM.h"
 
 using namespace std::complex_literals;
 
 /*
  * When using the PUM wary ray method to solve the Helmholtz equation,
- * The finite element space associated with the finest mesh is S1
- * The FE spaces in coarser mesh are PUM spaces {bi(x) * exp(ikdt x}
+ * The finite element space associated with the finest mesh is LagrangeO1
+ * The FE spaces in coarser mesh are plan wave PUM spaces {bi(x) * exp(ikdt x}
+ * 
+ * FE spaces:
+ *  S_i : Lagrange FE in mesh i
+ *  E_i : plan wave spaces {exp(ikd x)}
+ * 
+ * Some notation:
+ *  Nl  = 2^{N+1-l} = num_planwaves[l]
+ *  dtl = [cos(2pi * t/Nl), sin(2pi * t/Nl)] 
+ *  etl = exp(ik* dtl x)
  */
-class PUM_WaveRay: public HE_FEM {
+class PUM_WaveRay: HE_FEM {
 public:
     using size_type = unsigned int;
     using Scalar = std::complex<double>;
+    using coordinate_t = Eigen::Vector2d;
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
-    using FHandle_t = std::function<Scalar(const Eigen::Vector2d&)>;
+    using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
+    using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
-    PUM_WaveRay(size_type L_, double k_, std::string mesh_path, FHandle_t g_, FHandle_t h_, bool hole):
-        HE_FEM(L_, k_, mesh_path, g_, h_, hole){}; // constructor 
+    PUM_WaveRay(size_type levels, double wave_number, const std::string& mesh_path, 
+        FHandle_t& g, FHandle_t& h, bool hole): HE_FEM(levels, wave_number, mesh_path, g, h, hole) {
+        std::vector<size_type> num_planwaves(L+1);
+        num_planwaves = std::vector<size_type>(L+1);
+        num_planwaves[L] = 2;
+        for(int i = L; i > 0; --i) {
+            num_planwaves[i-1] = 2 * num_planwaves[i];
+        }
+    }
 
-    lf::assemble::UniformFEDofHandler get_dofh(size_type);
-    
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) override; 
+
+    // compute interesting error norms of ||uh - u||, u is the exact solution passed by function handler
+    // and uh is a finite element solution and is represented by expansion coefficients.
     double L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) override;
     double H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) override;
     double H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const FunGradient_t& grad_u) override;
+
+    // get the vector representation of function f
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
-
-    size_type Dofs_perNode(size_type l) { return 1 ;};
-
-    void Prolongation_LF(); // generate P_LF
-    void Prolongation_PW(); // generate P_PW
-    void Restriction_PW();  // generate R_PW
-
-    Mat_t Prolongation_PUM(int l); // level l -> level l+1 in PUM spaces
-    Mat_t Restriction_PUM(int l);  // level l+1 -> level l in PUM spaces
-    
-    Scalar integration_mesh(int level, PUM_WaveRay::FHandle_t f);
-
-    void v_cycle(Vec_t& u, size_type mu1, size_type mu2); // initial: u, relaxation times: mu1 and mu2
-
-public:
-    std::vector<Mat_t> P_LF; // P_LF[i]: level i -> level i+1, prolongation of Lagrangian FE spaces
-    std::vector<Mat_t> P_PW; // P_PW[i]: level i -> level i+1, planar wave spaces
-    
-    std::vector<Mat_t> R_PW; // R_PW[i]: level i+1 -> level i, planar wave spaces
-};
-
-class exp_wave{
-// f(x,y) = exp(i(d1x+d2y))
-public:
-    exp_wave(double d1, double d2): d1_(d1), d2_(d2) {}
-    std::complex<double> operator()(Eigen::Vector2d x){
-        return std::exp(1i * (d1_ * x(0) + d2_ * x(1)));
+    size_type Dofs_perNode(size_type l) override { return l == L ? 1 : num_planwaves[l]; };
+    lf::assemble::UniformFEDofHandler get_dofh(size_type l) override {
+        return lf::assemble::UniformFEDofHandler(getmesh(l), 
+                {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});
     }
-private:
-    double d1_, d2_; // frequency
+
+    // prolongation and restriction operator for S_l and E_l, actually for latter, 
+    // the prolongation and restriction should be swaped, use the current name just to 
+    // be consistent with S_l.
+    void Prolongation_Lagrange();
+    void Prolongation_planwave();
+    void Restriction_planwave();
+
+private:    
+    std::vector<size_type> num_planwaves; // number of plan waves in coarser mesh
+    std::shared_ptr<HE_LagrangeO1> Lagrange_fem;
+    std::shared_ptr<HE_PUM> planwavePUM_fem;
+
+    std::vector<Mat_t> P_Lagrange; // prolongation operator between Lagrange FE spaces, S_l -> S_{l+1}
+    std::vector<Mat_t> P_planwave; // prolongation operator between plan wave spaces, E_l->E_{l+1}   
+
+    std::vector<Mat_t> R_Lagrange; // S_{l+1} -> S_l
+    std::vector<Mat_t> R_planwave; // E_{l+1} -> E_l, note that E_{l+1} is a subset of E_l
 };
 
 /*
