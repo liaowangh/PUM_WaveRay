@@ -90,11 +90,29 @@ HE_PUM::build_equation(size_type level) {
         // Set up predicate: Run through all global shape functions and check whether
         // they are associated with an entity on the boundary, store Dirichlet data.
         // A L2 projection is used to get Dirichlet data
-        auto h_in_vec = fun_in_vec(level, h);
+
+        auto inner_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)};
+        // modify it to classify inner and outer boundary
+        for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
+            if(outer_boundary(*edge)) {
+                inner_boundary(*edge) = false;
+            }
+        }
+      
+        auto h_vec = fun_in_vec(level, h);
+        // auto h_vec_2 = h_in_vec(level, inner_boundary, inner_point);
+
+        // if(level == 0){
+        //     std::cout << L2_BoundaryErr(level, h_vec, h, inner_boundary) << std::endl;
+        //     std::cout << L2_BoundaryErr(level, h_vec_2, h, inner_boundary) << std::endl;
+        //     std::cout << h_vec << std::endl << std::endl;
+        //     std::cout << h_vec_2 << std::endl;
+        // }
+
         std::vector<std::pair<bool, Scalar>> ess_dof_select{};
         for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
             const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
-            const Scalar h_val = h_in_vec(dofnum);
+            const Scalar h_val = h_vec(dofnum);
             if(inner_point(dof_node)) {
                 // Dof associated with an entity on the boundary: "essential dof"
                 // The value of the dof should be set to the correspoinding value of the 
@@ -154,6 +172,63 @@ HE_PUM::Vec_t HE_PUM::fun_in_vec(size_type l, const FHandle_t& f) {
     return res;
 }
 
+/*
+ * To get the vector representation of function h in the Dirichlet boundary
+ */
+HE_PUM::Vec_t HE_PUM::h_in_vec(size_type l, lf::mesh::utils::CodimMeshDataSet<bool> edge_selector,
+    lf::mesh::utils::CodimMeshDataSet<bool> inner_point) {
+    auto mesh = mesh_hierarchy->getMesh(l);  // get mesh
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+
+    size_type N_wave(num_planwaves[l]);
+    auto dofh = get_dofh(l);
+    size_type N_dofs(dofh.NumDofs());
+
+    lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
+
+    // assemble for \int_e (u,v) dx 
+    PUM_EdgeMat edge_mat_builder(fe_space, edge_selector, N_wave, k, 1.0);                                  
+    lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
+
+    // assemble for \int_e (h,v) dx
+    Vec_t phi(N_dofs);
+    phi.setZero();
+    PUM_EdgeVec edgeVec_builder(fe_space, edge_selector, N_wave, k, h);
+    lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
+
+    std::vector<std::pair<bool, Scalar>> ess_dof_select{};
+        for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+            const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
+            if(inner_point(dof_node)) {
+                ess_dof_select.push_back({false, 0.0});
+            } else {
+                ess_dof_select.push_back({true, 1.0});
+            }
+        }
+
+    lf::assemble::FixFlaggedSolutionCompAlt<Scalar>(
+        [&ess_dof_select](size_type dof_idx)->std::pair<bool, Scalar> {
+            return ess_dof_select[dof_idx];}, 
+    A, phi);
+
+    const Eigen::SparseMatrix<Scalar> A_crs(A.makeSparse());
+
+    // if(l == 0) {
+    //     std::cout << A_crs << std::endl;
+    //     std::cout << phi << std::endl;
+    // }
+
+    Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
+    solver.compute(A_crs);
+    Vec_t res;
+    if(solver.info() == Eigen::Success) {
+        res = solver.solve(phi);
+    } else {
+        LF_ASSERT_MSG(false, "Eigen Factorization failed")
+    }
+    return res;
+}
+
 // quadrature based norm computation for ||uh-u||
 double HE_PUM::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
     auto mesh = mesh_hierarchy->getMesh(l);
@@ -164,7 +239,7 @@ double HE_PUM::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
     auto dofh = get_dofh(l);
 
     for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
-         const lf::geometry::Geometry *geo_ptr = cell->Geometry();
+        const lf::geometry::Geometry *geo_ptr = cell->Geometry();
     
         // Matrix storing corner coordinates in its columns(2x3 in this case)
         auto vertices = geo_ptr->Global(cell->RefEl().NodeCoords());
@@ -184,7 +259,6 @@ double HE_PUM::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
         //obtain global indices of those shape functions
         nonstd::span<const lf::assemble::gdof_idx_t> dofarray{dofh.GlobalDofIndices(*cell)};
         // then uh(FE solution) restricted in the cell is \sum_i \lambda_(i/N_wave)*exp(ik d_{i%N_wave} x) * mu(dofarray(i))
-        // construct ||grad uh - grad u||^2_{cell}
 
         auto integrand = [this, &mu, &u, &X, &N_wave, &dofarray](const Eigen::Vector2d& x)->Scalar {
             Scalar val_uh = 0.0;
@@ -213,7 +287,7 @@ double HE_PUM::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& gra
     auto dofh = get_dofh(l);
 
     for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
-         const lf::geometry::Geometry *geo_ptr = cell->Geometry();
+        const lf::geometry::Geometry *geo_ptr = cell->Geometry();
     
         // Matrix storing corner coordinates in its columns(2x3 in this case)
         auto vertices = geo_ptr->Global(cell->RefEl().NodeCoords());
@@ -263,4 +337,50 @@ double HE_PUM::H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const Fu
     double l2err = L2_Err(l, mu, u);
     double h1serr = H1_semiErr(l, mu, grad_u);
     return std::sqrt(l2err*l2err + h1serr*h1serr);
+}
+
+// compute \int_{\partial Omega} |mu-u|^2dS
+double HE_PUM::L2_BoundaryErr(size_type l, const Vec_t& mu, const FHandle_t& u,
+    lf::mesh::utils::CodimMeshDataSet<bool> edge_selector) {
+    auto mesh = mesh_hierarchy->getMesh(l);
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+    double res = 0.0;
+
+    size_type N_wave(num_planwaves[l]);
+    auto dofh = get_dofh(l);
+
+    for(const lf::mesh::Entity* cell: mesh->Entities(1)) {
+        if(edge_selector(*cell)){
+            const lf::geometry::Geometry *geo_ptr = cell->Geometry();
+        
+            // Matrix storing corner coordinates in its columns(2x2 in this case)
+            auto vertices = geo_ptr->Global(cell->RefEl().NodeCoords());
+            
+            //obtain global indices of those shape functions
+            nonstd::span<const lf::assemble::gdof_idx_t> dofarray{dofh.GlobalDofIndices(*cell)};
+            // then uh(FE solution) restricted in the cell (line) is \sum_i \lambda_(i/N_wave)*exp(ik d_{i%N_wave} x) * mu(dofarray(i))
+
+            auto integrand = [this, &mu, &u, &vertices, &N_wave, &dofarray](const Eigen::Vector2d& x)->Scalar {
+                Scalar val_uh = 0.0;
+                Scalar val_u  = u(x);
+                double x1, y1, x2, y2, tmp;
+                x1 = vertices(0,0), y1 = vertices(1,0);
+                x2 = vertices(0,1), y2 = vertices(1,1);
+                if(x1 == x2) {
+                    tmp = (x(1) - y2) / (y1 - y2);
+                } else {
+                    tmp = (x(0) - x2) / (x1 - x2); 
+                }
+                for(int t = 0; t < N_wave; ++t) {
+                    Eigen::Matrix<double, 2, 1> d;
+                    double pi = std::acos(-1.);
+                    d << std::cos(2*pi*t/N_wave), std::sin(2*pi*t/N_wave);
+                    val_uh += (mu(dofarray[t]) * tmp + mu(dofarray[t+N_wave]) * (1-tmp)) * std::exp(1i*k*d.dot(x));
+                }
+                return std::abs((val_uh-val_u)*(val_uh-val_u));
+            };
+            res += std::abs(LocalIntegral(*cell, 10, integrand));
+        }
+    }
+    return std::sqrt(res);
 }

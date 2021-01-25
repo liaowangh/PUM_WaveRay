@@ -24,12 +24,12 @@ int main(){
     auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string(); 
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/no_hole.msh")).string(); 
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/tri2.msh")).string(); 
-    size_type L = 3; // refinement steps
+    size_type L = 2; // refinement steps
     double k = 2; // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
 
-    std::vector<int> num_waves(L+1, 5);
+    std::vector<int> num_waves(L+1, 3);
     
     std::vector<std::shared_ptr<HE_sol>> solutions(3);
     solutions[0] = std::make_shared<plan_wave>(k, 0.6, 0.8);
@@ -39,9 +39,12 @@ int main(){
     // solutions[1] = std::make_shared<plan_wave>(k, 0, 1.);
     // solutions[2] = std::make_shared<plan_wave>(k, -1., 0);
  
-    std::vector<std::string> sol_name{"pum5_plan_wave", "pum5_fundamental_sol", "pum5_spherical_wave"};
+    std::vector<std::string> sol_name{"pum3_plan_wave", "pum3_fundamental_sol", "pum3_spherical_wave"};
     // std::vector<std::string> sol_name{"wave_0_4", "wave_1_4", "wave_2_4"};
     for(int i = 0; i < solutions.size(); ++i) {
+        if(i > 0){
+            continue;
+        }
         auto u = solutions[i]->get_fun();
         auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();

@@ -37,6 +37,13 @@ public:
     double H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const FunGradient_t& grad_u) override;
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
 
+    double L2_BoundaryErr(size_type l, const Vec_t& mu, const FHandle_t& u,
+        lf::mesh::utils::CodimMeshDataSet<bool> edge_selector);
+
+    // Project the Dirichlet data on (h) into finite element space in Boundary
+    Vec_t h_in_vec(size_type l, lf::mesh::utils::CodimMeshDataSet<bool> edge_selector,
+        lf::mesh::utils::CodimMeshDataSet<bool> inner_point);
+
     size_type Dofs_perNode(size_type l) override { return num_planwaves[l]; }
     lf::assemble::UniformFEDofHandler get_dofh(size_type l) override {
         return lf::assemble::UniformFEDofHandler(getmesh(l), 
