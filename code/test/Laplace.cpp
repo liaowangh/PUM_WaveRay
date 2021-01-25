@@ -16,7 +16,7 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "../SingleMesh_LinearFEM/HE_LagrangeO1.h"
+#include "../LagrangeO1/HE_LagrangeO1.h"
 #include "../utils/HE_solution.h"
 #include "../utils/utils.h"
 

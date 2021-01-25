@@ -1,6 +1,6 @@
 set(numbering_sources
-  ../SingleMesh_LinearFEM/HE_LagrangeO1.h
-  ../SingleMesh_LinearFEM/HE_LagrangeO1.cpp
+  ../LagrangeO1/HE_LagrangeO1.h
+  ../LagrangeO1/HE_LagrangeO1.cpp
   PUM_BasisNumbering.cpp
   ../utils/utils.h
   ../utils/utils.cpp
@@ -26,8 +26,8 @@ target_link_libraries(numbering
 )
 
 set(Laplace_sources
-  ../SingleMesh_LinearFEM/HE_LagrangeO1.h
-  ../SingleMesh_LinearFEM/HE_LagrangeO1.cpp
+  ../LagrangeO1/HE_LagrangeO1.h
+  ../LagrangeO1/HE_LagrangeO1.cpp
   Laplace.cpp
   ../utils/utils.h
   ../utils/utils.cpp

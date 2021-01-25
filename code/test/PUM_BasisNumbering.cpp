@@ -23,9 +23,14 @@ int main(){
     auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string();    
     auto mesh_factory = std::make_unique<lf::mesh::hybrid2d::MeshFactory>(2);
     lf::io::GmshReader reader(std::move(mesh_factory), mesh_path);
-    auto mesh = reader.mesh();
+    std::shared_ptr<lf::refinement::MeshHierarchy> mesh_hierarchy = 
+        lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(reader.mesh(), 5);
+    
+    int level = 1;
+    
+    auto mesh = mesh_hierarchy->getMesh(level);
 
-    int num_wave = 4;
+    int num_wave = 2;
 
     lf::assemble::UniformFEDofHandler dofh(mesh, {{lf::base::RefEl::kPoint(), num_wave}});
 
@@ -41,7 +46,11 @@ int main(){
     for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
         if(outer_boundary(*edge)) {
             // find a boundary edge, need to determine if it's outer boundary
-            if(reader.IsPhysicalEntity(*edge, inner_nr)) {
+            const lf::mesh::Entity* parent_edge = edge;
+            for(int i = level; i > 0; --i) {
+                parent_edge = mesh_hierarchy->ParentEntity(i, *parent_edge);
+            }
+            if(reader.IsPhysicalEntity(*parent_edge, inner_nr)) {
                 // it is the inner boundary
                 outer_boundary(*edge) = false;
             }
@@ -68,7 +77,7 @@ int main(){
         }
     }
 
-    /*
+    
     std::cout << "DofHandler(" << N_dofs << " dofs):" << std::endl;
     // output information about dofs for entities of all co-dimensions
     for(int codim = 0; codim <= mesh->DimMesh(); ++codim) {
@@ -95,6 +104,6 @@ int main(){
             std::cout << "]" << std::endl;
         }
     }
-    */
+    
     return 0;
 }
