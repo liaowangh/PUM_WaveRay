@@ -36,4 +36,5 @@ find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_option
 
 #add_subdirectory(LagrangeO1)
 #add_subdirectory(test)
-add_subdirectory(planwave_pum)
+#add_subdirectory(planwave_pum)
+add_subdirectory(pum_wave_ray)
