@@ -21,10 +21,10 @@ using size_type = unsigned int;
 int main(){
     // mesh path
     boost::filesystem::path here = __FILE__;
-    auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string(); 
-    // auto mesh_path = (here.parent_path().parent_path() / ("meshes/no_hole.msh")).string(); 
+    // auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string(); 
+    auto mesh_path = (here.parent_path().parent_path() / ("meshes/square.msh")).string(); 
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/tri2.msh")).string(); 
-    size_type L = 3; // refinement steps
+    size_type L = 4; // refinement steps
     double k = 2; // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
@@ -42,13 +42,13 @@ int main(){
     std::vector<std::string> sol_name{"pum3_plan_wave", "pum3_fundamental_sol", "pum3_spherical_wave"};
     // std::vector<std::string> sol_name{"wave_0_4", "wave_1_4", "wave_2_4"};
     for(int i = 0; i < solutions.size(); ++i) {
-        // if(i > 0){
-        //     continue;
-        // }
+        if(i > 0){
+            continue;
+        }
         auto u = solutions[i]->get_fun();
         auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();
-        HE_PUM he_pum(L, k, mesh_path, g, u, num_waves, true);
+        HE_PUM he_pum(L, k, mesh_path, g, u, num_waves, false);
         solve_directly(he_pum, sol_name[i], L, u, grad_u);
         std::cout << std::endl;
     }
