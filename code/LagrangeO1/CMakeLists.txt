@@ -1,8 +1,9 @@
 
-set(SingleLinFEM_sources
+set(test_LagrangeO1_sources
   HE_LagrangeO1.h
   HE_LagrangeO1.cpp
-  SingleLinFEM.cpp
+  test_LagrangeO1.cpp
+  ../pum_wave_ray/HE_FEM.h
   ../utils/utils.h
   ../utils/utils.cpp
   ../utils/HE_solution.h
@@ -10,10 +11,10 @@ set(SingleLinFEM_sources
 )
 
 # define executable
-add_executable(SingleLinFEM ${SingleLinFEM_sources})
+add_executable(test_LagrangeO1 ${test_LagrangeO1_sources})
 
 #link executable with LehrFEM++
-target_link_libraries(SingleLinFEM
+target_link_libraries(test_LagrangeO1
   PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
   LF::lf.mesh
   LF::lf.mesh.utils
