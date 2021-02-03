@@ -15,193 +15,238 @@ Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const FHandle_t
         temp += weights_ie(i) * f(global_points.col(i));
     }
     return temp;
-
 }
 
-/*
- template <class MF>
- auto LocalIntegral(const lf::mesh::Entity &e, int quad_degree,
-                    const MF &mf) -> lf::mesh::utils::MeshFunctionReturnType<MF> {
-    using MfType = lf::mesh::utils::MeshFunctionReturnType<MF>;
-
-    auto qr = lf::quad::make_QuadRule(e.RefEl(), quad_degree);
-
-    auto values = mf(e, qr.Points());
-    auto weights_ie =
-        (qr.Weights().cwiseProduct(e.Geometry()->IntegrationElement(qr.Points())))
-            .eval();
-    LF_ASSERT_MSG(values.size() == qr.NumPoints(),
-                    "mf returns vector with wrong size.");
-    if constexpr (std::is_arithmetic_v<MfType>) {  // NOLINT
-        auto value_m = Eigen::Map<Eigen::Matrix<MfType, 1, Eigen::Dynamic>>(
-            &values[0], 1, values.size());
-        return (value_m * weights_ie)(0);
-    }
+void print_save_error(std::vector<int>& N, std::vector<std::vector<double>>& data, 
+    std::vector<std::string>& err_str, const std::string& sol_name, 
+    const std::string& output_folder) {
     
-    if constexpr (lf::base::is_eigen_matrix<MfType>) {  // NOLINT
-        constexpr int size = MfType::SizeAtCompileTime;
-        if constexpr (size != Eigen::Dynamic) {
-        auto value_m = Eigen::Map<
-            Eigen::Matrix<typename MfType::Scalar, size, Eigen::Dynamic>>(
-            &values[0](0, 0), size, values.size());
-        MfType result;
-        auto result_m =
-            Eigen::Map<Eigen::Matrix<typename MfType::Scalar, size, 1>>(
-                &result(0, 0));
-        result_m = value_m * weights_ie;
-        return result;
+    std::cout << sol_name << std::endl;
+    //Tabular output of the data
+    std::cout << std::left << std::setw(10) << "N";
+    for(int i = 0; i < err_str.size(); ++i){
+        std::cout << std::setw(20) << err_str[i];
+    }
+    std::cout << std::endl;
+    for(int l = 0; l < N.size(); ++l) {
+        std::cout << std::left << std::setw(10) << N[l];
+        for(int i = 0; i < data.size(); ++i) {
+            std::cout << std::setw(20) << data[i][l];
         }
+        std::cout << std::endl;
     }
-    // fallback: we cannot make any optimizations:
-    MfType temp = weights_ie(0) * values[0];
-    for (Eigen::Index i = 1; i < qr.NumPoints(); ++i) {
-        temp = temp + weights_ie(i) * values[i];
+
+    // write the result to the file
+    std::string output_file = output_folder + sol_name + ".txt";
+    std::ofstream out(output_file);
+
+    out << "N";
+    for(int i = 0; i < err_str.size(); ++i) {
+        out << " " << err_str[i];
     }
-    return temp;
-}
-*/
+    out << std::endl;
 
-Vec_t fun_in_vec(const lf::assemble::DofHandler& dofh, const FHandle_t& f) {
-    size_type N_dofs(dofh.NumDofs());
-    Vec_t res(N_dofs);
-    for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
-        const lf::mesh::Entity& dof_node{dofh.Entity(dofnum)};
-        const coordinate_t node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
-        res(dofnum) = f(node_pos);
-    }
-    return res;
+    for(int l = 0; l < N.size(); ++l) {
+        out << N[l];
+        for(int i = 0; i < data.size(); ++i) {
+            out << " " << data[i][l];
+        }
+        out << std::endl;
+    } 
 }
 
-/*
- * compute norm rely on the mass matrix which is the finite element Galerkin matrix 
- * for the L2 inner product (u,v)->\int_\Omega uvdx 
- */
-double L2_norm(const lf::assemble::DofHandler& dofh, const Vec_t& u) {
-    double res = 0.0;
-    int N_dofs = dofh.NumDofs();
-    lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
-    
-    lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
-    lf::mesh::utils::MeshFunctionConstant<double> mf_zero(0);
-    
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(dofh.Mesh());
-    
-    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_zero), decltype(mf_identity)>
-        elmat_builder(fe_space, mf_zero, mf_identity);
-    
-    lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, mass_matrix);
-    
-    const Eigen::SparseMatrix<double> mass_mat = mass_matrix.makeSparse();
-    res = std::sqrt(std::abs(u.dot(mass_mat * u.conjugate())));
-    return res;
-}
-
-/*
- * compute ||u-mu||_2, 
- * where u (manufacture solution) is of FHandle_t,
- * solution is giving by vector representation mu
- */ 
-double L2Err_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& u, const Vec_t& mu) {
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
-    // u has to be wrapped into a mesh function for error computation
-    lf::mesh::utils::MeshFunctionGlobal mf_u{u};
-    // create mesh function representing solution 
-    auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
-
-    auto u_conj = [&u](const coordinate_t& x) -> Scalar {
-        return std::conj(u(x));};
-    lf::mesh::utils::MeshFunctionGlobal mf_u_conj{u_conj};
-    auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu.conjugate());
-    
-    auto mf_square = (mf_u - mf_mu) * (mf_u_conj - mf_mu_conj);
-    double L2err = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_square, 5));
-    return std::sqrt(L2err);
-}
-
-double H1_norm(const lf::assemble::DofHandler& dofh, const Vec_t& u) {
-    double res = 0.0;
-    int N_dofs = dofh.NumDofs();
-    lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
-    
-    lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
-    
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(dofh.Mesh());
-    
-    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_identity)>
-        elmat_builder(fe_space, mf_identity, mf_identity);
-    
-    lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, mass_matrix);
-    
-    const Eigen::SparseMatrix<double> mass_mat = mass_matrix.makeSparse();
-    res = std::sqrt(std::abs(u.dot(mass_mat * u.conjugate())));
-    return res;
-}
-
-double H1_seminorm(const lf::assemble::DofHandler& dofh, const Vec_t& u) {
-    double res = 0.0;
-    int N_dofs = dofh.NumDofs();
-    lf::assemble::COOMatrix<double> mass_matrix(N_dofs, N_dofs);
-    
-    lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
-    lf::mesh::utils::MeshFunctionConstant<double> mf_zero(0);
-    
-    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(dofh.Mesh());
-    
-    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_zero)>
-        elmat_builder(fe_space, mf_identity, mf_zero);
-    
-    lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, mass_matrix);
-    
-    const Eigen::SparseMatrix<double> mass_mat = mass_matrix.makeSparse();
-    res = std::sqrt(std::abs(u.dot(mass_mat * u.conjugate())));
-    return res;
-}
-
-void solve_directly(HE_FEM& he_fem, const std::string& sol_name, size_type L, 
-                    const FHandle_t& u, const FunGradient_t& grad_u) {
+void test_solve(HE_FEM& he_fem, const std::string& sol_name, 
+    const std::string& output_folder, size_type L, const FHandle_t& u, 
+    const FunGradient_t& grad_u) {
     std::vector<int> ndofs;
     std::vector<double> L2err, H1serr, H1err;
     
     for(size_type level = 0; level <= L; ++level) {
-        auto eq_pair = he_fem.build_equation(level);
-
-        // solve linear system of equations A*x = \phi
-        const Eigen::SparseMatrix<Scalar> A_crs(eq_pair.first.makeSparse());
-        Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
-        solver.compute(A_crs);
-        Eigen::Matrix<Scalar, Eigen::Dynamic, 1> fe_sol;
-        if(solver.info() == Eigen::Success) {
-            fe_sol = solver.solve(eq_pair.second);
-        } else {
-            LF_ASSERT_MSG(false, "Eigen Factorization failed")
-        }
+        auto fe_sol = he_fem.solve(level);
         
         double l2_err = he_fem.L2_Err(level, fe_sol, u);
         double h1_serr = he_fem.H1_semiErr(level, fe_sol, grad_u);
         double h1_err = std::sqrt(l2_err*l2_err + h1_serr*h1_serr);
         
-        ndofs.push_back(eq_pair.second.size());
+        ndofs.push_back(fe_sol.size());
         L2err.push_back(l2_err);
         H1serr.push_back(h1_serr);
         H1err.push_back(h1_err);
     }
     
-    // Tabular output of the results
-    std::cout << sol_name << std::endl;
-    std::cout << std::left << std::setw(10) << "N" << std::setw(20)
-              << "L2_err" << std::setw(20) << "H1_serr" << std::setw(20) 
-              << "H1_err" << std::endl;
-    for (int l = 0; l <= L; ++l) {
-      std::cout << std::left << std::setw(10) << ndofs[l] << std::setw(20)
-                << L2err[l] << std::setw(20) << H1serr[l] << std::setw(20)
-                << H1err[l] << std::endl;
+    std::vector<std::vector<double>> err_data{L2err, H1err, H1serr};
+    std::vector<std::string> err_str{"L2_err", "H1_err", "H1_serr"};
+    print_save_error(ndofs, err_data, err_str, sol_name, output_folder);
+}
+
+void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
+    // u: initial value; mu: number of iterations
+    int N = A.rows();
+    for(int i = 0; i < mu; ++i){
+        for(int t = 0; t < stride; ++t) {
+            // stride/direction
+            for(int k = 0; k < N / stride; ++k) {
+                int j = k * stride + t;
+                Scalar tmp = (A.row(j) * u)(0,0);
+                u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
+            }
+        }
     }
+}
+
+void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
+    // u: initial value;
+    int N = A.rows();
+    std::cout << std::left << std::setw(10) << "Iteration"
+        << std::setw(20) << "Err_norm" << std::endl;
+
+    int cnt = 0;
+    while(true){
+        cnt++;
+        for(int t = 0; t < stride; ++t) {
+            // stride/direction
+            for(int k = 0; k < N / stride; ++k) {
+                int j = k * stride + t;
+                Scalar tmp = (A.row(j) * u)(0,0);
+                u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
+            }
+        }
+        if(cnt % 20 == 0) {
+            std::cout << std::left << std::setw(10) << cnt
+                << std::setw(20) << (sol - u).norm() / sol.norm() << std::endl;
+        }
+        
+        if((sol - u).norm() < 0.001){
+            break;
+        }
+        if(cnt > 500) {
+            std::cout << "Gaussian Seidel iteration doesn't converge after "
+                      << cnt << " iterations." << std::endl; 
+            break;
+        }
+    }
+}
+
+std::pair<Vec_t, Scalar> power_GS(Mat_t& A, int stride) {
+    /* Compute the Eigen value of the GS operator */
+    Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
+    Mat_t U = A - L;
+    Mat_t GS_op = L.colPivHouseholderQr().solve(-U);
+    Vec_t eivals = GS_op.eigenvalues();
+
+    Scalar domainant_eival = eivals(0);
+    for(int i = 1; i < eivals.size(); ++i) {
+        if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
+            domainant_eival = eivals(i);
+        }
+    }
+    std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
+    std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+    /**********************************************/
+
+    double tol = 1e-3;
+    int N = A.rows();
+    Vec_t u = Vec_t::Random(N);
+
+    u.normalize();    
+    Scalar lambda;
+    double normAest = A.operatorNorm();
+    int cnt = 0;
+
+    std::cout << "normAset: " << normAest << std::endl;
+    std::cout << std::left << std::setw(10) << "Iteration"
+        << std::setw(20) << "residual_norm" << std::endl;
+    while(1){
+        cnt++;
+        Vec_t old_u = u;
+        for(int t = 0; t < stride; ++t) {
+            for(int k = 0; k < N / stride; ++k) {
+                int j = k * stride + t;
+                Scalar tmp = (A.row(j) * u)(0,0);
+                u(j) = (u(j) * A(j,j) - tmp) / A(j,j);
+            }
+        }
+        // now u should be GS_op * old_u
+        lambda = old_u.dot(u); // Rayleigh quotient
+        // compute the residual and check vs tolerance
+        auto r = u - lambda * old_u;
+
+        if(cnt % 20 == 0){
+            std::cout << std::left << std::setw(10) << cnt
+                << std::setw(20) << r.norm() << std::endl;
+        }
+
+        u.normalize();
+        
+        if(r.norm() < tol) {
+            std::cout << "Power iteration converges after " << cnt 
+                << " iterations." << std::endl;
+            break;
+        }
+        if(cnt > 500) {
+            std::cout << "Power iteration doesn't converge after " << cnt 
+                << " iterations." << std::endl; 
+            break;
+        }
+    }
+    std::cout << "Number of iterations: " << cnt << std::endl;
+    std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
+    return std::make_pair(u, lambda);
+}
+
+/*
+ * Perform v-cycle, finer grid transfer the residual to the coarser grid, 
+ * in which the residual equation is solved, and then the error is transfered back to finer grid.
+ * 
+ * u: initial value.
+ * f: r.h.s vector
+ * Op: container storing all the operators.
+ * I: transfer operators, I[i]: Mesh_i -> Mesh_{i+1}
+ * stride: stride in Gaussian Seidel relaxation
+ * mu1, mu2: pre and post relaxation times
+ */
+void v_cycle(Vec_t& u, Vec_t& f, std::vector<Mat_t>& Op, std::vector<Mat_t>& I, 
+    std::vector<int>& stride, size_type mu1, size_type mu2) {
+
+    Vec_t old_u = u;
+
+    int L = I.size();
+    LF_ASSERT_MSG(Op.size() == L + 1 && stride.size() == L + 1, 
+        "#{transfer operator} should be #{Operator} - 1");
     
-    // write the result to the file
-    std::string output_file = "../plot_err/" + sol_name + ".txt";
-    std::ofstream out(output_file);
-    out << "N " << "L2_err " << "H1_err" << std::endl;
-    for(int l = 0; l <= L; ++l) {
-        out << ndofs[l] << " " << L2err[l] << " " << H1err[l] << std::endl;
-    } 
+    std::vector<int> op_size(L+1);
+    for(int i = 0; i <= L; ++i) {
+        op_size[i] = Op[i].rows();
+    }
+
+    for(int i = 0; i < L; ++i) {
+        LF_ASSERT_MSG(I[i].rows() == op_size[i+1] && I[i].cols() == op_size[i],
+            "transfer operator size does not mathch grid operator size.");
+    }
+
+    std::vector<Vec_t> initial(L + 1), rhs_vec(L + 1);
+
+    initial[L] = u;
+    rhs_vec[L] = f;
+    // initial guess on coarser mesh are all zero
+    for(int i = 0; i < L; ++i) {
+        initial[i] = Vec_t::Zero(op_size[i]);
+    }
+
+    // std::cout << "Finer to coarser" << std::endl;
+    for(int i = L; i > 0; --i) {
+        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
+        rhs_vec[i-1] = I[i-1].transpose() * (rhs_vec[i] - Op[i] * initial[i]);
+    }
+    // std::cout << "solve on coarest mesh" << std::endl;
+    initial[0] = Op[0].colPivHouseholderQr().solve(rhs_vec[0]);
+
+    // std::cout << "Coarser to finer" << std::endl;
+    for(int i = 1; i <= L; ++i) {
+        initial[i] += I[i-1] * initial[i-1];
+        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
+    }
+    u = initial[L];
+
+    // std::cout << "After v cycle, ||u-u_old||=" << (old_u - u).norm() << std::endl;
 }
