@@ -27,6 +27,12 @@ int main(){
     double k = 2; // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
+
+    std::vector<int> num_planwaves(L+1);
+    num_planwaves[L] = 2;
+    for(int i = L - 1; i >= 0; --i) {
+        num_planwaves[i] = 2 * num_planwaves[i+1];
+    }
     
     std::vector<std::shared_ptr<HE_sol>> solutions(3);
     solutions[0] = std::make_shared<plan_wave>(k, 0.8, 0.6);
@@ -45,7 +51,7 @@ int main(){
         auto u = solutions[i]->get_fun();
         auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();
-        PUM_WaveRay he_waveray(L, k, mesh_path, g, u, false);
+        PUM_WaveRay he_waveray(L, k, mesh_path, g, u, false, num_planwaves);
 
         /***************************************************************/
         std::cout << "start prolongation_planwave" << std::endl;
@@ -76,16 +82,16 @@ int main(){
 
         int start_layer = 2;
         int num_wavelayer = 2;
-        auto dofh = he_waveray.Lagrange_fem->get_dofh(start_layer);
+        auto dofh = he_waveray.get_dofh(start_layer);
 
         PUM_WaveRay::Vec_t fem_sol(dofh.NumDofs());
         fem_sol.setZero();
         std::cout << "Start v cycle;" << std::endl;
-        he_waveray.v_cycle(fem_sol, start_layer, num_wavelayer, 10, 10);
+        he_waveray.solve(fem_sol, num_wavelayer, 10, 10);
 
-        std::cout << he_waveray.Lagrange_fem->L2_Err(start_layer, fem_sol, u) << std::endl;
+        std::cout << he_waveray.HE_LagrangeO1::L2_Err(start_layer, fem_sol, u) << std::endl;
 
-        std::cout << std::endl << fem_sol << std::endl;
+        // std::cout << std::endl << fem_sol << std::endl;
 
         std::cout << std::endl;
     }

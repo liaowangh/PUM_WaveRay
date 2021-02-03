@@ -16,6 +16,7 @@
 #include <Eigen/SparseCore>
 
 #include "PUM_WaveRay.h"
+#include "../utils/utils.h"
 
 using namespace std::complex_literals;
 
@@ -26,12 +27,39 @@ PUM_WaveRay::FHandle_t exp_wave(const Eigen::Vector2d& d, double k) {
     return res;
 }
 
-// S_l -> S_{l+1}
+std::pair<lf::assemble::COOMatrix<PUM_WaveRay::Scalar>, PUM_WaveRay::Vec_t> 
+PUM_WaveRay::build_equation(size_type level) {
+    return level == L ? HE_LagrangeO1::build_equation(level) :
+                        HE_PUM::build_equation(level);
+}
+
+double PUM_WaveRay::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
+    return l == L ? HE_LagrangeO1::L2_Err(l, mu, u) :
+                    HE_PUM::L2_Err(l, mu, u);
+}
+
+double PUM_WaveRay::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) {
+    return l == L ? HE_LagrangeO1::H1_semiErr(l, mu, grad_u):
+                    HE_PUM::H1_semiErr(l, mu, grad_u);
+}
+
+double PUM_WaveRay::H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const FunGradient_t& grad_u){
+    double l2err = L2_Err(l, mu, u);
+    double h1serr = H1_semiErr(l, mu, grad_u);
+    return std::sqrt(l2err * l2err + h1serr * h1serr);
+}
+
+PUM_WaveRay::Vec_t PUM_WaveRay::fun_in_vec(size_type l, const FHandle_t& f) {
+    return l == L ? HE_LagrangeO1::fun_in_vec(l, f) :
+                    HE_PUM::fun_in_vec(l, f);
+}
+
+// S_l -> S_{l+1}， 0 <= l < L
 void PUM_WaveRay::Prolongation_Lagrange(){
     P_Lagrange = std::vector<Mat_t>(L);
     for(int l = 0; l < L; ++l) {
-        auto coarse_mesh = Lagrange_fem->getmesh(l);
-        auto fine_mesh   = Lagrange_fem->getmesh(l+1);
+        auto coarse_mesh = getmesh(l);
+        auto fine_mesh   = getmesh(l+1);
         
         auto coarse_dofh = lf::assemble::UniformFEDofHandler(coarse_mesh, 
                            {{lf::base::RefEl::kPoint(), 1}});
@@ -49,15 +77,10 @@ void PUM_WaveRay::Prolongation_Lagrange(){
             LF_ASSERT_MSG((num_points == 2), 
                 "Every EDGE should have 2 kPoint subentities");
             for(int j = 0; j < num_points; ++j) {
-                auto parent_p = Lagrange_fem->mesh_hierarchy->ParentEntity(l+1, *points[j]); // parent entity of current point 
+                auto parent_p = mesh_hierarchy->ParentEntity(l+1, *points[j]); // parent entity of current point 
                 if(parent_p->RefEl() == lf::base::RefEl::kPoint()) {
                     // it's parent is also a NODE. If the point in finer mesh does not show in coarser mesh,
                     // then it's parent is an EDGE
-
-                    // debuging:
-                    // std::cout << fine_mesh->Index(*points[j]) << " "  << fine_mesh->Index(*points[1-j])
-                    //           <<  " " << coarse_mesh->Index(*parent_p) << std::endl;
-
                     M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[j])) = 1;
                     M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[1-j])) = 0.5;
                 }
@@ -68,20 +91,21 @@ void PUM_WaveRay::Prolongation_Lagrange(){
 }
 
 /*
- * E_l -> E_{l+1}
- * P(e_2t_l) = e_t_{l+1}
+ * E_l -> E_{l+1}, l = 0, 1, ..., L-1
+ * P(e_2t_l) = e_t^{l+1}
  * P(e_{2t+1}_l) = at * e_t_{l+1} + bt * e_{t+1}_{l+1} (get the coefficient by L2 projection)
+ * e_t^l = exp(ik(cos(2pi*t/N)x + sin(2pi*t/N)y)) t = 0, 1, ..., N-1 (note that in my thesis, t starts from 1)
  */
 void PUM_WaveRay::Prolongation_planwave() {
     P_planwave = std::vector<Mat_t>(L);
-    auto mesh = Lagrange_fem->getmesh(0);
+    auto mesh = getmesh(0);
     double domain_area = 0.0;
     for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
         const lf::geometry::Geometry *geo_ptr = cell->Geometry();
         domain_area += lf::geometry::Volume(*geo_ptr);
     }
 
-    mesh = Lagrange_fem->getmesh(L);
+    mesh = getmesh(L);
     double pi = std::acos(-1);
 
     for(int l = 0; l < L; ++l) {
@@ -122,28 +146,6 @@ void PUM_WaveRay::Prolongation_planwave() {
             b << lf::uscalfe::IntegrateMeshFunction(*mesh, mf_f2, 10),
                  lf::uscalfe::IntegrateMeshFunction(*mesh, mf_f3, 10);
             auto tmp = A.colPivHouseholderQr().solve(b);
-            
-            /**debuging*/
-            // if(l == 1) {
-            //     std::cout << "t: " << t << std::endl;
-            //     std::cout << A << std::endl;
-            //     std::cout << b << std::endl;
-            //     std::cout << "[" << dl1_t1[0] << ", " << dl1_t1[1] << "]" << std::endl;
-            //     std::cout << "[" << dl1_t[0]  << ", " << dl1_t[1]  << "]" << std::endl;
-            //     std::cout << "[" << dl_2t1[0] << ", " << dl_2t1[1] << "]" << std::endl;
-            
-            //     std::cout << "[ " << dl1_t1[0] - dl1_t[0] << ", " 
-            //               << dl1_t1[1] - dl1_t[1] << "]" << std::endl;
-            //     auto integr = [&dl1_t1, &dl1_t](const Eigen::Vector2d& x)->Scalar {
-            //         return std::exp(1i*2.0*(dl1_t1 - dl1_t).dot(x));
-            //     };
-            //     lf::mesh::utils::MeshFunctionGlobal mf_integr(integr);
-            //     std::cout << A12 << std::endl;
-            //     Scalar AAA = lf::uscalfe::IntegrateMeshFunction(*mesh, mf_integr, 10);
-            //     std::cout << AAA << std::endl;
-            
-            // }
-            /**debuging*/
 
             M(t, 2 * t) = 1;
             M(t, 2 * t + 1) = tmp(0);
@@ -176,109 +178,64 @@ void PUM_WaveRay::Prolongation_SE() {
 }
 
 /*
- * SxE_l -> S_{l+1}
+ * SxE_{L-1} -> S_L
  */
-void PUM_WaveRay::Prolongation_SE_S() {
-    P_SE_S = std::vector<Mat_t>(L);
+PUM_WaveRay::Mat_t PUM_WaveRay::Prolongation_SE_S() {
     double pi = std::acos(-1.);
-    for(int l = 0; l < L; ++l) {
-        auto Q = P_Lagrange[l];
-        int n = Q.rows();
-        int N = num_planwaves[l];
+    auto Q = P_Lagrange[L-1];
+    int n = Q.rows();
+    int N = num_planwaves[L-1];
 
-        Mat_t E(n, N);
+    Mat_t E(n, N);
 
-        auto S_mesh = Lagrange_fem->getmesh(l+1);
-        auto S_dofh = lf::assemble::UniformFEDofHandler(S_mesh, 
-                           {{lf::base::RefEl::kPoint(), 1}});
-        for(int i = 0; i < n; ++i) {
-            const lf::mesh::Entity& vi = S_dofh.Entity(i); // the entity to which i-th global shape function is associated
-            coordinate_t vi_coordinate = lf::geometry::Corners(*vi.Geometry()).col(0);
-            for(int t = 0; t < N; ++t) {
-                Eigen::Vector2d dt;
-                dt << std::cos(2*pi*t/N), std::cos(2*pi*t/N);
-                E(i,t) = std::exp(1i*k*dt.dot(vi_coordinate));
-            }
+    auto S_mesh = getmesh(L);
+    auto S_dofh = lf::assemble::UniformFEDofHandler(S_mesh, 
+                        {{lf::base::RefEl::kPoint(), 1}});
+    for(int i = 0; i < n; ++i) {
+        const lf::mesh::Entity& vi = S_dofh.Entity(i); // the entity to which i-th global shape function is associated
+        coordinate_t vi_coordinate = lf::geometry::Corners(*vi.Geometry()).col(0);
+        for(int t = 0; t < N; ++t) {
+            Eigen::Vector2d dt;
+            dt << std::cos(2*pi*t/N), std::cos(2*pi*t/N);
+            E(i,t) = std::exp(1i*k*dt.dot(vi_coordinate));
         }
-        Mat_t tmp(n, Q.cols() * N);
-        // for(int i = 0; i < n; ++i) {
-        //     for(int j = 0; j < Q.cols(); ++j) {
-        //         tmp.block(i, j*N, 1, N) = Q(i,j) * E.row(i);
-        //     }
-        // }
-        for(int j = 0; j < Q.cols(); ++j) {
-            tmp.block(0, j*N, n, N) = Q.col(j).asDiagonal() * E;
-        }
-        P_SE_S[l] = tmp;
     }
+    Mat_t res(n, Q.cols() * N);
+    // for(int i = 0; i < n; ++i) {
+    //     for(int j = 0; j < Q.cols(); ++j) {
+    //         res.block(i, j*N, 1, N) = Q(i,j) * E.row(i);
+    //     }
+    // }
+    for(int j = 0; j < Q.cols(); ++j) {
+        res.block(0, j*N, n, N) = Q.col(j).asDiagonal() * E;
+    }
+    return res;
 }
 
 /*
  * v-cycle, mu1, mu2 -- pre and post smoothing times
  */
-void PUM_WaveRay::v_cycle(Vec_t& initial, size_type start_layer, size_type num_wavelayer,
-    size_type mu1, size_type mu2) {
-    LF_ASSERT_MSG((num_wavelayer <= start_layer), 
+void PUM_WaveRay::solve(Vec_t& initial, int num_wavelayer, int mu1, int mu2) {
+    LF_ASSERT_MSG((num_wavelayer <= L), 
         "please use a smaller number of wave layers");
-    auto eq_pair = Lagrange_fem->build_equation(start_layer);
+    auto eq_pair = build_equation(L);
     Mat_t A(eq_pair.first.makeDense());
 
     std::vector<Mat_t> Op(num_wavelayer + 1), prolongation_op(num_wavelayer);
+    std::vector<int> stride(num_wavelayer + 1);
     Op[num_wavelayer] = A;
+    stride[num_wavelayer] = 1;
     for(int i = num_wavelayer - 1; i >= 0; --i) {
-        int idx = start_layer + i - num_wavelayer;
-        auto tmp = planwavePUM_fem->build_equation(idx);
+        int idx = L + i - num_wavelayer;
+        auto tmp = build_equation(idx);
         Op[i] = tmp.first.makeDense();
         if(i == num_wavelayer - 1) {
-            prolongation_op[i] = P_SE_S[idx];
+            prolongation_op[i] = Prolongation_SE_S();
         } else {
             prolongation_op[i] = P_SE[idx];
         }
+        stride[idx] = num_planwaves[idx];
     }
 
-    /*****debuging*****/
-    // std::cout << "Operator size: " << std::endl;
-    // for(int i = 0; i < Op.size(); ++i) {
-    //     std::cout << i << ": " << Op[i].rows() << " " << Op[i].cols() << std::endl;
-    // }
-
-    // std::cout << "Prolongation operator size: " << std::endl;
-    // for(int i = 0; i < prolongation_op.size(); ++i) {
-    //     std::cout << i << ": " << prolongation_op[i].rows() << " " << Op[i].cols() << std::endl;
-    // }
-    /*****debuging*****/
-
-    std::vector<Vec_t> initial_perlayer(num_wavelayer + 1), rhs_vec(num_wavelayer + 1);
-    initial_perlayer[num_wavelayer] = initial;
-    rhs_vec[num_wavelayer] = eq_pair.second;
-    // initial guess on coarser mesh are all zero
-    for(int i = 0; i < num_wavelayer; ++i) {
-        initial_perlayer[i] = Vec_t::Zero(Op[i].rows());
-    }
-
-    std::cout << "Initial size:" << std::endl;
-    for(int i = 0; i < initial_perlayer.size(); ++i) {
-        std::cout << i << ": " << initial_perlayer[i].size() << std::endl;
-    }
-
-    Gaussian_Seidel(A, rhs_vec[num_wavelayer], initial_perlayer[num_wavelayer], 1, mu1);
-    int stride = 2;
-    for(int i = num_wavelayer - 1; i >= 0; --i) {
-        stride *= 2;
-        rhs_vec[i] = prolongation_op[i].transpose() * (rhs_vec[i+1] - Op[i+1]*initial_perlayer[i+1]);
-        if(i > 0){
-            Gaussian_Seidel(Op[i], rhs_vec[i], initial_perlayer[i], stride, mu1);
-        } 
-    }
-
-    initial_perlayer[0] = Op[0].colPivHouseholderQr().solve(rhs_vec[0]);
-    for(int i = 1; i <= num_wavelayer; ++i) {
-        stride /= 2;
-        if(i == num_wavelayer) {
-            stride = 1;
-        }
-        initial_perlayer[i] += prolongation_op[i-1] * initial_perlayer[i-1];
-        Gaussian_Seidel(Op[i], rhs_vec[i], initial_perlayer[i], stride, mu2);
-    }
-    initial = initial_perlayer[num_wavelayer];
+    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
 }

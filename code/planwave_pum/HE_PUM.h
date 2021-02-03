@@ -19,7 +19,7 @@ using namespace std::complex_literals;
 /*
  * PUM spaces: {bi(x) * exp(ikdt x)}
  */
-class HE_PUM: public HE_FEM {
+class HE_PUM: virtual public HE_FEM {
 public:
     using size_type = unsigned int;
     using Scalar = std::complex<double>;
@@ -50,6 +50,6 @@ public:
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});
     }
 
-private:
+public:
     std::vector<int> num_planwaves;  // number of plan waves per mesh
 };

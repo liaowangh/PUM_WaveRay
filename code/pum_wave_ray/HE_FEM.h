@@ -22,7 +22,7 @@ using namespace std::complex_literals;
  *   \partial u / \partial n - iku = g in \Gamma_R
  *   u = h in \Gamma_D
  * 
- * This is the basis class for solving HE by finite element methods
+ * This is the base class for solving HE by finite element method
  */
 class HE_FEM {
 public:
@@ -56,9 +56,19 @@ public:
     virtual Vec_t fun_in_vec(size_type l, const FHandle_t& f) = 0;
     virtual size_type Dofs_perNode(size_type l) = 0;
     virtual lf::assemble::UniformFEDofHandler get_dofh(size_type l) = 0;
+
+    virtual Mat_t prolongation(size_type l) = 0; // transfer operator: FE sapce l -> FE space {l+1}
+    virtual Vec_t solve(size_type l) = 0;  // solve equaitons Ax=\phi on mesh l.
+    // solve by multigrid method
+    virtual void solve_multigrid(size_type start_layer, Vec_t& initial, int num_coarserlayer, 
+        int mu1, int mu2) = 0; 
+    virtual Vec_t power_multigird(size_type start_layer, int num_coarserlayer, int mu1, int mu2) = 0;
+
+    // virtual std::pair<Vec_t, Scalar> power_multigrid(size_type l)
+
     virtual ~HE_FEM() = default;
 
-public:
+protected:
     size_type L;  // number of refinement steps
     double k;  // wave number in the Helmholtz equation
     std::shared_ptr<lf::io::GmshReader> reader; // read the coarest mesh
