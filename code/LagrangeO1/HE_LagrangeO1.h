@@ -35,9 +35,8 @@ public:
 
     HE_LagrangeO1(size_type levels, double wave_num, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole): 
-        HE_FEM(levels, wave_num, mesh_path, g, h, hole){};
-
-    void Prolongation_Lagrange();
+        HE_FEM(levels, wave_num, mesh_path, g, h, hole,
+            std::vector<int>(L+1, 1)){};
 
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type l) override;
     double L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) override;
@@ -49,17 +48,11 @@ public:
         return lf::assemble::UniformFEDofHandler(getmesh(l), 
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});
     }
-
     size_type Dofs_perNode(size_type l) override { return 1; }
 
     Mat_t prolongation(size_type l) override;
     Vec_t solve(size_type l) override;
-    void solve_multigrid(size_type start_layer, Vec_t& initial, int num_coarserlayer, 
+    Vec_t solve_multigrid(size_type start_layer, int num_coarserlayer, int mu1, int mu2) override;
+    std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 
         int mu1, int mu2) override;
-
-    Vec_t power_multigird(size_type start_layer, int num_coarserlayer, int mu1, int mu2) override;
-
-
-// protected:
-//     std::vector<Mat_t> P_Lagrange; // prolongation operator between Lagrange FE spaces, S_l -> S_{l+1}
 };

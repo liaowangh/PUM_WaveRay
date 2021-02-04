@@ -119,35 +119,7 @@ HE_LagrangeO1::build_equation(size_type l) {
 }
 
 HE_LagrangeO1::Mat_t HE_LagrangeO1::prolongation(size_type l) {
-    // P_Lagrange = std::vector<Mat_t>(L);
-    LF_ASSERT_MSG(l >= 0 && l < L, "l in prolongation should be smaller to L");
-    auto coarse_mesh = getmesh(l);
-    auto fine_mesh   = getmesh(l+1);
-    
-    auto coarse_dofh = get_dofh(l);
-    auto fine_dof    = get_dofh(l+1);
-    
-    size_type n_c = coarse_dofh.NumDofs();
-    size_type n_f = fine_dof.NumDofs();
-    
-    Mat_t M(n_c, n_f);
-
-    for(const lf::mesh::Entity* edge: fine_mesh->Entities(1)) {
-        nonstd::span<const lf::mesh::Entity* const> points = edge->SubEntities(1);
-        size_type num_points = (*edge).RefEl().NumSubEntities(1); // number of endpoints, should be 2
-        LF_ASSERT_MSG((num_points == 2), 
-            "Every EDGE should have 2 kPoint subentities");
-        for(int j = 0; j < num_points; ++j) {
-            auto parent_p = mesh_hierarchy->ParentEntity(l+1, *points[j]); // parent entity of current point 
-            if(parent_p->RefEl() == lf::base::RefEl::kPoint()) {
-                // it's parent is also a NODE. If the point in finer mesh does not show in coarser mesh,
-                // then it's parent is an EDGE
-                M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[j])) = 1;
-                M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[1-j])) = 0.5;
-            }
-        }
-    }
-    return M.transpose();
+    return prolongation_lagrange(l);
 }
 
 HE_LagrangeO1::Vec_t HE_LagrangeO1::solve(size_type l) {
@@ -164,7 +136,7 @@ HE_LagrangeO1::Vec_t HE_LagrangeO1::solve(size_type l) {
     return fe_sol;
 }
 
-void HE_LagrangeO1::solve_multigrid(size_type start_layer, Vec_t& initial, int num_coarserlayer, 
+HE_LagrangeO1::Vec_t HE_LagrangeO1::solve_multigrid(size_type start_layer, int num_coarserlayer, 
     int mu1, int mu2) {
 
     LF_ASSERT_MSG((num_coarserlayer <= start_layer), 
@@ -177,32 +149,19 @@ void HE_LagrangeO1::solve_multigrid(size_type start_layer, Vec_t& initial, int n
     Op[num_coarserlayer] = A;
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
         int idx = start_layer + i - num_coarserlayer;
-        std::cout << idx << std::endl;
+        prolongation_op[i] = prolongation(idx);
+        // Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
         auto tmp = build_equation(idx);
         Op[i] = tmp.first.makeDense();
-        // prolongation_op[i] = P_Lagrange[idx];
-        prolongation_op[i] = prolongation(idx);
     }
 
-    /* debugging */
-    // std::cout << "operator size" << std::endl;
-    // for(int i = 0; i < Op.size(); ++i){
-    //     std::cout << i << " " << Op[i].rows() << std::endl;
-    // }
-
-    // std::cout << "transfer operator size" << std::endl;
-    // for(int i = 0; i < prolongation_op.size(); ++i){
-    //     std::cout << i << " [" << prolongation_op[i].rows() << "," 
-    //                            << prolongation_op[i].cols() << "]" << std::endl;
-    // }
-    // std::cout << "initial size" << std::endl;
-    // std::cout << initial.size() << std::endl;
-    /* debugging */
+    Vec_t initial = Vec_t::Random(A.rows());
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
+    return initial;
 }
 
-HE_LagrangeO1::Vec_t HE_LagrangeO1::power_multigird(size_type start_layer, int num_coarserlayer, 
-    int mu1, int mu2) {
+std::pair<HE_LagrangeO1::Vec_t, HE_LagrangeO1::Scalar> 
+HE_LagrangeO1::power_multigird(size_type start_layer, int num_coarserlayer, int mu1, int mu2) {
     LF_ASSERT_MSG((num_coarserlayer <= start_layer), 
         "please use a smaller number of wave layers");
     auto eq_pair = build_equation(start_layer);
@@ -215,14 +174,49 @@ HE_LagrangeO1::Vec_t HE_LagrangeO1::power_multigird(size_type start_layer, int n
         int idx = start_layer + i - num_coarserlayer;
         auto tmp = build_equation(idx);
         Op[i] = tmp.first.makeDense();
-        // prolongation_op[i] = P_Lagrange[idx];
         prolongation_op[i] = prolongation(idx);
     }
 
     int N = A.rows();
-    Vec_t initial = Vec_t::Random(N);
-    initial.normalize();
-    Vec_t old_vec;
+    /* Get the multigrid (2 grid) operator manually */
+    Op[0] = prolongation_op[0].transpose() * Op[1] * prolongation_op[0];
+    Mat_t mg_op = Mat_t::Identity(N, N) - 
+        prolongation_op[0]*Op[0].colPivHouseholderQr().solve(prolongation_op[0].transpose())*Op[1];
+
+    Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
+    Mat_t U = L - A;
+    Mat_t GS_op = L.colPivHouseholderQr().solve(U);
+
+    Mat_t R_mu1 = Mat_t::Identity(N, N);
+    Mat_t R_mu2 = Mat_t::Identity(N, N);
+    for(int i = 0; i < mu1; ++i) {
+        auto tmp = R_mu1 * GS_op;
+        R_mu1 = tmp;
+    }
+    for(int i = 0; i < mu2; ++i) {
+        auto tmp = R_mu2 * GS_op;
+        R_mu2 = tmp;
+    }
+    auto tmp = R_mu2 * mg_op * R_mu1;
+    mg_op = tmp;
+
+    Vec_t eivals = mg_op.eigenvalues();
+
+    std::cout << eivals << std::endl;
+
+    Scalar domainant_eival = eivals(0);
+    for(int i = 1; i < eivals.size(); ++i) {
+        if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
+            domainant_eival = eivals(i);
+        }
+    }
+    std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
+    std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+    /***************************************/
+
+    Vec_t u = Vec_t::Random(N);
+    u.normalize();
+    Vec_t old_u;
     Vec_t zero_vec = Vec_t::Zero(N);
     Scalar lambda;
     int cnt = 0;
@@ -231,31 +225,32 @@ HE_LagrangeO1::Vec_t HE_LagrangeO1::power_multigird(size_type start_layer, int n
         << std::setw(20) << "residual_norm" << std::endl;
     while(true) {
         cnt++;
-        old_vec = initial;
-        v_cycle(initial, zero_vec, Op, prolongation_op, stride, mu1, mu2);
+        old_u = u;
+        v_cycle(u, zero_vec, Op, prolongation_op, stride, mu1, mu2);
+        // u = mg_op * old_u;
         
-        lambda = old_vec.dot(initial);  // domainant eigenvalue
-        auto r = initial - lambda * old_vec;
+        lambda = old_u.dot(u);  // domainant eigenvalue
+        auto r = u - lambda * old_u;
         
-        initial.normalize();
+        u.normalize();
     
-        if(cnt % 10 == 0) {
+        if(cnt % 1 == 0) {
             std::cout << std::left << std::setw(10) << cnt 
                 << std::setw(20) << r.norm() 
-                << std::setw(20) << (initial - old_vec).norm()
+                << std::setw(20) << (u - old_u).norm()
                 << std::endl;
         }
         if(r.norm() < 0.1) {
             break;
         }
-        if(cnt > 50) {
+        if(cnt > 20) {
             std::cout << "Power iteration for multigrid doesn't converge." << std::endl;
             break;
         }
     }
     std::cout << "Number of iterations: " << cnt << std::endl;
     std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
-    return initial;
+    return std::make_pair(u, lambda);
 }
 
 double HE_LagrangeO1::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u){

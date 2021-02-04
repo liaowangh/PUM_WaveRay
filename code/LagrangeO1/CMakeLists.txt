@@ -4,6 +4,7 @@ set(test_LagrangeO1_sources
   HE_LagrangeO1.cpp
   test_LagrangeO1.cpp
   ../pum_wave_ray/HE_FEM.h
+  ../pum_wave_ray/HE_FEM.cpp
   ../utils/utils.h
   ../utils/utils.cpp
   ../utils/HE_solution.h
