@@ -23,6 +23,16 @@ using namespace std::complex_literals;
  *   u = h in \Gamma_D
  * 
  * This is the base class for solving HE by finite element method
+ * 
+ * FE spaces:
+ *  S_l : Lagrange FE in mesh l
+ *  E_l : plan wave spaces {exp(ikd x)}
+ *  W_l : plan-wave PUM space {b^l_i * e_t^l}
+ * 
+ * Some notation:
+ *  Nl  = 2^{N+1-l} = num_planwaves[l]
+ *  dtl = [cos(2pi * t/Nl), sin(2pi * t/Nl)] 
+ *  etl = exp(ik* dtl x)
  */
 class HE_FEM {
 public:
@@ -34,15 +44,29 @@ public:
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
-    HE_FEM(size_type levels, double wave_num, const std::string& mesh_path, FHandle_t g_, FHandle_t h_, bool hole):
-        L(levels), k(wave_num), g(g_), h(h_), hole_exist(hole) {
+    /******* Constructor *******/
+    HE_FEM(size_type levels, double wave_num, const std::string& mesh_path, 
+        FHandle_t g_, FHandle_t h_, bool hole, std::vector<int> num_waves):
+        L(levels), k(wave_num), num_planwaves(num_waves), g(g_), h(h_), hole_exist(hole) {
         auto mesh_factory = std::make_unique<lf::mesh::hybrid2d::MeshFactory>(2);
         reader = std::make_shared<lf::io::GmshReader>(std::move(mesh_factory), mesh_path);
         mesh_hierarchy = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(reader->mesh(), L);
     }
 
+    /******** general functions ********/
+    // prolongation and restriction operator for S_l and E_l, actually for latter, 
+    // the prolongation and restriction should be swaped, use the current name just to 
+    // be consistent with S_l.
+ 
+    Mat_t prolongation_lagrange(size_type l); // S_l -> S_{l+1}
+    Mat_t prolongation_planwave(size_type l); // E_l -> E_{l+1}
+    Mat_t prolongation_SE_S(); // SxE_{L-1} -> S_L
+
+    std::vector<double> mesh_width();
     // return mesh at l-th level
     std::shared_ptr<lf::mesh::Mesh> getmesh(size_type l) { return mesh_hierarchy->getMesh(l); }
+
+    /******** pure virtual functions ********/
     // equation: Ax=\phi, return (A, \phi)
     virtual std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) = 0; 
 
@@ -60,17 +84,16 @@ public:
     virtual Mat_t prolongation(size_type l) = 0; // transfer operator: FE sapce l -> FE space {l+1}
     virtual Vec_t solve(size_type l) = 0;  // solve equaitons Ax=\phi on mesh l.
     // solve by multigrid method
-    virtual void solve_multigrid(size_type start_layer, Vec_t& initial, int num_coarserlayer, 
-        int mu1, int mu2) = 0; 
-    virtual Vec_t power_multigird(size_type start_layer, int num_coarserlayer, int mu1, int mu2) = 0;
-
-    // virtual std::pair<Vec_t, Scalar> power_multigrid(size_type l)
+    virtual Vec_t solve_multigrid(size_type start_layer, int num_coarserlayer, int mu1, int mu2) = 0; 
+    virtual std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 
+        int mu1, int mu2) = 0;
 
     virtual ~HE_FEM() = default;
 
 protected:
     size_type L;  // number of refinement steps
     double k;  // wave number in the Helmholtz equation
+    std::vector<int> num_planwaves;  // number of plan waves per mesh
     std::shared_ptr<lf::io::GmshReader> reader; // read the coarest mesh
     std::shared_ptr<lf::refinement::MeshHierarchy> mesh_hierarchy;
     // mesh_hierarchy->getMesh(0) -- coarsest

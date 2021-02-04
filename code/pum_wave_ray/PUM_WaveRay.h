@@ -45,11 +45,15 @@ public:
 
     PUM_WaveRay(size_type levels, double wave_number, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves): 
-            HE_FEM(levels, wave_number, mesh_path, g, h, hole),
+            HE_FEM(levels, wave_number, mesh_path, g, h, hole, num_waves),
             HE_LagrangeO1(levels, wave_number, mesh_path, g, h, hole),
-            HE_PUM(levels, wave_number, mesh_path, g, h, num_waves, hole) {}
+            HE_PUM(levels, wave_number, mesh_path, g, h, hole, num_waves) {}
 
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) override; 
+
+    // Mat_t prolongation_lagrange(size_type l){ return HE_PUM::prolongation_lagrange(l); }; // S_l -> S_{l+1}
+    // Mat_t prolongation_planwave(size_type l){ return HE_PUM::prolongation_planwave(l); }; // E_l -> E_{l+1}
+    // Mat_t prolongation_SE_S() {return HE_PUM::prolongation_SE_S(); }; // SxE_{L-1} -> S_L
 
     // compute interesting error norms of ||uh - u||, u is the exact solution passed by function handler
     // and uh is a finite element solution and is represented by expansion coefficients.
@@ -65,22 +69,11 @@ public:
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});
     }
 
-    // prolongation and restriction operator for S_l and E_l, actually for latter, 
-    // the prolongation and restriction should be swaped, use the current name just to 
-    // be consistent with S_l.
-    void Prolongation_Lagrange();
-    void Prolongation_planwave();
-    // void Restriction_planwave();
-    void Prolongation_SE();
-    Mat_t Prolongation_SE_S();
-
-    void solve(Vec_t& initial, int num_wavelayer, int mu1, int mu2);
-
-public:  
-    std::vector<Mat_t> P_Lagrange; // prolongation operator between Lagrange FE spaces, S_l -> S_{l+1}
-    std::vector<Mat_t> P_planwave; // prolongation operator between plan wave spaces, E_l->E_{l+1}   
-
-    std::vector<Mat_t> P_SE;       // SxE_l -> SxE_{l+1}
+    Mat_t prolongation(size_type l) override;
+    Vec_t solve(size_type l) override;
+    Vec_t solve_multigrid(size_type start_layer, int num_wavelayer, int mu1, int mu2);
+    std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 
+        int mu1, int mu2) override;
 };
 
 

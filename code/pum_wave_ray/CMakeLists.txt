@@ -1,8 +1,9 @@
-set(pum_waveray_sources
+set(test_pum_waveray_sources
   HE_FEM.h
+  HE_FEM.cpp
   PUM_WaveRay.h
   PUM_WaveRay.cpp
-  he_waveray.cpp
+  test_waveray.cpp
   ../LagrangeO1/HE_LagrangeO1.h
   ../LagrangeO1/HE_LagrangeO1.cpp
   ../planwave_pum/PUM_EdgeMat.h
@@ -22,10 +23,10 @@ set(pum_waveray_sources
 )
 
 # define executable
-add_executable(pum_waveray ${pum_waveray_sources})
+add_executable(test_pum_waveray ${test_pum_waveray_sources})
 
 #link executable with LehrFEM++
-target_link_libraries(pum_waveray
+target_link_libraries(test_pum_waveray
   PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
   LF::lf.mesh
   LF::lf.mesh.utils
