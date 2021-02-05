@@ -62,8 +62,8 @@ int main(){
     auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string(); 
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/tri2.msh")).string(); 
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/square.msh")).string(); 
-    size_type L = 4; // refinement steps
-    double k = 2; // wave number
+    size_type L = 1; // refinement steps
+    double k = 20; // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
 
@@ -79,8 +79,8 @@ int main(){
     solutions[2] = std::make_shared<Spherical_wave>(k, 2);
  
     std::vector<std::string> sol_name{"waveray_plan_wave", "waveray_fundamental_sol", "waveray_spherical_wave"};
-    test_pumwaveray(k, L, 1, mesh_path, output_folder, solutions, sol_name);
-    /*
+    // test_pumwaveray(k, L, 1, mesh_path, output_folder, solutions, sol_name);
+    
     for(int i = 0; i < solutions.size(); ++i) {
         if(i > 0){
             continue;
@@ -92,16 +92,16 @@ int main(){
         std::string prefix = "k" + std::to_string(int(k)) + "_";
         // test_solve(he_waveray, prefix+sol_name[i], output_folder, L, u, grad_u);
         // test_prolongation(he_waveray, L);
-        // he_waveray.power_multigird(2, 1, 10, 10);
+        he_waveray.power_multigird(L, 1, 5, 5);
 
-        int num_wavelayer = 1;
-        std::cout << "Start v cycle;" << std::endl;
-        Vec_t fem_sol = he_waveray.solve_multigrid(L, num_wavelayer, 10, 10);
-        std::cout << he_waveray.L2_Err(L, fem_sol, u) << std::endl;
+        // int num_wavelayer = 1;
+        // std::cout << "Start v cycle;" << std::endl;
+        // Vec_t fem_sol = he_waveray.solve_multigrid(L, num_wavelayer, 10, 10);
+        // std::cout << he_waveray.L2_Err(L, fem_sol, u) << std::endl;
 
         // std::cout << std::endl << fem_sol << std::endl;
 
         // std::cout << std::endl;
     }
-    */
+    
 }

@@ -49,7 +49,7 @@ int main(){
  
     std::vector<std::string> sol_name{"plan_wave", "fundamental_sol", "spherical_wave"};
     // std::vector<std::string> sol_name{"square_plan_wave", "square_fundamental_sol", 
-        "square_spherical_wave"};
+        // "square_spherical_wave"};
     for(int i = 0; i < solutions.size(); ++i) {
         // if(i > 0) {
         //     continue;

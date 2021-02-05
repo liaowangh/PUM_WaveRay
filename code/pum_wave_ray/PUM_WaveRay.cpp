@@ -113,7 +113,7 @@ PUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
 
     int N = A.rows();
     /* Get the multigrid (2 grid) operator manually */
-    Op[0] = prolongation_op[0].transpose() * Op[1] * prolongation_op[0];
+    // Op[0] = prolongation_op[0].transpose() * Op[1] * prolongation_op[0];
     Mat_t mg_op = Mat_t::Identity(N, N) - 
         prolongation_op[0]*Op[0].colPivHouseholderQr().solve(prolongation_op[0].transpose())*Op[1];
 
@@ -136,14 +136,23 @@ PUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
 
     Vec_t eivals = mg_op.eigenvalues();
 
-    std::cout << eivals << std::endl;
-
     Scalar domainant_eival = eivals(0);
     for(int i = 1; i < eivals.size(); ++i) {
         if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
             domainant_eival = eivals(i);
         }
     }
+
+    std::string output_file = "../plot_err/eigenvalues/k20";
+    std::ofstream out(output_file);
+    if(out) {
+        out << "EigenValues" << std::endl;
+        out << eivals.cwiseAbs();
+    } else {
+        std::cout << "Cannot open file " << output_file << std::endl;
+    }
+
+    std::cout << eivals << std::endl;
     std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
     std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
     /***************************************/
