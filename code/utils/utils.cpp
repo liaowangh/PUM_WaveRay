@@ -2,6 +2,7 @@
 #include <string>
 
 #include "utils.h"
+#include "HE_solution.h"
 #include "../pum_wave_ray/HE_FEM.h"
 #include "../pum_wave_ray/PUM_WaveRay.h"
 
@@ -17,21 +18,22 @@ Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const FHandle_t
     return temp;
 }
 
-void print_save_error(std::vector<int>& N, std::vector<std::vector<double>>& data, 
-    std::vector<std::string>& err_str, const std::string& sol_name, 
+void print_save_error(std::vector<std::vector<double>>& data, 
+    std::vector<std::string>& data_label, const std::string& sol_name, 
     const std::string& output_folder) {
     
     std::cout << sol_name << std::endl;
     //Tabular output of the data
-    std::cout << std::left << std::setw(10) << "N";
-    for(int i = 0; i < err_str.size(); ++i){
-        std::cout << std::setw(20) << err_str[i];
+    // std::cout << std::left << std::setw(10) << data_label[i];
+    std::cout << std::left;
+    for(int i = 0; i < data_label.size(); ++i){
+        std::cout << std::setw(15) << data_label[i];
     }
     std::cout << std::endl;
-    for(int l = 0; l < N.size(); ++l) {
-        std::cout << std::left << std::setw(10) << N[l];
+    for(int l = 0; l < data[0].size(); ++l) {
+        std::cout << std::left;
         for(int i = 0; i < data.size(); ++i) {
-            std::cout << std::setw(20) << data[i][l];
+            std::cout << std::setw(15) << data[i][l];
         }
         std::cout << std::endl;
     }
@@ -40,15 +42,15 @@ void print_save_error(std::vector<int>& N, std::vector<std::vector<double>>& dat
     std::string output_file = output_folder + sol_name + ".txt";
     std::ofstream out(output_file);
 
-    out << "N";
-    for(int i = 0; i < err_str.size(); ++i) {
-        out << " " << err_str[i];
+    out << data_label[0];
+    for(int i = 1; i < data_label.size(); ++i) {
+        out << " " << data_label[i];
     }
     out << std::endl;
 
-    for(int l = 0; l < N.size(); ++l) {
-        out << N[l];
-        for(int i = 0; i < data.size(); ++i) {
+    for(int l = 0; l < data[0].size(); ++l) {
+        out << data[0][l];
+        for(int i = 1; i < data.size(); ++i) {
             out << " " << data[i][l];
         }
         out << std::endl;
@@ -58,7 +60,8 @@ void print_save_error(std::vector<int>& N, std::vector<std::vector<double>>& dat
 void test_solve(HE_FEM& he_fem, const std::string& sol_name, 
     const std::string& output_folder, size_type L, const FHandle_t& u, 
     const FunGradient_t& grad_u) {
-    std::vector<int> ndofs;
+    // std::vector<int> ndofs;
+    std::vector<double> mesh_width = he_fem.mesh_width();
     std::vector<double> L2err, H1serr, H1err;
     
     for(size_type level = 0; level <= L; ++level) {
@@ -68,15 +71,42 @@ void test_solve(HE_FEM& he_fem, const std::string& sol_name,
         double h1_serr = he_fem.H1_semiErr(level, fe_sol, grad_u);
         double h1_err = std::sqrt(l2_err*l2_err + h1_serr*h1_serr);
         
-        ndofs.push_back(fe_sol.size());
+        // ndofs.push_back(fe_sol.size());
         L2err.push_back(l2_err);
         H1serr.push_back(h1_serr);
         H1err.push_back(h1_err);
     }
     
-    std::vector<std::vector<double>> err_data{L2err, H1err, H1serr};
-    std::vector<std::string> err_str{"L2_err", "H1_err", "H1_serr"};
-    print_save_error(ndofs, err_data, err_str, sol_name, output_folder);
+    std::vector<std::vector<double>> err_data{mesh_width, L2err, H1err, H1serr};
+    std::vector<std::string> data_label{"h", "L2_err", "H1_err", "H1_serr"};
+    print_save_error(err_data, data_label, sol_name, output_folder);
+}
+
+void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol_name, 
+    const std::string& output_folder, size_type L, const FHandle_t& u,
+    const FunGradient_t& grad_u) {
+
+    // std::vector<int> ndofs;
+    std::vector<double> mesh_width = he_fem.mesh_width();
+    std::vector<double> L2err, H1serr, H1err;
+    
+    for(size_type level = num_coarserlayer; level <= L; ++level) {
+        auto fe_sol = he_fem.solve_multigrid(level, num_coarserlayer, 10, 10);
+        
+        double l2_err = he_fem.L2_Err(level, fe_sol, u);
+        double h1_serr = he_fem.H1_semiErr(level, fe_sol, grad_u);
+        double h1_err = std::sqrt(l2_err*l2_err + h1_serr*h1_serr);
+        
+        // ndofs.push_back(fe_sol.size());
+        L2err.push_back(l2_err);
+        H1serr.push_back(h1_serr);
+        H1err.push_back(h1_err);
+    }
+    int num_grids = 1 + num_coarserlayer;
+    std::vector<std::vector<double>> err_data{mesh_width, L2err, H1err, H1serr};
+    std::vector<std::string> err_str{"h", "L2_err", "H1_err", "H1_serr"};
+    std::string sol_name_mg = std::to_string(num_grids) + "grids_" + sol_name;
+    print_save_error(err_data, err_str, sol_name_mg, output_folder);
 }
 
 void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
@@ -194,6 +224,56 @@ std::pair<Vec_t, Scalar> power_GS(Mat_t& A, int stride) {
     return std::make_pair(u, lambda);
 }
 
+void test_prolongation(HE_FEM& he_fem, size_type L) {
+
+    // auto test_f = [](const coordinate_t& x)->Scalar {
+    //     return 1.0;
+    // };
+    plan_wave pw(2, 1.0, 0.0);
+    auto test_f = pw.get_fun();
+
+    std::vector<Mat_t> pro_op(L);
+    for(int i = 0; i < L; ++i) {
+        pro_op[i] = he_fem.prolongation(i);
+        // std::cout << i << " :[" << pro_op[i].rows() << "," 
+        //     << pro_op[i].cols() << "]" << std::endl;
+    }
+
+    // auto vec_f = he_fem.fun_in_vec(0, test_f);
+    Vec_t vec_f = Vec_t::Zero(48);
+    vec_f(0) = 1.0, vec_f(16) = 1.0, vec_f(32) = 1.0;
+    std::vector<Vec_t> vec_in_mesh(L+1);
+    vec_in_mesh[0] = vec_f;
+
+    // std::cout << vec_f << std::endl << std::endl;
+    for(int i = 1; i <= L; ++i) {
+        vec_in_mesh[i] = pro_op[i-1] * vec_in_mesh[i-1];
+        std::cout << vec_in_mesh[i].size() << std::endl << std::endl;
+    }
+
+    // std::string output_file = "prolongation.txt";
+    // std::ofstream out(output_file);
+    // if(out) {
+    //     for(int i = 0; i < L; ++i) {
+    //         std::cout << vec_in_mesh[i] << std::endl << std::endl;
+    //         out << pro_op[i] << std::endl << std::endl;
+    //     }
+    // } else {
+    //     std::cout << "Can't open file." << std::endl;
+    // }
+
+    std::cout << std::left << std::setw(7) << "level" 
+        << std::setw(15) << "||v-f||" 
+        << std::setw(15) << "||v-uh||" << std::endl;
+    for(int i = 0; i <= L; ++i) {
+        auto true_vec = he_fem.fun_in_vec(i, test_f);
+        std::cout << std::left << std::setw(7) << i 
+            << std::setw(15) << he_fem.L2_Err(i, vec_in_mesh[i], test_f) 
+            << std::setw(15) << (true_vec - vec_in_mesh[i]).norm()
+            << std::endl;
+    }
+}
+
 /*
  * Perform v-cycle, finer grid transfer the residual to the coarser grid, 
  * in which the residual equation is solved, and then the error is transfered back to finer grid.
@@ -250,3 +330,40 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<Mat_t>& Op, std::vector<Mat_t>& I,
 
     // std::cout << "After v cycle, ||u-u_old||=" << (old_u - u).norm() << std::endl;
 }
+
+
+/*
+ * Return the multigrid operator
+ * 
+ * For a 2-grid correction scheme
+ *  mg_op = R^{mu2}*(Id - I_H^h * A_H^{-1} * I_h^H * A_h) * R^{mu1}
+ * 
+ * l : indicator level, useful in a recursive method
+ * Op: mesh operator
+ * I: prolongation operator
+ * R: relaxation operator
+ * mu1, mu2: pre and post relaxation 
+ */
+// Mat_t multigrid_op(int l, std::vector<Mat_t>& Op, std::vector<Mat_t>& I, Mat_t& R,
+//     size_type mu1, size_type mu2) {
+//     int N = Op[0].rows();
+//     Mat_t Id = Mat_t::Identity(N, N);
+//     if(l == 0) {
+//         return Op[0].colPivHouseholderQr().solve(Id);
+//     } else {
+//         Mat_t R_mu1 = Mat_t::Identity(N, N);
+//         Mat_t R_mu2 = Mat_t::Identity(N, N);
+//         for(int i = 0; i < mu1; ++i) {
+//             auto tmp = R_mu1 * GS_op;
+//             R_mu1 = tmp;
+//         }
+//         for(int i = 0; i < mu2; ++i) {
+//             auto tmp = R_mu2 * GS_op;
+//             R_mu2 = tmp;
+//         }
+//         Mat_t mg_op = Id - I[l] * multigrid_op(l-1, Op, I, R, mu1, mu2) *  
+//         auto tmp = R_mu2 * mg_op * R_mu1;
+        
+//         return Id - I[l] * multigrid_op(l-1, Op, I, R, mu1, mu2) * 
+//     }
+// }
