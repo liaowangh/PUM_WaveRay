@@ -1,5 +1,6 @@
-set(singlePUM_sources
+set(test_PUM_sources
   ../pum_wave_ray/HE_FEM.h
+  ../pum_wave_ray/HE_FEM.cpp
   PUM_EdgeMat.h
   PUM_EdgeMat.cpp
   PUM_EdgeVector.h
@@ -10,7 +11,7 @@ set(singlePUM_sources
   PUM_ElemVector.cpp
   HE_PUM.h
   HE_PUM.cpp
-  planwave_pum.cpp
+  test_planwave_pum.cpp
   ../utils/utils.h
   ../utils/utils.cpp
   ../utils/HE_solution.h
@@ -18,10 +19,10 @@ set(singlePUM_sources
 )
 
 # define executable
-add_executable(singlePUM ${singlePUM_sources})
+add_executable(test_PUM ${test_PUM_sources})
 
 #link executable with LehrFEM++
-target_link_libraries(singlePUM
+target_link_libraries(test_PUM
   PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
   LF::lf.mesh
   LF::lf.mesh.utils

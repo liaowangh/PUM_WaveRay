@@ -385,3 +385,155 @@ double HE_PUM::L2_BoundaryErr(size_type l, const Vec_t& mu, const FHandle_t& u,
     }
     return std::sqrt(res);
 }
+
+HE_PUM::Vec_t HE_PUM::solve(size_type l) {
+    auto eq_pair = build_equation(l);
+    const Eigen::SparseMatrix<Scalar> A_crs(eq_pair.first.makeSparse());
+    Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
+    solver.compute(A_crs);
+    Vec_t fe_sol;
+    if(solver.info() == Eigen::Success) {
+        fe_sol = solver.solve(eq_pair.second);
+    } else {
+        LF_ASSERT_MSG(false, "Eigen Factorization failed")
+    }
+    return fe_sol;
+}
+
+/*
+ * SxE_l -> SxE_{l+1}, 
+ *  is the kronecker product of prolongation_lagrange(l) and prolongation_planwave(l)
+ */
+HE_PUM::Mat_t HE_PUM::prolongation(size_type l) {
+    LF_ASSERT_MSG((l < L), 
+        "in prolongation, level should smaller than" << L);
+    auto Q = prolongation_lagrange(l);
+    auto P = prolongation_planwave(l);
+    size_type n1 = Q.rows(), n2 = P.rows();
+    size_type m1 = Q.cols(), m2 = P.cols();
+    Mat_t res = Mat_t(n1*n2, m1*m2);
+    for(int i = 0; i < n1; ++i) {
+        for(int j = 0; j < m1; ++j) {
+            res.block(i*n2, j*m2, n2, m2) = Q(i, j) * P;
+        }
+    }
+    return res;
+}
+
+HE_PUM::Vec_t HE_PUM::solve_multigrid(size_type start_layer, int num_coarserlayer, 
+    int mu1, int mu2) {
+
+    LF_ASSERT_MSG((num_coarserlayer <= L), 
+        "please use a smaller number of wave layers");
+    auto eq_pair = build_equation(L);
+    Mat_t A(eq_pair.first.makeDense());
+
+    std::vector<Mat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
+    std::vector<int> stride(num_coarserlayer + 1);
+    Op[num_coarserlayer] = A;
+    stride[num_coarserlayer] = num_planwaves[start_layer];
+    for(int i = num_coarserlayer - 1; i >= 0; --i) {
+        int idx = L + i - num_coarserlayer;
+        auto tmp = build_equation(idx);
+        Op[i] = tmp.first.makeDense();
+        prolongation_op[i] = prolongation(idx);
+        stride[i] = num_planwaves[idx];
+    }
+    Vec_t initial = Vec_t::Random(A.rows());
+    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
+    return initial;
+}
+
+std::pair<HE_PUM::Vec_t, HE_PUM::Scalar> 
+HE_PUM::power_multigird(size_type start_layer, int num_coarserlayer, 
+        int mu1, int mu2) {
+    LF_ASSERT_MSG((num_coarserlayer <= start_layer), 
+        "please use a smaller number of wave layers");
+    auto eq_pair = build_equation(start_layer);
+    Mat_t A(eq_pair.first.makeDense());
+
+    std::vector<Mat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
+    std::vector<int> stride(num_coarserlayer + 1, 1);
+    Op[num_coarserlayer] = A;
+    for(int i = num_coarserlayer - 1; i >= 0; --i) {
+        int idx = start_layer + i - num_coarserlayer;
+        auto tmp = build_equation(idx);
+        Op[i] = tmp.first.makeDense();
+        prolongation_op[i] = prolongation(idx);
+    }
+
+    int N = A.rows();
+    /* Get the multigrid (2 grid) operator manually */
+    Op[0] = prolongation_op[0].transpose() * Op[1] * prolongation_op[0];
+    Mat_t mg_op = Mat_t::Identity(N, N) - 
+        prolongation_op[0]*Op[0].colPivHouseholderQr().solve(prolongation_op[0].transpose())*Op[1];
+
+    Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
+    Mat_t U = L - A;
+    Mat_t GS_op = L.colPivHouseholderQr().solve(U);
+
+    Mat_t R_mu1 = Mat_t::Identity(N, N);
+    Mat_t R_mu2 = Mat_t::Identity(N, N);
+    for(int i = 0; i < mu1; ++i) {
+        auto tmp = R_mu1 * GS_op;
+        R_mu1 = tmp;
+    }
+    for(int i = 0; i < mu2; ++i) {
+        auto tmp = R_mu2 * GS_op;
+        R_mu2 = tmp;
+    }
+    auto tmp = R_mu2 * GS_op * R_mu1;
+    GS_op = tmp;
+
+    Vec_t eivals = mg_op.eigenvalues();
+
+    std::cout << eivals << std::endl;
+
+    Scalar domainant_eival = eivals(0);
+    for(int i = 1; i < eivals.size(); ++i) {
+        if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
+            domainant_eival = eivals(i);
+        }
+    }
+    std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
+    std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+    /***************************************/
+
+    Vec_t u = Vec_t::Random(N);
+    u.normalize();
+    Vec_t old_u;
+    Vec_t zero_vec = Vec_t::Zero(N);
+    Scalar lambda;
+    int cnt = 0;
+    
+    std::cout << std::left << std::setw(10) << "Iteration" 
+        << std::setw(20) << "residual_norm" << std::endl;
+    while(true) {
+        cnt++;
+        old_u = u;
+        v_cycle(u, zero_vec, Op, prolongation_op, stride, mu1, mu2);
+        // u = mg_op * old_u;
+        
+        lambda = old_u.dot(u);  // domainant eigenvalue
+        auto r = u - lambda * old_u;
+        
+        u.normalize();
+    
+        if(cnt % 1 == 0) {
+            std::cout << std::left << std::setw(10) << cnt 
+                << std::setw(20) << r.norm() 
+                << std::setw(20) << (u - old_u).norm()
+                << std::endl;
+        }
+        if(r.norm() < 0.1) {
+            break;
+        }
+        if(cnt > 20) {
+            std::cout << "Power iteration for multigrid doesn't converge." << std::endl;
+            break;
+        }
+    }
+    std::cout << "Number of iterations: " << cnt << std::endl;
+    std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
+    return std::make_pair(u, lambda);
+}
