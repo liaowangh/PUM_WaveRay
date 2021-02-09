@@ -39,6 +39,8 @@ public:
     using Scalar = std::complex<double>;
     using coordinate_t = Eigen::Vector2d;
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using triplet_t = Eigen::Triplet<Scalar>;
+    using SpMat_t = Eigen::SparseMatrix<Scalar>;
     using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
@@ -50,10 +52,6 @@ public:
             HE_PUM(levels, wave_number, mesh_path, g, h, hole, num_waves) {}
 
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) override; 
-
-    // Mat_t prolongation_lagrange(size_type l){ return HE_PUM::prolongation_lagrange(l); }; // S_l -> S_{l+1}
-    // Mat_t prolongation_planwave(size_type l){ return HE_PUM::prolongation_planwave(l); }; // E_l -> E_{l+1}
-    // Mat_t prolongation_SE_S() {return HE_PUM::prolongation_SE_S(); }; // SxE_{L-1} -> S_L
 
     // compute interesting error norms of ||uh - u||, u is the exact solution passed by function handler
     // and uh is a finite element solution and is represented by expansion coefficients.
@@ -69,7 +67,7 @@ public:
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});
     }
 
-    Mat_t prolongation(size_type l) override;
+    SpMat_t prolongation(size_type l) override;
     Vec_t solve(size_type l) override;
     Vec_t solve_multigrid(size_type start_layer, int num_wavelayer, int mu1, int mu2);
     std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 

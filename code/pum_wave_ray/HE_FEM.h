@@ -40,6 +40,8 @@ public:
     using Scalar = std::complex<double>;
     using coordinate_t = Eigen::Vector2d;
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using triplet_t = Eigen::Triplet<Scalar>;
+    using SpMat_t = Eigen::SparseMatrix<Scalar>;
     using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
@@ -58,13 +60,15 @@ public:
     // the prolongation and restriction should be swaped, use the current name just to 
     // be consistent with S_l.
  
-    Mat_t prolongation_lagrange(size_type l); // S_l -> S_{l+1}
-    Mat_t prolongation_planwave(size_type l); // E_l -> E_{l+1}
-    Mat_t prolongation_SE_S(); // SxE_{L-1} -> S_L
+    SpMat_t prolongation_lagrange(size_type l); // S_l -> S_{l+1}
+    SpMat_t prolongation_planwave(size_type l); // E_l -> E_{l+1}
+    SpMat_t prolongation_SE_S(); // SxE_{L-1} -> S_L
 
     std::vector<double> mesh_width();
     // return mesh at l-th level
     std::shared_ptr<lf::mesh::Mesh> getmesh(size_type l) { return mesh_hierarchy->getMesh(l); }
+
+    void vector_vtk(size_type l, const Vec_t& v, const std::string& name_str);
 
     /******** pure virtual functions ********/
     // equation: Ax=\phi, return (A, \phi)
@@ -81,7 +85,7 @@ public:
     virtual size_type Dofs_perNode(size_type l) = 0;
     virtual lf::assemble::UniformFEDofHandler get_dofh(size_type l) = 0;
 
-    virtual Mat_t prolongation(size_type l) = 0; // transfer operator: FE sapce l -> FE space {l+1}
+    virtual SpMat_t prolongation(size_type l) = 0; // transfer operator: FE sapce l -> FE space {l+1}
     virtual Vec_t solve(size_type l) = 0;  // solve equaitons Ax=\phi on mesh l.
     // solve by multigrid method
     virtual Vec_t solve_multigrid(size_type start_layer, int num_coarserlayer, int mu1, int mu2) = 0; 

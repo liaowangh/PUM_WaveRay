@@ -28,7 +28,7 @@ std::vector<double> HE_FEM::mesh_width() {
 }
 
 // S_l -> S_{l+1}， 0 <= l < L
-HE_FEM::Mat_t HE_FEM::prolongation_lagrange(size_type l) {
+HE_FEM::SpMat_t HE_FEM::prolongation_lagrange(size_type l) {
     LF_ASSERT_MSG(l >= 0 && l < L, "l in prolongation should be smaller to L");
     auto coarse_mesh = getmesh(l);
     auto fine_mesh   = getmesh(l+1);
@@ -41,8 +41,9 @@ HE_FEM::Mat_t HE_FEM::prolongation_lagrange(size_type l) {
     size_type n_c = coarse_dofh.NumDofs();
     size_type n_f = fine_dof.NumDofs();
     
-    // Mat_t M(n_c, n_f);
     Mat_t M = Mat_t::Zero(n_c, n_f);
+    // SpMat_t M(n_f, n_c);
+    // std::vector<triplet_t> triplets;
 
     for(const lf::mesh::Entity* edge: fine_mesh->Entities(1)) {
         nonstd::span<const lf::mesh::Entity* const> points = edge->SubEntities(1);
@@ -56,10 +57,16 @@ HE_FEM::Mat_t HE_FEM::prolongation_lagrange(size_type l) {
                 // then it's parent is an EDGE
                 M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[j])) = 1.0;
                 M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[1-j])) = 0.5;
+                // triplets.push_back(triplet_t(fine_mesh->Index(*points[j]), 
+                //     coarse_mesh->Index(*parent_p), 1.0));
+                // triplets.push_back(triplet_t(fine_mesh->Index(*points[1-j]),
+                //     coarse_mesh->Index(*parent_p), 0.5));
             }
         }
     }
-    return M.transpose();
+    return (M.transpose()).sparseView();
+    // M.setFromTriplets(triplets.begin(), triplets.end());
+    // return M;
 }
 
 /*
@@ -68,7 +75,7 @@ HE_FEM::Mat_t HE_FEM::prolongation_lagrange(size_type l) {
  * P(e_{2t+1}_l) = at * e_t_{l+1} + bt * e_{t+1}_{l+1} (get the coefficient by L2 projection)
  * e_t^l = exp(ik(cos(2pi*t/N)x + sin(2pi*t/N)y)) t = 0, 1, ..., N-1 (note that in my thesis, t starts from 1)
  */
-HE_FEM::Mat_t HE_FEM::prolongation_planwave(size_type l) {
+HE_FEM::SpMat_t HE_FEM::prolongation_planwave(size_type l) {
     auto mesh = getmesh(0);
     double domain_area = 0.0;
     for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
@@ -83,7 +90,10 @@ HE_FEM::Mat_t HE_FEM::prolongation_planwave(size_type l) {
     int N1 = num_planwaves[l];
     int N2 = num_planwaves[l+1];
 
-    Mat_t M = Mat_t::Zero(N2, N1);
+    // Mat_t M = Mat_t::Zero(N2, N1);
+    SpMat_t M(N2, N1);
+    std::vector<triplet_t> triplets;
+
     for(int t = 0; t < N2; ++t) {
         
         Eigen::Vector2d dl1_t1, dl1_t, dl_2t1;
@@ -118,17 +128,24 @@ HE_FEM::Mat_t HE_FEM::prolongation_planwave(size_type l) {
                 lf::uscalfe::IntegrateMeshFunction(*mesh, mf_f3, 10);
         auto tmp = A.colPivHouseholderQr().solve(b);
 
-        M(t, 2 * t) = 1;
-        M(t, 2 * t + 1) = tmp(0);
-        M((t+1) % N2, 2 * t + 1) = tmp(1);
+        // M(t, 2 * t) = 1;
+        // M(t, 2 * t + 1) = tmp(0);
+        // M((t+1) % N2, 2 * t + 1) = tmp(1);
+        triplets.push_back(triplet_t(t, 2*t, 1.0));
+        triplets.push_back(triplet_t(t, 2*t+1, tmp(0)));
+        triplets.push_back(triplet_t((t+1)%N2, 2*t+1, tmp(1)));
+        // triplets.push_back(triplet_t(t, 2*t+1, 0.5));
+        // triplets.push_back(triplet_t((t+1)%N2, 2*t+1, 0.5));
     }
+    // return M;
+    M.setFromTriplets(triplets.begin(), triplets.end());
     return M;
 }
 
 /*
  * SxE_{L-1} -> S_L
  */
-HE_FEM::Mat_t HE_FEM::prolongation_SE_S() {
+HE_FEM::SpMat_t HE_FEM::prolongation_SE_S() {
     double pi = std::acos(-1.);
     auto Q = prolongation_lagrange(L-1);
     int n = Q.rows();
@@ -148,14 +165,48 @@ HE_FEM::Mat_t HE_FEM::prolongation_SE_S() {
             E(i,t) = std::exp(1i*k*dt.dot(vi_coordinate));
         }
     }
-    Mat_t res(n, Q.cols() * N);
+
+    // Mat_t res(n, Q.cols() * N);
     // for(int i = 0; i < n; ++i) {
     //     for(int j = 0; j < Q.cols(); ++j) {
     //         res.block(i, j*N, 1, N) = Q(i,j) * E.row(i);
     //     }
     // }
-    for(int j = 0; j < Q.cols(); ++j) {
-        res.block(0, j*N, n, N) = Q.col(j).asDiagonal() * E;
+    // for(int j = 0; j < Q.cols(); ++j) {
+    //     res.block(0, j*N, n, N) = Q.col(j).asDiagonal() * E;
+    // }
+
+    SpMat_t res(n, Q.cols() * N);
+    std::vector<triplet_t> triplets;
+    for(int outer_idx = 0; outer_idx < Q.outerSize(); ++outer_idx) {
+        for(SpMat_t::InnerIterator it(Q, outer_idx); it; ++it) {
+            int i = it.row();
+            int j = it.col();
+            Scalar qij = it.value(); 
+            for(int k = 0; k < N; ++k) {
+                triplets.push_back(triplet_t(i, j*N+k, qij*E(i,k)));
+            }
+        }
     }
+    res.setFromTriplets(triplets.begin(), triplets.end());
     return res;
+}
+
+void HE_FEM::vector_vtk(size_type l, const Vec_t& v, const std::string& name_str) {
+    auto mesh = getmesh(l);
+    LF_ASSERT_MSG(v.size() == mesh->NumEntities(2), 
+        "vector size should be same as number of vertices in mesh.");
+    lf::io::VtkWriter vtk_writer(mesh, "../vtk_file/" + name_str + ".vtk");
+
+    // write nodal data v
+    // lf::mesh::utils::CodimMeshDataSet<double> data(mesh, 2); // codim 2
+    lf::mesh::utils::CodimMeshDataSet<Eigen::Vector2d> data(mesh, 2);
+    for(const auto* node: mesh->Entities(2)) {
+        Scalar value = v(mesh->Index(*node));
+        Eigen::Vector2d tmp;
+        tmp << std::real(value), std::imag(value);
+        data(*node) = tmp;
+    }
+
+    vtk_writer.WritePointData("mode", data);
 }

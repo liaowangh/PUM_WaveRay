@@ -23,6 +23,8 @@ using size_type = unsigned int;
 using coordinate_t = Eigen::Vector2d;
 using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+using triplet_t = Eigen::Triplet<Scalar>;
+using SpMat_t = Eigen::SparseMatrix<Scalar>;
 using FHandle_t = std::function<Scalar(const coordinate_t&)>;
 using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
@@ -54,13 +56,13 @@ void test_prolongation(HE_FEM& he_fem, size_type L);
  * stride: number of plan waves
  * sol: true solution
  */
-void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
+void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
 
-void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride);
+void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride);
 
 // use the power iteration to compute the domainant eigenvalue of GS operator and 
 // an associated eigenvector
-std::pair<Vec_t, Scalar> power_GS(Mat_t& A, int stride);
+std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride);
 
-void v_cycle(Vec_t& u, Vec_t& f, std::vector<Mat_t>& Op, std::vector<Mat_t>& I, 
+void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
     std::vector<int>& stride, size_type mu1, size_type mu2);

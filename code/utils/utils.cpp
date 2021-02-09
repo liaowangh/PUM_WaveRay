@@ -109,7 +109,7 @@ void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol
     print_save_error(err_data, err_str, sol_name_mg, output_folder);
 }
 
-void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
+void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
     // u: initial value; mu: number of iterations
     int N = A.rows();
     for(int i = 0; i < mu; ++i){
@@ -118,13 +118,15 @@ void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
             for(int k = 0; k < N / stride; ++k) {
                 int j = k * stride + t;
                 Scalar tmp = (A.row(j) * u)(0,0);
-                u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
+                // u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
+                Scalar Ajj = A.coeffRef(j,j);
+                u(j) = (phi(j) - tmp + u(j) * Ajj) / Ajj;
             }
         }
     }
 }
 
-void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
+void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
     // u: initial value;
     int N = A.rows();
     std::cout << std::left << std::setw(10) << "Iteration"
@@ -138,7 +140,9 @@ void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
             for(int k = 0; k < N / stride; ++k) {
                 int j = k * stride + t;
                 Scalar tmp = (A.row(j) * u)(0,0);
-                u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
+                Scalar Ajj = A.coeffRef(j,j);
+                u(j) = (phi(j) - tmp + u(j) * Ajj) / Ajj;
+                // u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
             }
         }
         if(cnt % 20 == 0) {
@@ -157,9 +161,10 @@ void Gaussian_Seidel(Mat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
     }
 }
 
-std::pair<Vec_t, Scalar> power_GS(Mat_t& A, int stride) {
+std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
     /* Compute the Eigen value of the GS operator */
-    Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
+    Mat_t dense_A = Mat_t(A);
+    Mat_t L = Mat_t(dense_A.triangularView<Eigen::Lower>());
     Mat_t U = A - L;
     Mat_t GS_op = L.colPivHouseholderQr().solve(-U);
     Vec_t eivals = GS_op.eigenvalues();
@@ -180,10 +185,8 @@ std::pair<Vec_t, Scalar> power_GS(Mat_t& A, int stride) {
 
     u.normalize();    
     Scalar lambda;
-    double normAest = A.operatorNorm();
     int cnt = 0;
 
-    std::cout << "normAset: " << normAest << std::endl;
     std::cout << std::left << std::setw(10) << "Iteration"
         << std::setw(20) << "residual_norm" << std::endl;
     while(1){
@@ -193,7 +196,9 @@ std::pair<Vec_t, Scalar> power_GS(Mat_t& A, int stride) {
             for(int k = 0; k < N / stride; ++k) {
                 int j = k * stride + t;
                 Scalar tmp = (A.row(j) * u)(0,0);
-                u(j) = (u(j) * A(j,j) - tmp) / A(j,j);
+                Scalar Ajj = A.coeffRef(j,j);
+                u(j) = (u(j) * Ajj - tmp) / Ajj;
+                // u(j) = (u(j) * A(j,j) - tmp) / A(j,j);
             }
         }
         // now u should be GS_op * old_u
@@ -232,35 +237,36 @@ void test_prolongation(HE_FEM& he_fem, size_type L) {
     plan_wave pw(2, 1.0, 0.0);
     auto test_f = pw.get_fun();
 
-    std::vector<Mat_t> pro_op(L);
+    std::vector<SpMat_t> pro_op(L);
     for(int i = 0; i < L; ++i) {
         pro_op[i] = he_fem.prolongation(i);
-        // std::cout << i << " :[" << pro_op[i].rows() << "," 
-        //     << pro_op[i].cols() << "]" << std::endl;
+        std::cout << i << " :[" << pro_op[i].rows() << "," 
+            << pro_op[i].cols() << "]" << std::endl;
     }
 
     // auto vec_f = he_fem.fun_in_vec(0, test_f);
-    Vec_t vec_f = Vec_t::Zero(48);
-    vec_f(0) = 1.0, vec_f(16) = 1.0, vec_f(32) = 1.0;
+    int nr_waves = std::pow(2, L+1);
+    Vec_t vec_f = Vec_t::Zero(3 * nr_waves);
+    for(int i = 0; i < L*nr_waves; i += nr_waves) {
+        vec_f(i) = 1.0;
+    }
     std::vector<Vec_t> vec_in_mesh(L+1);
     vec_in_mesh[0] = vec_f;
-
-    // std::cout << vec_f << std::endl << std::endl;
     for(int i = 1; i <= L; ++i) {
         vec_in_mesh[i] = pro_op[i-1] * vec_in_mesh[i-1];
-        std::cout << vec_in_mesh[i].size() << std::endl << std::endl;
+        std::cout << vec_in_mesh[i].size() << std::endl;
     }
 
-    // std::string output_file = "prolongation.txt";
-    // std::ofstream out(output_file);
-    // if(out) {
-    //     for(int i = 0; i < L; ++i) {
-    //         std::cout << vec_in_mesh[i] << std::endl << std::endl;
-    //         out << pro_op[i] << std::endl << std::endl;
-    //     }
-    // } else {
-    //     std::cout << "Can't open file." << std::endl;
-    // }
+    std::string output_file = "prolongation.txt";
+    std::ofstream out(output_file);
+    if(out) {
+        for(int i = 0; i < L; ++i) {
+            std::cout << vec_in_mesh[i] << std::endl << std::endl;
+            out << pro_op[i] << std::endl << std::endl;
+        }
+    } else {
+        std::cout << "Can't open file." << std::endl;
+    }
 
     std::cout << std::left << std::setw(7) << "level" 
         << std::setw(15) << "||v-f||" 
@@ -285,7 +291,7 @@ void test_prolongation(HE_FEM& he_fem, size_type L) {
  * stride: stride in Gaussian Seidel relaxation
  * mu1, mu2: pre and post relaxation times
  */
-void v_cycle(Vec_t& u, Vec_t& f, std::vector<Mat_t>& Op, std::vector<Mat_t>& I, 
+void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
     std::vector<int>& stride, size_type mu1, size_type mu2) {
 
     Vec_t old_u = u;
@@ -313,15 +319,19 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<Mat_t>& Op, std::vector<Mat_t>& I,
         initial[i] = Vec_t::Zero(op_size[i]);
     }
 
-    // std::cout << "Finer to coarser" << std::endl;
     for(int i = L; i > 0; --i) {
         Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
         rhs_vec[i-1] = I[i-1].transpose() * (rhs_vec[i] - Op[i] * initial[i]);
     }
-    // std::cout << "solve on coarest mesh" << std::endl;
-    initial[0] = Op[0].colPivHouseholderQr().solve(rhs_vec[0]);
 
-    // std::cout << "Coarser to finer" << std::endl;
+    // Mat_t dense_op = Mat_t(Op[0]);
+    // initial[0] = dense_op.colPivHouseholderQr().solve(rhs_vec[0]);
+    // initial[0] = Op[0].colPivHouseholderQr().solve(rhs_vec[0]);
+    Eigen::SparseLU<SpMat_t> solver;
+    solver.compute(Op[0]);
+    initial[0] = solver.solve(rhs_vec[0]);
+    // Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], mu1 + mu2);
+
     for(int i = 1; i <= L; ++i) {
         initial[i] += I[i-1] * initial[i-1];
         Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
