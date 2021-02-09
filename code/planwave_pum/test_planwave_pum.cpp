@@ -24,8 +24,8 @@ int main(){
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/square.msh")).string(); 
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/tri2.msh")).string(); 
     std::string output_folder = "../plot_err/planwave_PUM/";
-    size_type L = 2; // refinement steps
-    double k = 2; // wave number
+    size_type L = 3; // refinement steps
+    double k = 5; // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
 
@@ -72,15 +72,11 @@ int main(){
     /*******************************************************************/
     
     /**** h-version, same number of plan waves with a set of meshes****/
-    // for(int i = 0; i < solutions.size(); ++i) {
-    //     // if(i > 0){
-    //     //     continue;
-    //     // }
-    //     auto u = solutions[i]->get_fun();
-    //     auto grad_u = solutions[i]->get_gradient();
-    //     auto g = solutions[i]->boundary_g();
-    //     HE_PUM he_pum(L, k, mesh_path, g, u, num_waves, true);
-    //     test_solve(he_pum, sol_name[i], output_folder, L, u, grad_u);
-    //     std::cout << std::endl;
-    // }
+    for(int i = 0; i < solutions.size(); ++i) {
+        auto u = solutions[i]->get_fun();
+        auto grad_u = solutions[i]->get_gradient();
+        auto g = solutions[i]->boundary_g();
+        HE_PUM he_pum(L, k, mesh_path, g, u, true, num_waves);
+        test_solve(he_pum, sol_name[i], output_folder, L, u, grad_u);
+    }
 }

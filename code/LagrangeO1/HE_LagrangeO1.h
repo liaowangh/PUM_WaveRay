@@ -29,6 +29,7 @@ public:
     using size_type = unsigned int;
     using Scalar = std::complex<double>;
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using SpMat_t = Eigen::SparseMatrix<Scalar>;
     using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
@@ -50,7 +51,7 @@ public:
     }
     size_type Dofs_perNode(size_type l) override { return 1; }
 
-    Mat_t prolongation(size_type l) override;
+    SpMat_t prolongation(size_type l) override;
     Vec_t solve(size_type l) override;
     Vec_t solve_multigrid(size_type start_layer, int num_coarserlayer, int mu1, int mu2) override;
     std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 

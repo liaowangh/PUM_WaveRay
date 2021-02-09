@@ -404,19 +404,38 @@ HE_PUM::Vec_t HE_PUM::solve(size_type l) {
  * SxE_l -> SxE_{l+1}, 
  *  is the kronecker product of prolongation_lagrange(l) and prolongation_planwave(l)
  */
-HE_PUM::Mat_t HE_PUM::prolongation(size_type l) {
+HE_PUM::SpMat_t HE_PUM::prolongation(size_type l) {
     LF_ASSERT_MSG((l < L), 
         "in prolongation, level should smaller than" << L);
     auto Q = prolongation_lagrange(l);
     auto P = prolongation_planwave(l);
+    // auto Q = Mat_t(prolongation_lagrange(l));
+    // auto P = Mat_t(prolongation_planwave(l));
     size_type n1 = Q.rows(), n2 = P.rows();
     size_type m1 = Q.cols(), m2 = P.cols();
-    Mat_t res = Mat_t(n1*n2, m1*m2);
-    for(int i = 0; i < n1; ++i) {
-        for(int j = 0; j < m1; ++j) {
-            res.block(i*n2, j*m2, n2, m2) = Q(i, j) * P;
+    // Mat_t res = Mat_t(n1*n2, m1*m2);
+    // for(int i = 0; i < n1; ++i) {
+    //     for(int j = 0; j < m1; ++j) {
+    //         res.block(i*n2, j*m2, n2, m2) = Q(i, j) * P;
+    //     }
+    // }
+    // return res.sparseView();
+    SpMat_t res(n1*n2, m1*m2);
+    std::vector<triplet_t> triplets;
+    for(int j1 = 0; j1 < Q.outerSize(); ++j1) {
+        for(SpMat_t::InnerIterator it1(Q, j1); it1; ++it1) {
+            int i1 = it1.row();
+            Scalar qij = it1.value();
+            for(int j2 = 0; j2 < P.outerSize(); ++j2) {
+                for(SpMat_t::InnerIterator it2(P, j2); it2; ++it2) {
+                    int i2 = it2.row();
+                    Scalar pij = it2.value();
+                    triplets.push_back(triplet_t(i1*n2+i2, j1*m2+j2, qij * pij));
+                }
+            }
         }
     }
+    res.setFromTriplets(triplets.begin(), triplets.end());
     return res;
 }
 
@@ -426,16 +445,16 @@ HE_PUM::Vec_t HE_PUM::solve_multigrid(size_type start_layer, int num_coarserlaye
     LF_ASSERT_MSG((num_coarserlayer <= L), 
         "please use a smaller number of wave layers");
     auto eq_pair = build_equation(L);
-    Mat_t A(eq_pair.first.makeDense());
+    SpMat_t A(eq_pair.first.makeSparse());
 
-    std::vector<Mat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
+    std::vector<SpMat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
     std::vector<int> stride(num_coarserlayer + 1);
     Op[num_coarserlayer] = A;
     stride[num_coarserlayer] = num_planwaves[start_layer];
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
         int idx = L + i - num_coarserlayer;
         auto tmp = build_equation(idx);
-        Op[i] = tmp.first.makeDense();
+        Op[i] = tmp.first.makeSparse();
         prolongation_op[i] = prolongation(idx);
         stride[i] = num_planwaves[idx];
     }
@@ -450,53 +469,53 @@ HE_PUM::power_multigird(size_type start_layer, int num_coarserlayer,
     LF_ASSERT_MSG((num_coarserlayer <= start_layer), 
         "please use a smaller number of wave layers");
     auto eq_pair = build_equation(start_layer);
-    Mat_t A(eq_pair.first.makeDense());
+    SpMat_t A(eq_pair.first.makeSparse());
 
-    std::vector<Mat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
+    std::vector<SpMat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
     std::vector<int> stride(num_coarserlayer + 1, 1);
     Op[num_coarserlayer] = A;
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
         int idx = start_layer + i - num_coarserlayer;
         auto tmp = build_equation(idx);
-        Op[i] = tmp.first.makeDense();
+        Op[i] = tmp.first.makeSparse();
         prolongation_op[i] = prolongation(idx);
     }
 
     int N = A.rows();
     /* Get the multigrid (2 grid) operator manually */
-    Op[0] = prolongation_op[0].transpose() * Op[1] * prolongation_op[0];
-    Mat_t mg_op = Mat_t::Identity(N, N) - 
-        prolongation_op[0]*Op[0].colPivHouseholderQr().solve(prolongation_op[0].transpose())*Op[1];
+    // Op[0] = prolongation_op[0].transpose() * Op[1] * prolongation_op[0];
+    // Mat_t mg_op = Mat_t::Identity(N, N) - 
+    //     prolongation_op[0]*Op[0].colPivHouseholderQr().solve(prolongation_op[0].transpose())*Op[1];
 
-    Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
-    Mat_t U = L - A;
-    Mat_t GS_op = L.colPivHouseholderQr().solve(U);
+    // Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
+    // Mat_t U = L - A;
+    // Mat_t GS_op = L.colPivHouseholderQr().solve(U);
 
-    Mat_t R_mu1 = Mat_t::Identity(N, N);
-    Mat_t R_mu2 = Mat_t::Identity(N, N);
-    for(int i = 0; i < mu1; ++i) {
-        auto tmp = R_mu1 * GS_op;
-        R_mu1 = tmp;
-    }
-    for(int i = 0; i < mu2; ++i) {
-        auto tmp = R_mu2 * GS_op;
-        R_mu2 = tmp;
-    }
-    auto tmp = R_mu2 * GS_op * R_mu1;
-    GS_op = tmp;
+    // Mat_t R_mu1 = Mat_t::Identity(N, N);
+    // Mat_t R_mu2 = Mat_t::Identity(N, N);
+    // for(int i = 0; i < mu1; ++i) {
+    //     auto tmp = R_mu1 * GS_op;
+    //     R_mu1 = tmp;
+    // }
+    // for(int i = 0; i < mu2; ++i) {
+    //     auto tmp = R_mu2 * GS_op;
+    //     R_mu2 = tmp;
+    // }
+    // auto tmp = R_mu2 * GS_op * R_mu1;
+    // GS_op = tmp;
 
-    Vec_t eivals = mg_op.eigenvalues();
+    // Vec_t eivals = mg_op.eigenvalues();
 
-    std::cout << eivals << std::endl;
+    // std::cout << eivals << std::endl;
 
-    Scalar domainant_eival = eivals(0);
-    for(int i = 1; i < eivals.size(); ++i) {
-        if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
-            domainant_eival = eivals(i);
-        }
-    }
-    std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
-    std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+    // Scalar domainant_eival = eivals(0);
+    // for(int i = 1; i < eivals.size(); ++i) {
+    //     if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
+    //         domainant_eival = eivals(i);
+    //     }
+    // }
+    // std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
+    // std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
     /***************************************/
 
     Vec_t u = Vec_t::Random(N);

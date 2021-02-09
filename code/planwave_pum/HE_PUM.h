@@ -25,6 +25,8 @@ public:
     using size_type = unsigned int;
     using Scalar = std::complex<double>;
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using SpMat_t = Eigen::SparseMatrix<Scalar>;
+    using triplet_t = Eigen::Triplet<Scalar>;
     using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
 
@@ -46,7 +48,7 @@ public:
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});
     }
 
-    Mat_t prolongation(size_type l) override; // transfer operator: FE sapce l -> FE space {l+1}
+    SpMat_t prolongation(size_type l) override; // transfer operator: FE sapce l -> FE space {l+1}
     Vec_t solve(size_type l) override;  // solve equaitons Ax=\phi on mesh l.
     Vec_t solve_multigrid(size_type start_layer, int num_coarserlayer, int mu1, int mu2) override; 
     std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 
