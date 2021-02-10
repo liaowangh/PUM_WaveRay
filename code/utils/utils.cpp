@@ -175,6 +175,7 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
             domainant_eival = eivals(i);
         }
     }
+    std::cout << eivals << std::endl;
     std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
     std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
     /**********************************************/
@@ -231,11 +232,11 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
 
 void test_prolongation(HE_FEM& he_fem, size_type L) {
 
-    // auto test_f = [](const coordinate_t& x)->Scalar {
-    //     return 1.0;
-    // };
-    plan_wave pw(2, 1.0, 0.0);
-    auto test_f = pw.get_fun();
+    auto test_f = [](const coordinate_t& x)->Scalar {
+        return 1.0;
+    };
+    // plan_wave pw(2, 1.0, 0.0);
+    // auto test_f = pw.get_fun();
 
     std::vector<SpMat_t> pro_op(L);
     for(int i = 0; i < L; ++i) {
@@ -244,12 +245,12 @@ void test_prolongation(HE_FEM& he_fem, size_type L) {
             << pro_op[i].cols() << "]" << std::endl;
     }
 
-    // auto vec_f = he_fem.fun_in_vec(0, test_f);
-    int nr_waves = std::pow(2, L+1);
-    Vec_t vec_f = Vec_t::Zero(3 * nr_waves);
-    for(int i = 0; i < L*nr_waves; i += nr_waves) {
-        vec_f(i) = 1.0;
-    }
+    auto vec_f = he_fem.fun_in_vec(0, test_f);
+    // int nr_waves = std::pow(2, L+1);
+    // Vec_t vec_f = Vec_t::Zero(3 * nr_waves);
+    // for(int i = 0; i < L*nr_waves; i += nr_waves) {
+    //     vec_f(i) = 1.0;
+    // }
     std::vector<Vec_t> vec_in_mesh(L+1);
     vec_in_mesh[0] = vec_f;
     for(int i = 1; i <= L; ++i) {

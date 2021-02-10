@@ -51,15 +51,16 @@ int main(){
     // std::vector<std::string> sol_name{"square_plan_wave", "square_fundamental_sol", 
         // "square_spherical_wave"};
     for(int i = 0; i < solutions.size(); ++i) {
-        // if(i > 0) {
-        //     continue;
-        // }
+        if(i > 0) {
+            continue;
+        }
         auto u = solutions[i]->get_fun();
         auto g = solutions[i]->boundary_g();
         auto grad_u = solutions[i]->get_gradient();
         HE_LagrangeO1 he_O1(L, k, mesh_path, g, u, true);
-        test_solve(he_O1, sol_name[i], output_folder, L, u, grad_u);   
+        // test_solve(he_O1, sol_name[i], output_folder, L, u, grad_u);   
         // auto slowest_eigenvec = he_O1.power_multigird(1, 1, 5, 5); 
+        test_prolongation(he_O1, L);
 
         // int num_coarserlayer = 2;
         // test_multigrid(he_O1, num_coarserlayer, sol_name[i], output_folder, L, u, grad_u);

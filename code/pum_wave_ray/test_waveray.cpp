@@ -106,8 +106,13 @@ int main(){
         // test_solve(he_waveray, prefix+sol_name[i], output_folder, L, u, grad_u);
         // test_prolongation(he_waveray, L);
 
-        int num_wavelayer = 1;
-        he_waveray.power_multigird(L, num_wavelayer, 5, 5);
+        auto eq_pair = he_waveray.build_equation(L);
+        SpMat_t A = eq_pair.first.makeSparse();
+        auto eigen_pair = power_GS(A, 1);
+        he_waveray.vector_vtk(L, eigen_pair.first, "GS_mode");
+
+        // int num_wavelayer = 1;
+        // he_waveray.power_multigird(L, num_wavelayer, 5, 5);
         // Vec_t fem_sol = he_waveray.solve_multigrid(L, num_wavelayer, 5, 5);
         // std::cout << he_waveray.mesh_width()[L] << " "
         //           << he_waveray.L2_Err(L, fem_sol, u) << " " 
