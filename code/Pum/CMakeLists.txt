@@ -1,10 +1,17 @@
-
-set(test_LagrangeO1_sources
-  HE_LagrangeO1.h
-  HE_LagrangeO1.cpp
-  test_LagrangeO1.cpp
+set(pum_resolution_sources
   ../Pum_WaveRay/HE_FEM.h
-  ../pum_wave_ray/HE_FEM.cpp
+  ../Pum_WaveRay/HE_FEM.cpp
+  PUM_EdgeMat.h
+  PUM_EdgeMat.cpp
+  PUM_EdgeVector.h
+  PUM_EdgeVector.cpp
+  PUM_ElementMatrix.h
+  PUM_ElementMatrix.cpp
+  PUM_ElemVector.h
+  PUM_ElemVector.cpp
+  HE_PUM.h
+  HE_PUM.cpp
+  pum_resolution.cpp
   ../utils/utils.h
   ../utils/utils.cpp
   ../utils/HE_solution.h
@@ -12,10 +19,10 @@ set(test_LagrangeO1_sources
 )
 
 # define executable
-add_executable(test_LagrangeO1 ${test_LagrangeO1_sources})
+add_executable(pum_resolution ${pum_resolution_sources})
 
 #link executable with LehrFEM++
-target_link_libraries(test_LagrangeO1
+target_link_libraries(pum_resolution
   PUBLIC Eigen3::Eigen Boost::filesystem Boost::system Boost::program_options
   LF::lf.mesh
   LF::lf.mesh.utils

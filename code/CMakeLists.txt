@@ -8,8 +8,6 @@ HunterGate(
     LOCAL
 )
 
-include(GoogleTest)
-
 ### Setup CMake Project ###
 project(PUM_Wave_Ray)
 
@@ -25,16 +23,14 @@ find_package(lehrfempp CONFIG REQUIRED)
 hunter_add_package(Eigen)
 find_package(Eigen3 CONFIG REQUIRED)
 
-# Get Google Test
-hunter_add_package(GTest)
-find_package(GTest CONFIG REQUIRED)
-
 # Get Boost
 hunter_add_package(Boost COMPONENTS chrono timer system filesystem program_options)
 find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_options)
 ###############################################################################
 
-add_subdirectory(LagrangeO1)
-#add_subdirectory(test)
-#add_subdirectory(planwave_pum)
-#add_subdirectory(pum_wave_ray)
+# add_subdirectory(LagrangeO1)
+# add_subdirectory(test)
+add_subdirectory(Pum)
+add_subdirectory(Pum_WaveRay)
+add_subdirectory(ExtendPum)
+# add_subdirectory(ExtendPum_WaveRay)

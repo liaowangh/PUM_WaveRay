@@ -131,7 +131,7 @@ HE_LagrangeO1::Vec_t HE_LagrangeO1::solve(size_type l) {
     if(solver.info() == Eigen::Success) {
         fe_sol = solver.solve(eq_pair.second);
     } else {
-        LF_ASSERT_MSG(false, "Eigen Factorization failed")
+        LF_ASSERT_MSG(false, "Eigen Factorization failed");
     }
     return fe_sol;
 }

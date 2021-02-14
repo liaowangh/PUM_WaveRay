@@ -3,8 +3,8 @@
 
 #include "utils.h"
 #include "HE_solution.h"
-#include "../pum_wave_ray/HE_FEM.h"
-#include "../pum_wave_ray/PUM_WaveRay.h"
+#include "../Pum_WaveRay/HE_FEM.h"
+#include "../Pum_WaveRay/PUM_WaveRay.h"
 
 Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const FHandle_t& f) {
     auto qr = lf::quad::make_QuadRule(e.RefEl(), quad_degree);
@@ -27,13 +27,13 @@ void print_save_error(std::vector<std::vector<double>>& data,
     // std::cout << std::left << std::setw(10) << data_label[i];
     std::cout << std::left;
     for(int i = 0; i < data_label.size(); ++i){
-        std::cout << std::setw(15) << data_label[i];
+        std::cout << std::setw(10) << data_label[i];
     }
     std::cout << std::endl;
+    std::cout << std::left << std::scientific << std::setprecision(2);
     for(int l = 0; l < data[0].size(); ++l) {
-        std::cout << std::left;
         for(int i = 0; i < data.size(); ++i) {
-            std::cout << std::setw(15) << data[i][l];
+            std::cout << std::setw(10) << data[i][l];
         }
         std::cout << std::endl;
     }
@@ -47,7 +47,7 @@ void print_save_error(std::vector<std::vector<double>>& data,
         out << " " << data_label[i];
     }
     out << std::endl;
-
+    out << std::scientific << std::setprecision(2);
     for(int l = 0; l < data[0].size(); ++l) {
         out << data[0][l];
         for(int i = 1; i < data.size(); ++i) {
