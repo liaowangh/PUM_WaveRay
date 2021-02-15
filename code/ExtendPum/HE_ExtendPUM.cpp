@@ -39,28 +39,9 @@ HE_ExtendPUM::build_equation(size_type level) {
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
     
-    auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)};
-    if(hole_exist) {
-        // assemble boundary edge matrix, -i*k*u*v over \Gamma_R (outer boundary)
-        // first need to distinguish between outer and inner boundar
-        auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
-        auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
-
-        // modify it to classify inner and outer boundary
-        for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
-            if(outer_boundary(*edge)) {
-                // find a boundary edge, need to determine if it's outer boundary
-                const lf::mesh::Entity* parent_edge = edge;
-                for(int i = level; i > 0; --i) {
-                    parent_edge = mesh_hierarchy->ParentEntity(i, *parent_edge);
-                }
-                if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
-                    // it is the inner boundary
-                    outer_boundary(*edge) = false;
-                }
-            }
-        }
-    }
+    // assemble boundary edge matrix, -i*k*u*v over \Gamma_R (outer boundary)
+    // first need to distinguish between outer and inner boundar
+    auto outer_boundary = outerBdy_selector(level);
 
     // (u,v) -> \int_e gamma * (u,v) dS
     ExtendPUM_EdgeMat edge_mat_builder(fe_space, outer_boundary, N_wave, k, -1i * k, degree);                                  
@@ -199,14 +180,14 @@ HE_ExtendPUM::Vec_t HE_ExtendPUM::h_in_vec(size_type l, lf::mesh::utils::CodimMe
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
 
     std::vector<std::pair<bool, Scalar>> ess_dof_select{};
-        for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
-            const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
-            if(inner_point(dof_node)) {
-                ess_dof_select.push_back({false, 0.0});
-            } else {
-                ess_dof_select.push_back({true, 0.0});
-            }
+    for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
+        const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
+        if(inner_point(dof_node)) {
+            ess_dof_select.push_back({false, 0.0});
+        } else {
+            ess_dof_select.push_back({true, 0.0});
         }
+    }
 
     lf::assemble::FixFlaggedSolutionCompAlt<Scalar>(
         [&ess_dof_select](size_type dof_idx)->std::pair<bool, Scalar> {
@@ -414,37 +395,190 @@ HE_ExtendPUM::Vec_t HE_ExtendPUM::solve(size_type l) {
 HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation(size_type l) {
     LF_ASSERT_MSG((l < L), 
         "in prolongation, level should smaller than" << L);
-    auto Q = prolongation_lagrange(l); // n_{l+1} x n_l
-    auto P = prolongation_planwave(l); // N_{l+1} x N_l
-    // auto Q = Mat_t(prolongation_lagrange(l));
-    // auto P = Mat_t(prolongation_planwave(l));
-    size_type n1 = Q.rows(), n2 = P.rows();
-    size_type m1 = Q.cols(), m2 = P.cols();
+    auto Q = Mat_t(prolongation_lagrange(l)); // n_{l+1} x n_l
+    auto eq_pair = build_equation(l+1);
+    auto A = eq_pair.first;
+    Mat_t Phi = Assemble_EnergyProjection(l, 1.0, -k*k, -1i * k);
+    Mat_t res(Phi.rows(), Phi.cols());
+    int Nl = num_planwaves[l], Nl1 = num_planwaves[l+1];
+    int n = Q.cols();
+    
+    for(int i = 0; i < n; ++i) {
+        auto A_copy = A;
+        auto selector = [&Q, &i, &Nl1](size_type dof_idx)->std::pair<bool, Scalar> {
+            int j = dof_idx / (Nl1 + 1);
+            if(Q(j, i) != 0) {
+                return {false, 0};
+            } else {
+                return {true, 0};
+            }
+        };
+        for(int t = 0; t <= Nl; ++t){
+            Vec_t tmp_phi = Phi.col(i*(Nl+1)+t);
+            lf::assemble::FixFlaggedSolutionCompAlt<Scalar>(selector, A_copy, tmp_phi);
+            Phi.col(i*(Nl+1)+t) = tmp_phi;
+        }
+        SpMat_t A_crs = A_copy.makeSparse();
+        Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
+        solver.compute(A_crs);
+        res.block(0, i*(Nl+1), Phi.rows(), Nl+1) = solver.solve(Phi.block(0, i*(Nl+1), Phi.rows(), Nl+1));
+    }
+    return res.sparseView();
+}
 
-    Mat_t tmp = Mat_t::Zero(n2+1, m2+1);
-    tmp(0,0) = 1.;
-    tmp.block(1, 1, n2, m2) = Mat_t(P);
-    SpMat_t P_Extend = tmp.sparseView();
-   
-    SpMat_t res(n1*(n2+1), m1*(m2+1));
+/*
+ * assemble for 
+ *  (z,c)-> \int_\Omega alpha*(grad z, grad c) + beta * (z,c)dx + gamma \int_\GammaR (z,c)dS 
+ * 
+ * and z \in W_l and c \in W_{l+1}
+ * if we take z = b_i^l * e_s^l and c = b_j^{l+1} * e_t^{l+1}, it is not easy get (z, c)
+ * so we make use of the fact that b_i^l = \sum qkj b_k^{l+1}
+ * we assemble for z = b_i^{l+1} * e_s^l and c = b_j^{l+1} * e_t^{l+1}
+ * 
+ * To implement local energy projection, we can set
+ *      alpha = 1.0, beta = -k^2, gamma = -ik
+ * To implement local L2 projection, we can set
+ *      alpha = 0.0, beta = 1.0, gamma = 1.0;
+ */
+HE_ExtendPUM::Mat_t HE_ExtendPUM::Assemble_EnergyProjection(size_type l, Scalar alpha, Scalar beta, Scalar gamma) {
+    auto mesh = getmesh(l);
+    auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
+    auto Q = prolongation_lagrange(l); // n_{l+1} x n_l
+    int Nl = num_planwaves[l], Nl1 = num_planwaves[l+1];
+    int n = Q.rows();
+
+    auto outer_boundary = outerBdy_selector(l);
     std::vector<triplet_t> triplets;
-    for(int j1 = 0; j1 < Q.outerSize(); ++j1) {
-        for(SpMat_t::InnerIterator it1(Q, j1); it1; ++it1) {
-            int i1 = it1.row();
-            Scalar qij = it1.value();
-            for(int j2 = 0; j2 < P_Extend.outerSize(); ++j2) {
-                for(SpMat_t::InnerIterator it2(P_Extend, j2); it2; ++it2) {
-                    int i2 = it2.row();
-                    Scalar pij = it2.value();
-                    triplets.push_back(triplet_t(i1*(n2+1)+i2, j1*(m2+1)+j2, qij * pij));
+    // assemble for alpha*(grad z, grad c) + beta * (z,c)
+    for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
+        const lf::geometry::Geometry *geo_ptr = cell->Geometry();
+    
+        // Matrix storing corner coordinates in its columns(2x3 in this case)
+        auto vertices = geo_ptr->Global(cell->RefEl().NodeCoords());
+        
+        // suppose that the barycentric coordinate functions have the form
+        // \lambda_i = X(0,i) + X(1,i)*x + X(2,i)*y
+        // grad \lambda_i = [X(1,i), X(2,i)]^T
+        Eigen::Matrix3d X, tmp;
+        tmp.block<3,1>(0,0) = Eigen::Vector3d::Ones();
+        tmp.block<3,2>(0,1) = vertices.transpose();
+        X = tmp.inverse();
+
+        // Number of shape functions covering current entity
+        const lf::assemble::size_type no_dofs(dofh.NumLocalDofs(*cell));
+        //obtain global indices of those shape functions
+        nonstd::span<const lf::assemble::gdof_idx_t> dofarray{dofh.GlobalDofIndices(*cell)};
+
+        for(int i = 0; i < no_dofs; ++i) { 
+            for(int s = 0; s <= Nl; ++s) {
+                int z_idx = dofarray[i] * (Nl + 1) + s;
+                for(int j = 0; j < no_dofs; ++j) { 
+                    for(int t = 0; t <= Nl1; ++t) {
+                        int v_idx = dofarray[j] * (Nl1 + 1) + t;
+
+                        auto f = [this,&X,&i,&j,&s,&t,&Nl,&Nl1,&alpha,&beta](const Eigen::Vector2d& x)->Scalar {
+                            Eigen::Vector2d ds, dt, betai, betaj; 
+                            double pi = std::acos(-1);
+                            if(s == 0) {
+                                ds << 0.0, 0.0;
+                            } else {
+                                ds << std::cos(2*pi*(s-1)/Nl), std::sin(2*pi*(s-1)/Nl);
+                            }
+                            if(t == 0) {
+                                dt << 0.0, 0.0;
+                            } else {
+                                dt << std::cos(2*pi*(t-1)/Nl1), std::sin(2*pi*(t-1)/Nl1);
+                            }
+                            betai << X(1, i), X(2, i);
+                            betaj << X(1, j), X(2, j);
+                            double lambdai = X(0,i) + betai.dot(x);
+                            double lambdaj = X(0,j) + betaj.dot(x);
+
+                            auto gradz = std::exp(1i*k*ds.dot(x)) * (betai + 1i*k*lambdai*ds);
+                            auto gradv = std::exp(1i*k*dt.dot(x)) * (betaj + 1i*k*lambdaj*dt);
+                            auto val_z = lambdai * std::exp(1i*k*ds.dot(x));
+                            auto val_v = lambdaj * std::exp(1i*k*dt.dot(x));
+
+                            return alpha * gradv.dot(gradz) + beta * val_z * std::conj(val_v);
+                        };
+                        Scalar tmp = LocalIntegral(*cell, degree, f);
+                        triplets.push_back(triplet_t(v_idx, z_idx, tmp));
+                    }
                 }
             }
         }
     }
-    res.setFromTriplets(triplets.begin(), triplets.end());
-    return res;
-}
+    // assemble for gamma * (z,c)dS 
+    for(const lf::mesh::Entity* cell: mesh->Entities(1)) {
+        if(!outer_boundary(*cell)){
+            continue;
+        }
+        const lf::geometry::Geometry *geo_ptr = cell->Geometry();
+        // Matrix storing corner coordinates in its columns(2x2 in this case)
+        auto vertices = geo_ptr->Global(cell->RefEl().NodeCoords());
+        const lf::assemble::size_type no_dofs(dofh.NumLocalDofs(*cell));
+        //obtain global indices of those shape functions
+        nonstd::span<const lf::assemble::gdof_idx_t> dofarray{dofh.GlobalDofIndices(*cell)};
 
+        for(int i = 0; i < no_dofs; ++i) { 
+            for(int s = 0; s <= Nl; ++s) {
+                int z_idx = dofarray[i] * (Nl + 1) + s;
+                for(int j = 0; j < no_dofs; ++j) { 
+                    for(int t = 0; t <= Nl1; ++t) {
+                        int v_idx = dofarray[j] * (Nl1 + 1) + t;
+                        auto integrand = [this,&vertices,&i,&j,&s,&t,&Nl,&Nl1,&gamma](const Eigen::Vector2d& x)->Scalar {
+                            double x1, y1, x2, y2, tmp;
+                            x1 = vertices(0,0), y1 = vertices(1,0);
+                            x2 = vertices(0,1), y2 = vertices(1,1);
+                            if(x1 == x2) {
+                                tmp = (x(1) - y2) / (y1 - y2);
+                            } else {
+                                tmp = (x(0) - x2) / (x1 - x2); 
+                            }
+                            Scalar lambdai = (i == 0 ? tmp : 1 - tmp);
+                            Scalar lambdaj = (j == 0 ? tmp : 1 - tmp);
+
+                            if(s == 0) {
+                                ds << 0.0, 0.0;
+                            } else {
+                                ds << std::cos(2*pi*(s-1)/Nl), std::sin(2*pi*(s-1)/Nl);
+                            }
+                            if(t == 0) {
+                                dt << 0.0, 0.0;
+                            } else {
+                                dt << std::cos(2*pi*(t-1)/Nl1), std::sin(2*pi*(t-1)/Nl1);
+                            }
+                            Scalar val_z = lambdai * std::exp(1i*k*ds.dot(x));
+                            Scalar val_v = lambdaj * std::exp(1i*k*dt.dot(x));
+                            return val_z * std::conj(val_v);
+                        };
+                        Scalar tmp = LocalIntegral(*cell, degree, f);
+                        triplets.push_back(triplet_t(v_idx, z_idx, tmp));
+                    }
+                }
+            }
+        }
+    }
+
+    SpMat_t Z(n*Nl1, n*Nl), ;
+    Z.setFromTriples(triplets.begin(), triplets.end());
+    
+    Mat_t Phi = Mat_t::Zero(n*Nl1, Q.cols()*Nl);
+    Mat_t Dense_Q = Mat_t(Q);
+    Mat_t Dense_Z = Mat_t(Z);
+    for(int J = 0; J < Q.cols()*(Nl+1); ++J) {
+        int j = J / (Nl + 1);
+        int s = J % (Nl + 1);
+        for(int I = 0; I < n*(Nl1+1); ++I) {
+            int i = I / (Nl1 + 1);
+            int t = I % (Nl1 + 1);
+            for(int k = 0; k < n; ++k) {
+                Phi(I,J) += Dense_Q(k,j) * Dense_Z(I, k*(Nl+1) + s);
+            }
+        }
+    }
+    return Phi;
+}
 
 HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation_SE_S() {
     double pi = std::acos(-1.);

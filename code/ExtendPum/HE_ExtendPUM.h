@@ -59,6 +59,8 @@ public:
     std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 
         int mu1, int mu2) override;
 
+    Mat_t Assemble_EnergyProjection(size_type l, Scalar alpha, Scalar beta, Scalar gamma);
+
     /* functions specific to this class */
     double L2_BoundaryErr(size_type l, const Vec_t& mu, const FHandle_t& u,
         lf::mesh::utils::CodimMeshDataSet<bool> edge_selector);

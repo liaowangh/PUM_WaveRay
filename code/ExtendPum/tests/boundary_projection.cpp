@@ -28,7 +28,7 @@ int main() {
     int L = 5; // refinement steps
     std::vector<int> number_waves{3, 5, 7, 9, 11, 13};
     
-    double k = 20;
+    double k = 2;
 
     // plan_wave sol(k, 0.8, 0.6);
     Spherical_wave sol(k, 2);
