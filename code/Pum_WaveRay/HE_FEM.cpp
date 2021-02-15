@@ -27,6 +27,32 @@ std::vector<double> HE_FEM::mesh_width() {
     return width;
 }
 
+lf::mesh::utils::CodimMeshDataSet<bool> 
+HE_FEM::outerBdy_selector(size_type l) {
+    auto mesh = getmesh(l);
+    auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)};
+    if(hole_exist) {
+        auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
+        auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
+
+        // modify it to classify inner and outer boundary
+        for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
+            if(outer_boundary(*edge)) {
+                // find a boundary edge, need to determine if it's outer boundary
+                const lf::mesh::Entity* parent_edge = edge;
+                for(int i = l; i > 0; --i) {
+                    parent_edge = mesh_hierarchy->ParentEntity(i, *parent_edge);
+                }
+                if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
+                    // it is the inner boundary
+                    outer_boundary(*edge) = false;
+                }
+            }
+        }
+    }
+    return outer_boundary;
+}
+
 // S_l -> S_{l+1}， 0 <= l < L
 HE_FEM::SpMat_t HE_FEM::prolongation_lagrange(size_type l) {
     LF_ASSERT_MSG(l >= 0 && l < L, "l in prolongation should be smaller to L");
