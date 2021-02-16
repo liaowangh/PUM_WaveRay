@@ -35,9 +35,9 @@ public:
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
     HE_LagrangeO1(size_type levels, double wave_num, const std::string& mesh_path, 
-        FHandle_t g, FHandle_t h, bool hole): 
+        FHandle_t g, FHandle_t h, bool hole, int quad_degree=20): 
         HE_FEM(levels, wave_num, mesh_path, g, h, hole,
-            std::vector<int>(L+1, 1)){};
+            std::vector<int>(levels+1, 1), quad_degree){};
 
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type l) override;
     double L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) override;

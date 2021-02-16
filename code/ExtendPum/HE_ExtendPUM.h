@@ -46,10 +46,10 @@ public:
     double H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const FunGradient_t& grad_u) override;
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
 
-    size_type Dofs_perNode(size_type l) override { return num_planwaves[l]; }
+    size_type Dofs_perNode(size_type l) override { return num_planwaves[l]+1; }
     lf::assemble::UniformFEDofHandler get_dofh(size_type l) override {
         return lf::assemble::UniformFEDofHandler(getmesh(l), 
-                {{lf::base::RefEl::kPoint(), Dofs_perNode(l) + 1}});
+                {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});
     }
 
     SpMat_t prolongation_SE_S() override;

@@ -46,8 +46,8 @@ public:
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
     PUM_WaveRay(size_type levels, double wave_number, const std::string& mesh_path, 
-        FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves): 
-            HE_FEM(levels, wave_number, mesh_path, g, h, hole, num_waves),
+        FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20): 
+            HE_FEM(levels, wave_number, mesh_path, g, h, hole, num_waves, quad_degree),
             HE_LagrangeO1(levels, wave_number, mesh_path, g, h, hole),
             HE_PUM(levels, wave_number, mesh_path, g, h, hole, num_waves) {}
 

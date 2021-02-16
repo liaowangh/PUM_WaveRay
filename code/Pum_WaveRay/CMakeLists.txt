@@ -3,7 +3,7 @@ set(test_pum_waveray_sources
   HE_FEM.cpp
   PUM_WaveRay.h
   PUM_WaveRay.cpp
-  test_waveray.cpp
+  tests/test_waveray.cpp
   ../LagrangeO1/HE_LagrangeO1.h
   ../LagrangeO1/HE_LagrangeO1.cpp
   ../Pum/PUM_EdgeMat.h

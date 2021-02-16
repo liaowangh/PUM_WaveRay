@@ -1,4 +1,5 @@
 set(ExtendPum_resolution_sources
+  tests/extendpum_resolution.cpp
   ../Pum_WaveRay/HE_FEM.h
   ../Pum_WaveRay/HE_FEM.cpp
   ExtendPUM_EdgeMat.h
@@ -11,7 +12,6 @@ set(ExtendPum_resolution_sources
   ExtendPUM_ElemVector.cpp
   HE_ExtendPUM.h
   HE_ExtendPUM.cpp
-  tests/extendpum_resolution.cpp
   ../utils/utils.h
   ../utils/utils.cpp
   ../utils/HE_solution.h

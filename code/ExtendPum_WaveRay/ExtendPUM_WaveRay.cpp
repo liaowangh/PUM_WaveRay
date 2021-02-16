@@ -20,13 +20,6 @@
 
 using namespace std::complex_literals;
 
-ExtendPUM_WaveRay::FHandle_t exp_wave(const Eigen::Vector2d& d, double k) {
-    auto res = [&d, &k](const Eigen::Vector2d& x) {
-        return std::exp(1i*k * d.dot(x));
-    };
-    return res;
-}
-
 std::pair<lf::assemble::COOMatrix<ExtendPUM_WaveRay::Scalar>, ExtendPUM_WaveRay::Vec_t> 
 ExtendPUM_WaveRay::build_equation(size_type level) {
     return level == L ? HE_LagrangeO1::build_equation(level) :
@@ -83,7 +76,7 @@ ExtendPUM_WaveRay::Vec_t ExtendPUM_WaveRay::solve_multigrid(size_type start_laye
         // Op[i] = tmp.first.makeSparse();
         prolongation_op[i] = prolongation(idx);
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves[idx];
+        stride[i] = num_planwaves[idx] + 1;
     }
     Vec_t initial = Vec_t::Random(A.rows());
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
@@ -106,57 +99,59 @@ ExtendPUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
         int idx = start_layer + i - num_coarserlayer;
         prolongation_op[i] = prolongation(idx);
-        auto tmp = build_equation(idx);
-        Op[i] = tmp.first.makeSparse();
-        // Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves[idx];
+        // auto tmp = build_equation(idx);
+        // Op[i] = tmp.first.makeSparse();
+        Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
+        stride[i] = num_planwaves[idx] + 1;
     }
 
     int N = A.rows();
     
     /* Get the multigrid (2 grid) operator manually */
-    // Op[0] = prolongation_op[0].transpose() * Op[1] * prolongation_op[0];
-    // Mat_t mg_op = Mat_t::Identity(N, N) - 
-    //     prolongation_op[0]*Op[0].colPivHouseholderQr().solve(prolongation_op[0].transpose())*Op[1];
+    if(num_coarserlayer == 1) {
+        Mat_t coarse_op = Mat_t(Op[0]);
+        Mat_t mg_op = Mat_t::Identity(N, N) - 
+            prolongation_op[0]*coarse_op.colPivHouseholderQr().solve(Mat_t(prolongation_op[0]).transpose())*Op[1];
 
-    // Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
-    // Mat_t U = L - A;
-    // Mat_t GS_op = L.colPivHouseholderQr().solve(U);
+        Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
+        Mat_t U = L - A;
+        Mat_t GS_op = L.colPivHouseholderQr().solve(U);
 
-    // Mat_t R_mu1 = Mat_t::Identity(N, N);
-    // Mat_t R_mu2 = Mat_t::Identity(N, N);
-    // for(int i = 0; i < mu1; ++i) {
-    //     auto tmp = R_mu1 * GS_op;
-    //     R_mu1 = tmp;
-    // }
-    // for(int i = 0; i < mu2; ++i) {
-    //     auto tmp = R_mu2 * GS_op;
-    //     R_mu2 = tmp;
-    // }
-    // auto tmp = R_mu2 * mg_op * R_mu1;
-    // mg_op = tmp;
+        Mat_t R_mu1 = Mat_t::Identity(N, N);
+        Mat_t R_mu2 = Mat_t::Identity(N, N);
+        for(int i = 0; i < mu1; ++i) {
+            auto tmp = R_mu1 * GS_op;
+            R_mu1 = tmp;
+        }
+        for(int i = 0; i < mu2; ++i) {
+            auto tmp = R_mu2 * GS_op;
+            R_mu2 = tmp;
+        }
+        auto tmp = R_mu2 * mg_op * R_mu1;
+        mg_op = tmp;
 
-    // Vec_t eivals = mg_op.eigenvalues();
+        Vec_t eivals = mg_op.eigenvalues();
 
-    // Scalar domainant_eival = eivals(0);
-    // for(int i = 1; i < eivals.size(); ++i) {
-    //     if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
-    //         domainant_eival = eivals(i);
-    //     }
-    // }
+        Scalar domainant_eival = eivals(0);
+        for(int i = 1; i < eivals.size(); ++i) {
+            if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
+                domainant_eival = eivals(i);
+            }
+        }
 
-    // std::string output_file = "../plot_err/eigenvalues/k2";
-    // std::ofstream out(output_file);
-    // if(out) {
-    //     out << "EigenValues" << std::endl;
-    //     out << eivals.cwiseAbs();
-    // } else {
-    //     std::cout << "Cannot open file " << output_file << std::endl;
-    // }
+        // std::string output_file = "../plot_err/eigenvalues/k2";
+        // std::ofstream out(output_file);
+        // if(out) {
+        //     out << "EigenValues" << std::endl;
+        //     out << eivals.cwiseAbs();
+        // } else {
+        //     std::cout << "Cannot open file " << output_file << std::endl;
+        // }
 
-    // std::cout << eivals << std::endl;
-    // std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
-    // std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+        std::cout << eivals << std::endl;
+        std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
+        std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+    }
     /***************************************/
 
     Vec_t u = Vec_t::Random(N);
@@ -195,6 +190,6 @@ ExtendPUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
     }
     std::cout << "Number of iterations: " << cnt << std::endl;
     std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
-    vector_vtk(start_layer, u, "L3_k4pi_2mesh");
+    // vector_vtk(start_layer, u, "L3_k4pi_2mesh");
     return std::make_pair(u, lambda);
 }

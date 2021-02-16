@@ -158,10 +158,10 @@ HE_FEM::SpMat_t HE_FEM::prolongation_planwave(size_type l) {
         // M(t, 2 * t + 1) = tmp(0);
         // M((t+1) % N2, 2 * t + 1) = tmp(1);
         triplets.push_back(triplet_t(t, 2*t, 1.0));
-        triplets.push_back(triplet_t(t, 2*t+1, tmp(0)));
-        triplets.push_back(triplet_t((t+1)%N2, 2*t+1, tmp(1)));
-        // triplets.push_back(triplet_t(t, 2*t+1, 0.5));
-        // triplets.push_back(triplet_t((t+1)%N2, 2*t+1, 0.5));
+        // triplets.push_back(triplet_t(t, 2*t+1, tmp(0)));
+        // triplets.push_back(triplet_t((t+1)%N2, 2*t+1, tmp(1)));
+        triplets.push_back(triplet_t(t, 2*t+1, 0.5));
+        triplets.push_back(triplet_t((t+1)%N2, 2*t+1, 0.5));
     }
     // return M;
     M.setFromTriplets(triplets.begin(), triplets.end());
@@ -187,7 +187,7 @@ HE_FEM::SpMat_t HE_FEM::prolongation_SE_S() {
         coordinate_t vi_coordinate = lf::geometry::Corners(*vi.Geometry()).col(0);
         for(int t = 0; t < N; ++t) {
             Eigen::Vector2d dt;
-            dt << std::cos(2*pi*t/N), std::cos(2*pi*t/N);
+            dt << std::cos(2*pi*t/N), std::sin(2*pi*t/N);
             E(i,t) = std::exp(1i*k*dt.dot(vi_coordinate));
         }
     }

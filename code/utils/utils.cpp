@@ -18,6 +18,30 @@ Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const FHandle_t
     return temp;
 }
 
+Scalar integrate(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int degree){
+    auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+    auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
+
+    Scalar res = 0.0;
+    for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
+        res += LocalIntegral(*cell, degree, f);
+    }
+    return res;
+}
+
+double L2_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int degree=20) {
+    auto f_square = [&f](const coordinate_t& x) {
+        return std::abs(f(x) * f(x));
+    };
+    auto res = integrate(mesh, f_square, degree);
+    return std::sqrt(std::abs(res));
+    // double res = 0.0;
+    // for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
+    //     res += std::abs(LocalIntegral(*cell, degree, f_square));
+    // }
+    // return std::sqrt(res);
+}
+
 void print_save_error(std::vector<std::vector<double>>& data, 
     std::vector<std::string>& data_label, const std::string& sol_name, 
     const std::string& output_folder) {
@@ -32,8 +56,14 @@ void print_save_error(std::vector<std::vector<double>>& data,
     std::cout << std::endl;
     std::cout << std::left << std::scientific << std::setprecision(2);
     for(int l = 0; l < data[0].size(); ++l) {
+        std::cout << l << " & ";
         for(int i = 0; i < data.size(); ++i) {
             std::cout << std::setw(10) << data[i][l];
+            if(i == data.size() - 1) {
+                std::cout << " \\\\";
+            } else {
+                std::cout << " & ";
+            }
         }
         std::cout << std::endl;
     }
@@ -228,57 +258,6 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
     std::cout << "Number of iterations: " << cnt << std::endl;
     std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
     return std::make_pair(u, lambda);
-}
-
-void test_prolongation(HE_FEM& he_fem, size_type L) {
-
-    auto test_f = [](const coordinate_t& x)->Scalar {
-        return 1.0;
-    };
-    // plan_wave pw(2, 1.0, 0.0);
-    // auto test_f = pw.get_fun();
-
-    std::vector<SpMat_t> pro_op(L);
-    for(int i = 0; i < L; ++i) {
-        pro_op[i] = he_fem.prolongation(i);
-        std::cout << i << " :[" << pro_op[i].rows() << "," 
-            << pro_op[i].cols() << "]" << std::endl;
-    }
-
-    auto vec_f = he_fem.fun_in_vec(0, test_f);
-    // int nr_waves = std::pow(2, L+1);
-    // Vec_t vec_f = Vec_t::Zero(3 * nr_waves);
-    // for(int i = 0; i < L*nr_waves; i += nr_waves) {
-    //     vec_f(i) = 1.0;
-    // }
-    std::vector<Vec_t> vec_in_mesh(L+1);
-    vec_in_mesh[0] = vec_f;
-    for(int i = 1; i <= L; ++i) {
-        vec_in_mesh[i] = pro_op[i-1] * vec_in_mesh[i-1];
-        std::cout << vec_in_mesh[i].size() << std::endl;
-    }
-
-    std::string output_file = "prolongation.txt";
-    std::ofstream out(output_file);
-    if(out) {
-        for(int i = 0; i < L; ++i) {
-            std::cout << vec_in_mesh[i] << std::endl << std::endl;
-            out << pro_op[i] << std::endl << std::endl;
-        }
-    } else {
-        std::cout << "Can't open file." << std::endl;
-    }
-
-    std::cout << std::left << std::setw(7) << "level" 
-        << std::setw(15) << "||v-f||" 
-        << std::setw(15) << "||v-uh||" << std::endl;
-    for(int i = 0; i <= L; ++i) {
-        auto true_vec = he_fem.fun_in_vec(i, test_f);
-        std::cout << std::left << std::setw(7) << i 
-            << std::setw(15) << he_fem.L2_Err(i, vec_in_mesh[i], test_f) 
-            << std::setw(15) << (true_vec - vec_in_mesh[i]).norm()
-            << std::endl;
-    }
 }
 
 /*

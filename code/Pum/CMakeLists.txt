@@ -11,7 +11,7 @@ set(pum_resolution_sources
   PUM_ElemVector.cpp
   HE_PUM.h
   HE_PUM.cpp
-  pum_resolution.cpp
+  tests/pum_resolution.cpp
   ../utils/utils.h
   ../utils/utils.cpp
   ../utils/HE_solution.h

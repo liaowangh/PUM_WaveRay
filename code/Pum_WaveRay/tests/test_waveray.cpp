@@ -9,9 +9,9 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "../utils/HE_solution.h"
-#include "../utils/utils.h"
-#include "ExtendPUM_WaveRay.h"
+#include "../../utils/HE_solution.h"
+#include "../../utils/utils.h"
+#include "../PUM_WaveRay.h"
 
 using namespace std::complex_literals;
 
@@ -44,7 +44,7 @@ void test_pumwaveray(int L, int num_wavelayer, std::string& mesh_path,
                 num_planwaves[j] = 2 * num_planwaves[j+1];
             }
             double k_coeff = std::pow(2, l-1);
-            ExtendPUM_WaveRay he_waveray(l, k_coeff*pi, mesh_path, g, u, true, num_planwaves);
+            PUM_WaveRay he_waveray(l, k_coeff*pi, mesh_path, g, u, true, num_planwaves);
             Vec_t fem_sol = he_waveray.solve_multigrid(l, num_wavelayer, 5, 5); 
 
             double l2_err = he_waveray.L2_Err(l, fem_sol, u);
@@ -69,10 +69,8 @@ void test_pumwaveray(int L, int num_wavelayer, std::string& mesh_path,
 }
 
 int main(){
-    // mesh path
-    boost::filesystem::path here = __FILE__;
-    std::string output_folder = "../plot_err/ExtendPum_waveray/";
-    auto mesh_path = (here.parent_path().parent_path() / ("meshes/coarest_mesh.msh")).string(); 
+    std::string output_folder = "../plot_err/pum_waveray/";
+    std::string square_hole = "../meshes/square_hole.msh";
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/tri2.msh")).string(); 
     // auto mesh_path = (here.parent_path().parent_path() / ("meshes/square.msh")).string(); 
     size_type L = 3; // refinement steps
@@ -101,21 +99,21 @@ int main(){
         auto u = solutions[i]->get_fun();
         auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();
-        ExtendPUM_WaveRay he_waveray(L, k, mesh_path, g, u, true, num_planwaves);
+        PUM_WaveRay he_waveray(L, k, square_hole, g, u, true, num_planwaves);
         // std::string prefix = "k" + std::to_string(int(k)) + "_";
         // test_solve(he_waveray, prefix+sol_name[i], output_folder, L, u, grad_u);
         // test_prolongation(he_waveray, L);
 
         auto eq_pair = he_waveray.build_equation(L);
         SpMat_t A = eq_pair.first.makeSparse();
-        // auto eigen_pair = power_GS(A, 1);
-        // he_waveray.vector_vtk(L, eigen_pair.first, "GS_mode");
+        auto eigen_pair = power_GS(A, 1);
+        he_waveray.vector_vtk(L, eigen_pair.first, "GS_mode");
 
-        int num_wavelayer = 2;
+        // int num_wavelayer = 1;
         // he_waveray.power_multigird(L, num_wavelayer, 5, 5);
-        Vec_t fem_sol = he_waveray.solve_multigrid(L, num_wavelayer, 5, 5);
-        std::cout << he_waveray.mesh_width()[L] << " "
-                  << he_waveray.L2_Err(L, fem_sol, u) << " " 
-                  << he_waveray.H1_Err(L, fem_sol, u, grad_u) << std::endl;
+        // Vec_t fem_sol = he_waveray.solve_multigrid(L, num_wavelayer, 5, 5);
+        // std::cout << he_waveray.mesh_width()[L] << " "
+        //           << he_waveray.L2_Err(L, fem_sol, u) << " " 
+        //           << he_waveray.H1_Err(L, fem_sol, u, grad_u) << std::endl;
     }
 }

@@ -9,9 +9,9 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "HE_PUM.h"
-#include "../utils/HE_solution.h"
-#include "../utils/utils.h"
+#include "../HE_PUM.h"
+#include "../../utils/HE_solution.h"
+#include "../../utils/utils.h"
 
 using namespace std::complex_literals;
 

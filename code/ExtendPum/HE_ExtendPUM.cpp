@@ -241,13 +241,13 @@ double HE_ExtendPUM::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
         auto integrand = [this, &mu, &u, &X, &N_wave, &dofarray](const Eigen::Vector2d& x)->Scalar {
             Scalar val_uh = 0.0;
             Scalar val_u  = u(x);
+            double pi = std::acos(-1);
             for(int i = 0; i < 3; ++i) {
                 for(int t = 0; t <= N_wave; ++t) {
                     Eigen::Vector2d d;
                     if(t == 0) {
                         d << 0.0, 0.0;
                     } else {
-                        double pi = std::acos(-1);
                         d << std::cos(2*pi*(t-1)/N_wave), std::sin(2*pi*(t-1)/N_wave);
                     }
                     val_uh += mu(dofarray[i*(N_wave+1)+t]) * (X(0,i) + X(1,i)*x(0) + X(2,i)*x(1)) * std::exp(1i*k*d.dot(x));
@@ -395,36 +395,63 @@ HE_ExtendPUM::Vec_t HE_ExtendPUM::solve(size_type l) {
 HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation(size_type l) {
     LF_ASSERT_MSG((l < L), 
         "in prolongation, level should smaller than" << L);
-    auto Q = Mat_t(prolongation_lagrange(l)); // n_{l+1} x n_l
-    auto eq_pair = build_equation(l+1);
-    auto A = eq_pair.first;
-    Mat_t Phi = Assemble_EnergyProjection(l, 1.0, -k*k, -1i * k);
-    Mat_t res(Phi.rows(), Phi.cols());
-    int Nl = num_planwaves[l], Nl1 = num_planwaves[l+1];
-    int n = Q.cols();
+    auto Q = prolongation_lagrange(l);
+    auto P = prolongation_planwave(l);
     
-    for(int i = 0; i < n; ++i) {
-        auto A_copy = A;
-        auto selector = [&Q, &i, &Nl1](size_type dof_idx)->std::pair<bool, Scalar> {
-            int j = dof_idx / (Nl1 + 1);
-            if(Q(j, i) != 0) {
-                return {false, 0};
-            } else {
-                return {true, 0};
-            }
-        };
-        for(int t = 0; t <= Nl; ++t){
-            Vec_t tmp_phi = Phi.col(i*(Nl+1)+t);
-            lf::assemble::FixFlaggedSolutionCompAlt<Scalar>(selector, A_copy, tmp_phi);
-            Phi.col(i*(Nl+1)+t) = tmp_phi;
+    size_type n1 = Q.rows(), n2 = P.rows();
+    size_type m1 = Q.cols(), m2 = P.cols();
+    Mat_t Extend_P = Mat_t::Zero(n2+1, m2+1);
+    Extend_P.block(1, 1, n2, m2) = Mat_t(P);
+    Extend_P(0, 0) = 1.0;
+    Mat_t res = Mat_t(n1*(n2+1), m1*(m2+1));
+    for(int k = 0; k < Q.outerSize(); ++k) {
+        for(SpMat_t::InnerIterator it(Q, k); it; ++it) {
+            int i = it.row();
+            int j = it.col();
+            Scalar qij = it.value();
+            res.block(i*(n2+1), j*(m2+1), n2+1, m2+1) = qij * Extend_P;
         }
-        SpMat_t A_crs = A_copy.makeSparse();
-        Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
-        solver.compute(A_crs);
-        res.block(0, i*(Nl+1), Phi.rows(), Nl+1) = solver.solve(Phi.block(0, i*(Nl+1), Phi.rows(), Nl+1));
     }
     return res.sparseView();
 }
+// HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation(size_type l) {
+//     LF_ASSERT_MSG((l < L), 
+//         "in prolongation, level should smaller than" << L);
+//     auto Q = Mat_t(prolongation_lagrange(l)); // n_{l+1} x n_l
+//     auto eq_pair = build_equation(l+1);
+//     auto A = eq_pair.first;
+//     Mat_t Phi = Assemble_EnergyProjection(l, 1.0, -k*k, -1i * k);
+//     Mat_t res(Phi.rows(), Phi.cols());
+//     int Nl = num_planwaves[l], Nl1 = num_planwaves[l+1];
+//     int n = Q.cols();
+//
+//     SpMat_t A_crs = A.makeSparse();
+//     Eigen::SparseLU<SpMat_t> solver;
+//     solver.compute(A_crs);
+//     res = solver.solve(Phi);
+// 
+    // for(int i = 0; i < n; ++i) {
+    //     auto A_copy = A;
+    //     auto selector = [&Q, &i, &Nl1](size_type dof_idx)->std::pair<bool, Scalar> {
+    //         int j = dof_idx / (Nl1 + 1);
+    //         if(Q(j, i) != 0.) {
+    //             return {false, 0.};
+    //         } else {
+    //             return {true, 0.};
+    //         }
+    //     };
+    //     for(int t = 0; t <= Nl; ++t){
+    //         Vec_t tmp_phi = Phi.col(i*(Nl+1)+t);
+    //         lf::assemble::FixFlaggedSolutionCompAlt<Scalar>(selector, A_copy, tmp_phi);
+    //         Phi.col(i*(Nl+1)+t) = tmp_phi;
+    //     }
+    //     SpMat_t A_crs = A_copy.makeSparse();
+    //     Eigen::SparseLU<Eigen::SparseMatrix<Scalar>> solver;
+    //     solver.compute(A_crs);
+    //     res.block(0, i*(Nl+1), Phi.rows(), Nl+1) = solver.solve(Phi.block(0, i*(Nl+1), Phi.rows(), Nl+1));
+    // }
+    // return res.sparseView();
+// }
 
 /*
  * assemble for 
@@ -528,6 +555,7 @@ HE_ExtendPUM::Mat_t HE_ExtendPUM::Assemble_EnergyProjection(size_type l, Scalar 
                         int v_idx = dofarray[j] * (Nl1 + 1) + t;
                         auto integrand = [this,&vertices,&i,&j,&s,&t,&Nl,&Nl1,&gamma](const Eigen::Vector2d& x)->Scalar {
                             double x1, y1, x2, y2, tmp;
+                            double pi = std::acos(-1.);
                             x1 = vertices(0,0), y1 = vertices(1,0);
                             x2 = vertices(0,1), y2 = vertices(1,1);
                             if(x1 == x2) {
@@ -537,7 +565,7 @@ HE_ExtendPUM::Mat_t HE_ExtendPUM::Assemble_EnergyProjection(size_type l, Scalar 
                             }
                             Scalar lambdai = (i == 0 ? tmp : 1 - tmp);
                             Scalar lambdaj = (j == 0 ? tmp : 1 - tmp);
-
+                            Eigen::Vector2d ds, dt;
                             if(s == 0) {
                                 ds << 0.0, 0.0;
                             } else {
@@ -552,7 +580,7 @@ HE_ExtendPUM::Mat_t HE_ExtendPUM::Assemble_EnergyProjection(size_type l, Scalar 
                             Scalar val_v = lambdaj * std::exp(1i*k*dt.dot(x));
                             return val_z * std::conj(val_v);
                         };
-                        Scalar tmp = LocalIntegral(*cell, degree, f);
+                        Scalar tmp = LocalIntegral(*cell, degree, integrand);
                         triplets.push_back(triplet_t(v_idx, z_idx, tmp));
                     }
                 }
@@ -560,8 +588,8 @@ HE_ExtendPUM::Mat_t HE_ExtendPUM::Assemble_EnergyProjection(size_type l, Scalar 
         }
     }
 
-    SpMat_t Z(n*Nl1, n*Nl), ;
-    Z.setFromTriples(triplets.begin(), triplets.end());
+    SpMat_t Z(n*Nl1, n*Nl);
+    Z.setFromTriplets(triplets.begin(), triplets.end());
     
     Mat_t Phi = Mat_t::Zero(n*Nl1, Q.cols()*Nl);
     Mat_t Dense_Q = Mat_t(Q);
@@ -597,7 +625,7 @@ HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation_SE_S() {
         E(i,0) = 1.0;
         for(int t = 1; t <= N; ++t) {
             Eigen::Vector2d dt;
-            dt << std::cos(2*pi*(t-1)/N), std::cos(2*pi*(t-1)/N);
+            dt << std::cos(2*pi*(t-1)/N), std::sin(2*pi*(t-1)/N);
             E(i,t) = std::exp(1i*k*dt.dot(vi_coordinate));
         }
     }

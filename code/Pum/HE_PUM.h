@@ -32,8 +32,8 @@ public:
 
     /* Construcotr */
     HE_PUM(size_type levels, double wave_num, const std::string& mesh_path, 
-        FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves): 
-        HE_FEM(levels, wave_num, mesh_path, g, h, hole, num_waves){};
+        FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20): 
+        HE_FEM(levels, wave_num, mesh_path, g, h, hole, num_waves, quad_degree){};
 
     /* functions inherit from base class */
     std::pair<lf::assemble::COOMatrix<Scalar>, Vec_t> build_equation(size_type level) override;

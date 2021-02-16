@@ -13,7 +13,7 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "../pum_wave_ray/HE_FEM.h"
+#include "../Pum_WaveRay/HE_FEM.h"
 #include "../LagrangeO1/HE_LagrangeO1.h"
 #include "../ExtendPum/HE_ExtendPUM.h"
 
@@ -47,8 +47,8 @@ public:
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
     ExtendPUM_WaveRay(size_type levels, double wave_number, const std::string& mesh_path, 
-        FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves): 
-            HE_FEM(levels, wave_number, mesh_path, g, h, hole, num_waves),
+        FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20): 
+            HE_FEM(levels, wave_number, mesh_path, g, h, hole, num_waves, quad_degree),
             HE_LagrangeO1(levels, wave_number, mesh_path, g, h, hole),
             HE_ExtendPUM(levels, wave_number, mesh_path, g, h, hole, num_waves) {}
 
@@ -62,7 +62,7 @@ public:
 
     // get the vector representation of function f
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
-    size_type Dofs_perNode(size_type l) override { return l == L ? 1 : num_planwaves[l]; };
+    size_type Dofs_perNode(size_type l) override { return l == L ? 1 : num_planwaves[l]+1; };
     lf::assemble::UniformFEDofHandler get_dofh(size_type l) override {
         return lf::assemble::UniformFEDofHandler(getmesh(l), 
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});

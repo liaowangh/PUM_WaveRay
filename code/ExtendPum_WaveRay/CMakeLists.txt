@@ -1,9 +1,9 @@
 set(test_extendpum_waveray_sources
-  ../pum_wave_ray/HE_FEM.h
-  ../pum_wave_ray/HE_FEM.cpp
+  tests/test_ExtendPUM_WaveRay.cpp
   ExtendPUM_WaveRay.h
   ExtendPUM_WaveRay.cpp
-  test_ExtendPUM_WaveRay.cpp
+  ../Pum_WaveRay/HE_FEM.h
+  ../Pum_WaveRay/HE_FEM.cpp
   ../LagrangeO1/HE_LagrangeO1.h
   ../LagrangeO1/HE_LagrangeO1.cpp
   ../ExtendPum/ExtendPUM_EdgeMat.h

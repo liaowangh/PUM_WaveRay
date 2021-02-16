@@ -30,6 +30,12 @@ using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate
 // Integer through entity e, \int_e fdx
 Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const FHandle_t& f);
 
+// integrate over mesh
+Scalar integrate(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int degree);
+
+// L2 norm of the function, computed with the numerical quadrature in the given mesh
+double L2_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int degree);
+
 // Test the manufacture solution, directly solve the equation in finest coarse.
 void test_solve(HE_FEM& he_fem, const std::string& sol_name, 
     const std::string& output_folder, size_type L, const FHandle_t& u, 
@@ -42,8 +48,6 @@ void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol
 void print_save_error(std::vector<std::vector<double>>& data, 
     std::vector<std::string>& data_label, const std::string& sol_name, 
     const std::string& output_folder);
-
-void test_prolongation(HE_FEM& he_fem, size_type L);
 
 /*
  * Directional Gaussian Seidel relaxation.
