@@ -37,7 +37,7 @@ void test_prolongation(HE_FEM& he_fem, const Vec_t& vec_f, int L, const FHandle_
 int main() {
     // std::string mesh_path = "../meshes/square_hole.msh";
     std::string mesh_path = "../meshes/square.msh";
-    size_type L = 3; // refinement steps
+    size_type L = 5; // refinement steps
     double k = std::acos(-1.); // wave number
 
     std::vector<int> num_planwaves(L+1);
@@ -56,21 +56,21 @@ int main() {
     PUM_WaveRay waveray(L, k, mesh_path, g, u, false, num_planwaves, 20);
 
     /************************************************************************/
-    // std::cout << "Test prolongation operator between Lagrangian finite element spaces." << std::endl;
-    // // auto test_f = [](const coordinate_t& x)->Scalar {
-    // //     return 2.0*x(0) + 3.0*x(1);
-    // // };
-    // Vec_t vec_f = he_O1.fun_in_vec(0, u);
-    // test_prolongation(he_O1, vec_f, L, u);
+    std::cout << "Test prolongation operator between Lagrangian finite element spaces." << std::endl;
+    auto test_f = [](const coordinate_t& x)->Scalar {
+        return 2.0*x(0) + 3.0*x(1);
+    };
+    Vec_t vec_f = he_O1.fun_in_vec(0, u);
+    test_prolongation(he_O1, vec_f, L, u);
 
     /************************************************************************/
-    // std::cout << "Test prolongation operator using best approximation between PUM sapces." << std::endl;
-    // auto vec_u = waveray.fun_in_vec(0, u);
-    // // Vec_t vec_u = Vec_t::Zero(5*N0);
-    // // for(int i = 0; i < 5*N0; i += N0) {
-    // //     vec_u(i) = 1.0;
-    // // }
-    // test_prolongation(waveray, vec_u, L, u);
+    std::cout << "Test prolongation operator using best approximation between PUM sapces." << std::endl;
+    auto vec_u = waveray.fun_in_vec(0, u);
+    // Vec_t vec_u = Vec_t::Zero(5*N0);
+    // for(int i = 0; i < 5*N0; i += N0) {
+    //     vec_u(i) = 1.0;
+    // }
+    test_prolongation(waveray, vec_u, L, u);
 
     /************************************************************************/
     std::cout << "Test prolongation operator using best approximation between extend PUM sapces." << std::endl;

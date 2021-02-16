@@ -69,11 +69,12 @@ void test_pumwaveray(int L, int num_wavelayer, std::string& mesh_path,
 }
 
 int main(){
-    boost::filesystem::path here = __FILE__;
-    std::string output_folder = "../result_square/ExtendPUM_WaveRay/";
-    std::string mesh_path = "../meshes/square.msh";
+    std::string square_output = "../result_square/ExtendPUM_WaveRay/";
+    std::string square_hole_output = "../result_squarehole/ExtendPUM_WaveRaay/";
+    std::string square = "../meshes/square.msh";
+    std::string square_hole = "../meshes/square_hole.msh";
     size_type L = 3; // refinement steps
-    double k = 3*std::acos(-1.); // wave number
+    double k = 2*std::acos(-1.); // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
 
@@ -98,7 +99,7 @@ int main(){
         auto u = solutions[i]->get_fun();
         auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();
-        ExtendPUM_WaveRay extend_waveray(L, k, mesh_path, g, u, false, num_planwaves);
+        ExtendPUM_WaveRay extend_waveray(L, k, square, g, u, false, num_planwaves);
         // std::string prefix = "k" + std::to_string(int(k)) + "_";
         // test_solve(extend_waveray, prefix+sol_name[i], output_folder, L, u, grad_u);
         // test_prolongation(extend_waveray, L);

@@ -190,6 +190,6 @@ ExtendPUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
     }
     std::cout << "Number of iterations: " << cnt << std::endl;
     std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
-    // vector_vtk(start_layer, u, "L3_k4pi_2mesh");
+    vector_vtk(start_layer, u, "square_L3_k2pi_2mesh_Galerkin");
     return std::make_pair(u, lambda);
 }

@@ -49,6 +49,10 @@ void print_save_error(std::vector<std::vector<double>>& data,
     std::vector<std::string>& data_label, const std::string& sol_name, 
     const std::string& output_folder);
 
+void tabular_output(std::vector<std::vector<double>>& data, 
+    std::vector<std::string>& data_label, const std::string& sol_name, 
+    const std::string& output_folder);
+
 /*
  * Directional Gaussian Seidel relaxation.
  *   D.o.f. are first ordered according to the direction d they are associated with
