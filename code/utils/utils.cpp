@@ -80,7 +80,7 @@ void print_save_error(std::vector<std::vector<double>>& data,
 
 void tabular_output(std::vector<std::vector<double>>& data, 
     std::vector<std::string>& data_label, const std::string& sol_name, 
-    const std::string& output_folder) {
+    const std::string& output_folder, bool save) {
     
     std::cout << sol_name << std::endl;
     //Tabular output of the data
@@ -105,26 +105,28 @@ void tabular_output(std::vector<std::vector<double>>& data,
     }
 
     // write the result to the file
-    std::string output_file = output_folder + sol_name + ".txt";
-    std::ofstream out(output_file);
+    if(save){
+        std::string output_file = output_folder + sol_name + ".txt";
+        std::ofstream out(output_file);
 
-    out << data_label[0];
-    for(int i = 1; i < data_label.size(); ++i) {
-        out << " " << data_label[i];
-    }
-    out << std::endl;
-    out << std::scientific << std::setprecision(1);
-    for(int l = 0; l < data[0].size(); ++l) {
-        out << l << " & ";
-        for(int i = 0; i < data.size(); ++i) {
-            if(i == data.size() - 1) {
-                out << data[i][l] << " \\\\";
-            } else {
-                out << data[i][l] << " & ";
-            }
+        out << data_label[0];
+        for(int i = 1; i < data_label.size(); ++i) {
+            out << " " << data_label[i];
         }
         out << std::endl;
-    } 
+        out << std::scientific << std::setprecision(1);
+        for(int l = 0; l < data[0].size(); ++l) {
+            out << l << " & ";
+            for(int i = 0; i < data.size(); ++i) {
+                if(i == data.size() - 1) {
+                    out << data[i][l] << " \\\\";
+                } else {
+                    out << data[i][l] << " & ";
+                }
+            }
+            out << std::endl;
+        } 
+    }
 }
 
 void test_solve(HE_FEM& he_fem, const std::string& sol_name, 
@@ -220,7 +222,7 @@ void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
                 << std::setw(20) << (sol - u).norm() / sol.norm() << std::endl;
         }
         
-        if((sol - u).norm() < 0.001){
+        if((sol - u).norm() < 0.01){
             break;
         }
         if(cnt > 500) {
@@ -235,8 +237,8 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
     /* Compute the Eigen value of the GS operator */
     Mat_t dense_A = Mat_t(A);
     Mat_t L = Mat_t(dense_A.triangularView<Eigen::Lower>());
-    Mat_t U = A - L;
-    Mat_t GS_op = L.colPivHouseholderQr().solve(-U);
+    Mat_t U = L - A;
+    Mat_t GS_op = L.colPivHouseholderQr().solve(U);
     Vec_t eivals = GS_op.eigenvalues();
 
     Scalar domainant_eival = eivals(0);
@@ -250,7 +252,7 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
     std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
     /**********************************************/
 
-    double tol = 1e-3;
+    double tol = 0.0001;
     int N = A.rows();
     Vec_t u = Vec_t::Random(N);
 
@@ -269,22 +271,21 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
                 Scalar tmp = (A.row(j) * u)(0,0);
                 Scalar Ajj = A.coeffRef(j,j);
                 u(j) = (u(j) * Ajj - tmp) / Ajj;
-                // u(j) = (u(j) * A(j,j) - tmp) / A(j,j);
             }
         }
         // now u should be GS_op * old_u
         lambda = old_u.dot(u); // Rayleigh quotient
         // compute the residual and check vs tolerance
         auto r = u - lambda * old_u;
-
+        double r_norm = r.norm();
         if(cnt % 20 == 0){
             std::cout << std::left << std::setw(10) << cnt
-                << std::setw(20) << r.norm() << std::endl;
+                << std::setw(20) << r_norm << std::endl;
         }
 
         u.normalize();
         
-        if(r.norm() < tol) {
+        if(r_norm < tol) {
             std::cout << "Power iteration converges after " << cnt 
                 << " iterations." << std::endl;
             break;
@@ -300,6 +301,16 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
     return std::make_pair(u, lambda);
 }
 
+void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu) {
+    int N = A.rows();
+    for(int k = 0; k < mu; ++k) {
+        int i = k % N;
+        Vec_t rowi_T = A.row(i).transpose();
+        Vec_t tmp = u + (phi(i) - u.dot(rowi_T)) / rowi_T.squaredNorm() * rowi_T.conjugate();
+        u = tmp;
+    }
+}
+
 /*
  * Perform v-cycle, finer grid transfer the residual to the coarser grid, 
  * in which the residual equation is solved, and then the error is transfered back to finer grid.
@@ -313,8 +324,6 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
  */
 void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
     std::vector<int>& stride, size_type mu1, size_type mu2) {
-
-    Vec_t old_u = u;
 
     int L = I.size();
     LF_ASSERT_MSG(Op.size() == L + 1 && stride.size() == L + 1, 
@@ -344,9 +353,6 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
         rhs_vec[i-1] = I[i-1].transpose() * (rhs_vec[i] - Op[i] * initial[i]);
     }
 
-    // Mat_t dense_op = Mat_t(Op[0]);
-    // initial[0] = dense_op.colPivHouseholderQr().solve(rhs_vec[0]);
-    // initial[0] = Op[0].colPivHouseholderQr().solve(rhs_vec[0]);
     Eigen::SparseLU<SpMat_t> solver;
     solver.compute(Op[0]);
     initial[0] = solver.solve(rhs_vec[0]);
@@ -357,8 +363,6 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
         Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
     }
     u = initial[L];
-
-    // std::cout << "After v cycle, ||u-u_old||=" << (old_u - u).norm() << std::endl;
 }
 
 
@@ -374,13 +378,17 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
  * R: relaxation operator
  * mu1, mu2: pre and post relaxation 
  */
-// Mat_t multigrid_op(int l, std::vector<Mat_t>& Op, std::vector<Mat_t>& I, Mat_t& R,
-//     size_type mu1, size_type mu2) {
-//     int N = Op[0].rows();
+// Mat_t multigrid_op(int l, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, size_type mu1, size_type mu2) {
+//     int N = Op[l].rows();
 //     Mat_t Id = Mat_t::Identity(N, N);
 //     if(l == 0) {
 //         return Op[0].colPivHouseholderQr().solve(Id);
 //     } else {
+//         Mat_t A = Mat_t(Op[l]);
+//         Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
+//         Mat_t U = L - A;
+//         Mat_t GS_op = L.colPivHouseholderQr().solve(U);
+// 
 //         Mat_t R_mu1 = Mat_t::Identity(N, N);
 //         Mat_t R_mu2 = Mat_t::Identity(N, N);
 //         for(int i = 0; i < mu1; ++i) {
@@ -391,9 +399,9 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
 //             auto tmp = R_mu2 * GS_op;
 //             R_mu2 = tmp;
 //         }
-//         Mat_t mg_op = Id - I[l] * multigrid_op(l-1, Op, I, R, mu1, mu2) *  
+//         Mat_t mg_op = Id - I[l] * multigrid_op(l-1, Op, I, mu1, mu2) *  
 //         auto tmp = R_mu2 * mg_op * R_mu1;
-        
-//         return Id - I[l] * multigrid_op(l-1, Op, I, R, mu1, mu2) * 
+// 
+//         return Id - I[l] * multigrid_op(l-1, Op, I, mu1, mu2) * 
 //     }
 // }

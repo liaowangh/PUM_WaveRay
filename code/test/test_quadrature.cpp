@@ -16,6 +16,8 @@
 
 using namespace std::complex_literals;
 
+
+
 int main(){
     std::string mesh_path = "../meshes/square.msh";
     auto mesh_factory = std::make_unique<lf::mesh::hybrid2d::MeshFactory>(2);
@@ -24,7 +26,7 @@ int main(){
     auto mesh = reader.mesh();
 
     double pi = std::acos(-1.);
-    double k = 20.0;
+    double k = 60.0;
     int N = 16;
     for(int i = 0; i < N; ++i) {
         Eigen::Vector2d d;
@@ -32,7 +34,9 @@ int main(){
         auto f = [&d, &k](const Eigen::Vector2d& x)->Scalar {
             return std::exp(1i*k*d.dot(x));
         };
-        std::cout << integrate(mesh, f, 20) << " " << L2_norm(mesh, f, 20) << std::endl;
+        std::cout << integrate(mesh, f, 20) << " " 
+                  << integrate(mesh, f, 30) << " "
+                  << integrate(mesh, f, 50) << std::endl;
     }
 
 }

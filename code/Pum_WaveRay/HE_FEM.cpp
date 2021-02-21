@@ -158,10 +158,10 @@ HE_FEM::SpMat_t HE_FEM::prolongation_planwave(size_type l) {
         // M(t, 2 * t + 1) = tmp(0);
         // M((t+1) % N2, 2 * t + 1) = tmp(1);
         triplets.push_back(triplet_t(t, 2*t, 1.0));
-        triplets.push_back(triplet_t(t, 2*t+1, tmp(0)));
-        triplets.push_back(triplet_t((t+1)%N2, 2*t+1, tmp(1)));
-        // triplets.push_back(triplet_t(t, 2*t+1, 0.5));
-        // triplets.push_back(triplet_t((t+1)%N2, 2*t+1, 0.5));
+        // triplets.push_back(triplet_t(t, 2*t+1, tmp(0)));
+        // triplets.push_back(triplet_t((t+1)%N2, 2*t+1, tmp(1)));
+        triplets.push_back(triplet_t(t, 2*t+1, 0.5));
+        triplets.push_back(triplet_t((t+1)%N2, 2*t+1, 0.5));
     }
     // return M;
     M.setFromTriplets(triplets.begin(), triplets.end());

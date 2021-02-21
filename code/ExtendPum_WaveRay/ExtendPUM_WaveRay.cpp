@@ -53,6 +53,49 @@ ExtendPUM_WaveRay::Vec_t ExtendPUM_WaveRay::solve(size_type l) {
 
 ExtendPUM_WaveRay::SpMat_t ExtendPUM_WaveRay::prolongation(size_type l) {
     return l == L - 1 ? HE_ExtendPUM::prolongation_SE_S() : HE_ExtendPUM::prolongation(l);
+    // if(l == L -1) {
+    //     return HE_ExtendPUM::prolongation_SE_S();
+    // }
+    // double pi = std::acos(-1.);
+    // auto Q = prolongation_lagrange(l);
+    // int n1 = Q.cols(), n2 = Q.rows(); // n1: n_l, n2: n_{l+1}
+    // int N1 = num_planwaves[l], N2 = num_planwaves[l+1]; // N1: N_l, N2: N_{l+1}
+
+    // auto mesh = getmesh(l+1);  // fine mesh
+    // auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
+
+    // SpMat_t res(n2*(N2+1), n1*(N1+1)); // transfer operator
+    // std::vector<triplet_t> triplets;
+    
+    // for(int outer_idx = 0; outer_idx < Q.outerSize(); ++outer_idx) {
+    //     for(SpMat_t::InnerIterator it(Q, outer_idx); it; ++it) {
+    //         int i = it.row();
+    //         int j = it.col();
+    //         Scalar qij = it.value(); 
+            
+    //         // b_j^l = \sum_i qij b_i^{l+1} (t = 0)
+    //         triplets.push_back(triplet_t(i*(N2+1), j*(N1+1), qij));
+
+    //         // b_j^l e_{2t-1}^l = \sum_i qij b_i^{l+1} e_t^{l+1}
+    //         for(int t = 1; t <= N2; ++t) {
+    //             triplets.push_back(triplet_t(i*(N2+1)+t, j*(N1+1)+2*t-1, qij));
+    //         } 
+
+    //         const lf::mesh::Entity& p_i = dofh.Entity(i); // the entity to which i-th global shape function is associated
+    //         coordinate_t pi_coordinate = lf::geometry::Corners(*p_i.Geometry()).col(0);
+
+    //         for(int t = 1; t <= N2; ++t) {
+    //             Eigen::Vector2d d1, d2;
+    //             d1 << std::cos(2*pi*(2*t-1)/N1), std::sin(2*pi*(2*t-1)/N1); // d_{2t}^l
+    //             d2 << std::cos(2*pi*(  t-1)/N2), std::sin(2*pi*(  t-1)/N2); // d_{t}^{l+1}
+    //             Scalar tmp = qij * std::exp(1i*k*(d1-d2).dot(pi_coordinate));
+    //             triplets.push_back(triplet_t(i*(N2+1)+t, j*(N1+1)+2*t, tmp));
+    //         }
+
+    //     }
+    // }
+    // res.setFromTriplets(triplets.begin(), triplets.end());
+    // return res;
 }
 
 /*
@@ -79,6 +122,7 @@ ExtendPUM_WaveRay::Vec_t ExtendPUM_WaveRay::solve_multigrid(size_type start_laye
         stride[i] = num_planwaves[idx] + 1;
     }
     Vec_t initial = Vec_t::Random(A.rows());
+    // Vec_t initial = HE_LagrangeO1::solve_multigrid(start_layer, 3, 5, 5);
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
     return initial;
 }

@@ -150,10 +150,9 @@ HE_LagrangeO1::Vec_t HE_LagrangeO1::solve_multigrid(size_type start_layer, int n
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
         int idx = start_layer + i - num_coarserlayer;
         prolongation_op[i] = prolongation(idx);
-        // Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        auto tmp = build_equation(idx);
-        // Op[i] = tmp.first.makeDense();
-        Op[i] = tmp.first.makeSparse();
+        Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
+        // auto tmp = build_equation(idx);
+        // Op[i] = tmp.first.makeSparse();
     }
 
     Vec_t initial = Vec_t::Random(A.rows());
@@ -180,39 +179,40 @@ HE_LagrangeO1::power_multigird(size_type start_layer, int num_coarserlayer, int 
 
     int N = A.rows();
     /* Get the multigrid (2 grid) operator manually */
-    // Op[0] = prolongation_op[0].transpose() * Op[1] * prolongation_op[0];
-    // Mat_t mg_op = Mat_t::Identity(N, N) - 
-    //     prolongation_op[0]*Op[0].colPivHouseholderQr().solve(prolongation_op[0].transpose())*Op[1];
+    if(num_coarserlayer == 1) {
+        Mat_t mg_op = Mat_t::Identity(N, N) - 
+            prolongation_op[0]*Mat_t(Op[0]).colPivHouseholderQr().solve(Mat_t(prolongation_op[0]).transpose())*Op[1];
 
-    // Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
-    // Mat_t U = L - A;
-    // Mat_t GS_op = L.colPivHouseholderQr().solve(U);
+        Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
+        Mat_t U = L - A;
+        Mat_t GS_op = L.colPivHouseholderQr().solve(U);
 
-    // Mat_t R_mu1 = Mat_t::Identity(N, N);
-    // Mat_t R_mu2 = Mat_t::Identity(N, N);
-    // for(int i = 0; i < mu1; ++i) {
-    //     auto tmp = R_mu1 * GS_op;
-    //     R_mu1 = tmp;
-    // }
-    // for(int i = 0; i < mu2; ++i) {
-    //     auto tmp = R_mu2 * GS_op;
-    //     R_mu2 = tmp;
-    // }
-    // auto tmp = R_mu2 * mg_op * R_mu1;
-    // mg_op = tmp;
+        Mat_t R_mu1 = Mat_t::Identity(N, N);
+        Mat_t R_mu2 = Mat_t::Identity(N, N);
+        for(int i = 0; i < mu1; ++i) {
+            auto tmp = R_mu1 * GS_op;
+            R_mu1 = tmp;
+        }
+        for(int i = 0; i < mu2; ++i) {
+            auto tmp = R_mu2 * GS_op;
+            R_mu2 = tmp;
+        }
+        auto tmp = R_mu2 * mg_op * R_mu1;
+        mg_op = tmp;
 
-    // Vec_t eivals = mg_op.eigenvalues();
+        Vec_t eivals = mg_op.eigenvalues();
 
-    // std::cout << eivals << std::endl;
+        std::cout << eivals << std::endl;
 
-    // Scalar domainant_eival = eivals(0);
-    // for(int i = 1; i < eivals.size(); ++i) {
-    //     if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
-    //         domainant_eival = eivals(i);
-    //     }
-    // }
-    // std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
-    // std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+        Scalar domainant_eival = eivals(0);
+        for(int i = 1; i < eivals.size(); ++i) {
+            if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
+                domainant_eival = eivals(i);
+            }
+        }
+        std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
+        std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+    }
     /***************************************/
 
     Vec_t u = Vec_t::Random(N);

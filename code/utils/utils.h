@@ -51,7 +51,7 @@ void print_save_error(std::vector<std::vector<double>>& data,
 
 void tabular_output(std::vector<std::vector<double>>& data, 
     std::vector<std::string>& data_label, const std::string& sol_name, 
-    const std::string& output_folder);
+    const std::string& output_folder, bool save);
 
 /*
  * Directional Gaussian Seidel relaxation.
@@ -70,6 +70,8 @@ void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride);
 // use the power iteration to compute the domainant eigenvalue of GS operator and 
 // an associated eigenvector
 std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride);
+
+void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
 
 void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
     std::vector<int>& stride, size_type mu1, size_type mu2);
