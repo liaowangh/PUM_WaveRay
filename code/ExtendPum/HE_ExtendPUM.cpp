@@ -439,7 +439,7 @@ HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation(size_type l) {
     
     // auto Q = prolongation_lagrange(l);
     // auto P = prolongation_planwave(l);
-    // 
+    //
     // size_type n1 = Q.rows(), n2 = P.rows();
     // size_type m1 = Q.cols(), m2 = P.cols();
     // Mat_t Extend_P = Mat_t::Zero(n2+1, m2+1);

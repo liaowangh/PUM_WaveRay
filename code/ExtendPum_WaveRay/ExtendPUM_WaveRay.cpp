@@ -122,8 +122,8 @@ ExtendPUM_WaveRay::Vec_t ExtendPUM_WaveRay::solve_multigrid(size_type start_laye
         stride[i] = num_planwaves[idx] + 1;
     }
     Vec_t initial = Vec_t::Random(A.rows());
-    // Vec_t initial = HE_LagrangeO1::solve_multigrid(start_layer, 3, 5, 5);
-    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
+    // Vec_t initial = HE_LagrangeO1::solve_multigrid(start_layer, 1, 3, 3);
+    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2, false);
     return initial;
 }
 

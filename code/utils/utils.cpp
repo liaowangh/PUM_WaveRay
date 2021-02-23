@@ -1,4 +1,5 @@
 #include <fstream>
+#include <random>
 #include <string>
 
 #include "utils.h"
@@ -217,16 +218,148 @@ void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
                 // u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
             }
         }
+        double err = (sol - u).norm() / sol.norm();
         if(cnt % 20 == 0) {
             std::cout << std::left << std::setw(10) << cnt
-                << std::setw(20) << (sol - u).norm() / sol.norm() << std::endl;
+                << std::setw(20) << err << std::endl;
         }
-        
-        if((sol - u).norm() < 0.01){
+        if(err < 0.01){
+            std::cout << "Gauss Seidel iteration converges after " << cnt << " iterations." << std::endl;
             break;
         }
-        if(cnt > 500) {
-            std::cout << "Gaussian Seidel iteration doesn't converge after "
+        if(cnt >= 500) {
+            std::cout << "Gauss Seidel iteration doesn't converge after "
+                      << cnt << " iterations." << std::endl; 
+            break;
+        }
+    }
+}
+
+/*
+ * N = stride (number of plan waves), n = u.size() / N (number of nodes)
+ * u is divided into blocks
+ *  1. {u[i*N],...,u[(i+1)*N-1]}, i = 0, 1, ..., n (divid according to nodes)
+ *  2. {u[t], u[N+t], u[2N+t], ... , u[(n-1)N+t]}, t = 0, 1, ... , N-1 (divid according to waves)
+ */
+void block_GS(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
+    LF_ASSERT_MSG(phi.size() % stride == 0, 
+        "the size of unknows should divide stride!");
+    if(stride == 1) {
+        Gaussian_Seidel(A, phi, u, stride, mu);
+        return;
+    }
+    int N = stride;
+    int n = u.size() / N;
+    for(int nu = 0; nu < mu; ++nu) {
+        for(int i = 0; i < n; ++i) {
+            Mat_t Ai = A.block(i*N, i*N, N, N);
+            Vec_t rhs_i = phi.segment(i*N, N) - A.block(i*N, 0, N, N*n) * u 
+                + Ai * u.segment(i*N, N);
+            u.segment(i*N, N) = Ai.colPivHouseholderQr().solve(rhs_i);
+        }
+    }
+}
+
+void block_GS(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
+    // u: initial value;
+    std::cout << std::left << std::setw(10) << "Iteration"
+        << std::setw(20) << "Err_norm" << std::endl;
+
+    int N = stride;
+    int n = u.size() / N;
+
+    int cnt = 0;
+    while(true){
+        cnt++;
+        for(int i = 0; i < n; ++i) {
+            Mat_t Ai = A.block(i*N, i*N, N, N);
+            Vec_t rhs_i = phi.segment(i*N, N) - A.block(i*N, 0, N, N*n) * u 
+                + Ai * u.segment(i*N, N);
+            u.segment(i*N, N) = Ai.colPivHouseholderQr().solve(rhs_i);
+        }
+        double err = (sol - u).norm() / sol.norm();
+        if(cnt % 20 == 0) {
+            std::cout << std::left << std::setw(10) << cnt
+                << std::setw(20) << err << std::endl;
+        }
+        if(err < 0.01){
+            std::cout << "Block GS iteration converges after " << cnt << " iterations." << std::endl;
+            break;
+        }
+        if(cnt >= 500) {
+            std::cout << "block GS iteration doesn't converge after "
+                      << cnt << " iterations." << std::endl; 
+            break;
+        }
+    }
+}
+
+void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, int mu) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+
+    Eigen::VectorXd A_rowwise_norm = Mat_t(A).rowwise().squaredNorm();
+    A_rowwise_norm = A_rowwise_norm / A_rowwise_norm.sum();
+
+    int N = A.rows();
+    for(int k = 0; k < mu; ++k) {
+        // int i = k % N;
+        int i = 0;
+        double random_number = dis(gen), acc = 0.0;
+        for( ; i < N; ++i) {
+            acc += A_rowwise_norm(i);
+            if(acc > random_number){
+                break;
+            }
+        }
+        Vec_t rowi_T = A.row(i).transpose();
+        Vec_t tmp = u + (phi(i) - (u.conjugate()).dot(rowi_T)) / rowi_T.squaredNorm() * rowi_T.conjugate();
+        u = tmp;
+    }
+}
+
+void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol){
+    // u: initial value;
+    std::cout << std::left << std::setw(10) << "Iteration"
+        << std::setw(20) << "Err_norm" << std::endl;
+    int N = A.rows();
+    int cnt = 0;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+
+    Eigen::VectorXd A_rowwise_norm = Mat_t(A).rowwise().squaredNorm();
+    A_rowwise_norm = A_rowwise_norm / A_rowwise_norm.sum();
+    while(true){
+        // i is selected with probability proportion to A.row(i).squaredNorm();
+        int i = 0;
+        double random_number = dis(gen), acc = 0.0;
+        for( ; i < N; ++i) {
+            acc += A_rowwise_norm(i);
+            if(acc > random_number){
+                break;
+            }
+        }
+
+        Vec_t rowi_T = A.row(i).transpose();
+        Vec_t tmp = u + (phi(i) - (u.conjugate()).dot(rowi_T)) / rowi_T.squaredNorm() * rowi_T.conjugate();
+        u = tmp;
+        
+        cnt++;
+        double err = (sol - u).norm() / sol.norm();
+        if(cnt % 50 == 0) {
+            std::cout << std::left << std::setw(10) << cnt
+                << std::setw(20) << err << std::endl;
+        }
+        
+        if(err < 0.01){
+            std::cout << "Kaczmarz iteration converges after " << cnt << " iterations." << std::endl;
+            break;
+        }
+        if(cnt >= 2000) {
+            std::cout << "Kaczmarz iteration doesn't converge after "
                       << cnt << " iterations." << std::endl; 
             break;
         }
@@ -234,7 +367,7 @@ void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
 }
 
 std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
-    /* Compute the Eigen value of the GS operator */
+    /* Compute the Eigen value of the GS operator manually */
     Mat_t dense_A = Mat_t(A);
     Mat_t L = Mat_t(dense_A.triangularView<Eigen::Lower>());
     Mat_t U = L - A;
@@ -286,29 +419,129 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
         u.normalize();
         
         if(r_norm < tol) {
-            std::cout << "Power iteration converges after " << cnt 
+            std::cout << "Power iteration for Gauss-Seidel converges after " << cnt 
                 << " iterations." << std::endl;
             break;
         }
-        if(cnt > 500) {
-            std::cout << "Power iteration doesn't converge after " << cnt 
+        if(cnt >= 500) {
+            std::cout << "Power iteration for Gauss-Seidel doesn't converge after " << cnt 
                 << " iterations." << std::endl; 
             break;
         }
     }
     std::cout << "Number of iterations: " << cnt << std::endl;
-    std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
+    std::cout << "Domainant eigenvalue of Gauss-Seidel by power iteration: " << lambda << std::endl;
     return std::make_pair(u, lambda);
 }
 
-void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu) {
-    int N = A.rows();
-    for(int k = 0; k < mu; ++k) {
-        int i = k % N;
-        Vec_t rowi_T = A.row(i).transpose();
-        Vec_t tmp = u + (phi(i) - u.dot(rowi_T)) / rowi_T.squaredNorm() * rowi_T.conjugate();
-        u = tmp;
+std::pair<Vec_t, Scalar> power_block_GS(SpMat_t& A, int stride) {
+    
+    double tol = 0.001;
+    Vec_t u = Vec_t::Random(A.rows());
+
+    u.normalize();    
+    Scalar lambda;
+    int cnt = 0;
+
+    int N = stride;
+    int n = u.size() / N;
+
+    std::cout << std::left << std::setw(10) << "Iteration"
+        << std::setw(20) << "residual_norm" << std::endl;
+    while(1){
+        cnt++;
+        Vec_t old_u = u;
+
+        for(int i = 0; i < n; ++i) {
+            Mat_t Ai = A.block(i*N, i*N, N, N);
+            Vec_t rhs_i = - A.block(i*N, 0, N, N*n) * u + Ai * u.segment(i*N, N);
+            u.segment(i*N, N) = Ai.colPivHouseholderQr().solve(rhs_i);
+        }
+        
+        lambda = old_u.dot(u); // Rayleigh quotient
+        auto r = u - lambda * old_u;
+        double r_norm = r.norm();
+        if(cnt % 20 == 0){
+            std::cout << std::left << std::setw(10) << cnt
+                << std::setw(20) << r_norm << std::endl;
+        }
+
+        u.normalize();
+        
+        if(r_norm < tol) {
+            std::cout << "Power iteration for block GS converges after " << cnt 
+                << " iterations." << std::endl;
+            break;
+        }
+        if(cnt >= 500) {
+            std::cout << "Power iteration for block GS doesn't converge after " << cnt 
+                << " iterations." << std::endl; 
+            break;
+        }
     }
+    std::cout << "Number of iterations: " << cnt << std::endl;
+    std::cout << "Domainant eigenvalue of block GS by power iteration: " << lambda << std::endl;
+    return std::make_pair(u, lambda);
+}
+
+std::pair<Vec_t, Scalar> power_kaczmarz(SpMat_t& A) {
+    int N = A.rows();
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+
+    Eigen::VectorXd A_rowwise_norm = Mat_t(A).rowwise().squaredNorm();
+    A_rowwise_norm = A_rowwise_norm / A_rowwise_norm.sum();
+
+    double tol = 0.001;
+    Vec_t u = Vec_t::Random(N);
+
+    u.normalize();    
+    Scalar lambda;
+    int cnt = 0;
+
+    std::cout << std::left << std::setw(10) << "Iteration"
+        << std::setw(20) << "residual_norm" << std::endl;
+    while(1){
+        cnt++;
+        Vec_t old_u = u;
+
+        int i = 0;
+        double random_number = dis(gen), acc = 0.0;
+        for( ; i < N; ++i) {
+            acc += A_rowwise_norm(i);
+            if(acc > random_number){
+                break;
+            }
+        }
+        Vec_t rowi_T = A.row(i).transpose();
+        Vec_t tmp = u + (-(u.conjugate()).dot(rowi_T)) / rowi_T.squaredNorm() * rowi_T.conjugate();
+        u = tmp;
+        
+        lambda = old_u.dot(u); // Rayleigh quotient
+        auto r = u - lambda * old_u;
+        double r_norm = r.norm();
+        if(cnt % 20 == 0){
+            std::cout << std::left << std::setw(10) << cnt
+                << std::setw(20) << r_norm << std::endl;
+        }
+
+        u.normalize();
+        
+        if(r_norm < tol) {
+            std::cout << "Power iteration for Kaczmarz iteration converges after " << cnt 
+                << " iterations." << std::endl;
+            break;
+        }
+        if(cnt >= 500) {
+            std::cout << "Power iteration for Kaczmarz iteration doesn't converge after " << cnt 
+                << " iterations." << std::endl; 
+            break;
+        }
+    }
+    std::cout << "Number of iterations: " << cnt << std::endl;
+    std::cout << "Domainant eigenvalue of Kaczmarz iteration by power iteration: " << lambda << std::endl;
+    return std::make_pair(u, lambda);
 }
 
 /*
@@ -323,7 +556,7 @@ void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu) {
  * mu1, mu2: pre and post relaxation times
  */
 void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
-    std::vector<int>& stride, size_type mu1, size_type mu2) {
+    std::vector<int>& stride, size_type mu1, size_type mu2, bool solve_on_coarest) {
 
     int L = I.size();
     LF_ASSERT_MSG(Op.size() == L + 1 && stride.size() == L + 1, 
@@ -347,20 +580,25 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
     for(int i = 0; i < L; ++i) {
         initial[i] = Vec_t::Zero(op_size[i]);
     }
-
     for(int i = L; i > 0; --i) {
-        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
+        // Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
+        block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
         rhs_vec[i-1] = I[i-1].transpose() * (rhs_vec[i] - Op[i] * initial[i]);
     }
 
-    Eigen::SparseLU<SpMat_t> solver;
-    solver.compute(Op[0]);
-    initial[0] = solver.solve(rhs_vec[0]);
-    // Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], mu1 + mu2);
-
+    if(solve_on_coarest) {
+        Eigen::SparseLU<SpMat_t> solver;
+        solver.compute(Op[0]);
+        initial[0] = solver.solve(rhs_vec[0]);
+    } else {
+        // Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], mu1 + mu2);
+        block_GS(Op[0], rhs_vec[0], initial[0], stride[0], mu1+mu2);
+    }
+    
     for(int i = 1; i <= L; ++i) {
         initial[i] += I[i-1] * initial[i-1];
-        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
+        // Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
+        block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
     }
     u = initial[L];
 }

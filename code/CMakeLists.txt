@@ -32,5 +32,5 @@ find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_option
 # add_subdirectory(test)
 # add_subdirectory(Pum)
 # add_subdirectory(Pum_WaveRay)
-add_subdirectory(ExtendPum)
+# add_subdirectory(ExtendPum)
 add_subdirectory(ExtendPum_WaveRay)

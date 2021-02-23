@@ -67,11 +67,19 @@ void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
 
 void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride);
 
+void block_GS(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
+
+void block_GS(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride);
+
+void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, int mu);
+
+void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol);
+
 // use the power iteration to compute the domainant eigenvalue of GS operator and 
 // an associated eigenvector
 std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride);
-
-void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
+std::pair<Vec_t, Scalar> power_block_GS(SpMat_t& A, int stride);
+std::pair<Vec_t, Scalar> power_kaczmarz(SpMat_t& A);
 
 void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
-    std::vector<int>& stride, size_type mu1, size_type mu2);
+    std::vector<int>& stride, size_type mu1, size_type mu2, bool solve_on_coarest=true);
