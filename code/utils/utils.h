@@ -33,6 +33,9 @@ Scalar LocalIntegral(const lf::mesh::Entity& e, int quad_degree, const FHandle_t
 // integrate over mesh
 Scalar integrate(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int degree);
 
+// return {k, b}, such that y = kx + b
+std::vector<double> linearFit(const std::vector<double> x, const std::vector<double> y);
+
 // L2 norm of the function, computed with the numerical quadrature in the given mesh
 double L2_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int degree);
 
@@ -41,9 +44,9 @@ void test_solve(HE_FEM& he_fem, const std::string& sol_name,
     const std::string& output_folder, size_type L, const FHandle_t& u, 
     const FunGradient_t& grad_u);
 
-void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol_name, 
-    const std::string& output_folder, size_type L, const FHandle_t& u,
-    const FunGradient_t& grad_u);
+// void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol_name, 
+//     const std::string& output_folder, size_type L, const FHandle_t& u,
+//     const FunGradient_t& grad_u);
 
 void print_save_error(std::vector<std::vector<double>>& data, 
     std::vector<std::string>& data_label, const std::string& sol_name, 

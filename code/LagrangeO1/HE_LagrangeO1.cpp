@@ -136,8 +136,8 @@ HE_LagrangeO1::Vec_t HE_LagrangeO1::solve(size_type l) {
     return fe_sol;
 }
 
-HE_LagrangeO1::Vec_t HE_LagrangeO1::solve_multigrid(size_type start_layer, int num_coarserlayer, 
-    int mu1, int mu2) {
+void HE_LagrangeO1::solve_multigrid(Vec_t& initial, size_type start_layer, int num_coarserlayer, 
+    int nu1, int nu2, bool solve_coarest) {
 
     LF_ASSERT_MSG((num_coarserlayer <= start_layer), 
         "please use a smaller number of wave layers");
@@ -155,9 +155,7 @@ HE_LagrangeO1::Vec_t HE_LagrangeO1::solve_multigrid(size_type start_layer, int n
         // Op[i] = tmp.first.makeSparse();
     }
 
-    Vec_t initial = Vec_t::Random(A.rows());
-    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
-    return initial;
+    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
 }
 
 std::pair<HE_LagrangeO1::Vec_t, HE_LagrangeO1::Scalar> 

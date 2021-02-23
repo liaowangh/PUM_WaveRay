@@ -89,7 +89,7 @@ public:
     virtual SpMat_t prolongation(size_type l) = 0; // transfer operator: FE sapce l -> FE space {l+1}
     virtual Vec_t solve(size_type l) = 0;  // solve equaitons Ax=\phi on mesh l.
     // solve by multigrid method
-    virtual Vec_t solve_multigrid(size_type start_layer, int num_coarserlayer, int mu1, int mu2) = 0; 
+    virtual void solve_multigrid(Vec_t& initial, size_type start_layer, int num_coarserlayer, int nu1, int nu2, bool solve_coarest=false) = 0; 
     virtual std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 
         int mu1, int mu2) = 0;
 

@@ -53,7 +53,7 @@ public:
 
     SpMat_t prolongation(size_type l) override;
     Vec_t solve(size_type l) override;
-    Vec_t solve_multigrid(size_type start_layer, int num_coarserlayer, int mu1, int mu2) override;
+    void solve_multigrid(Vec_t& initial, size_type start_layer, int num_coarserlayer, int nu1, int nu2, bool solve_coarest=false) override;
     std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 
         int mu1, int mu2) override;
 };

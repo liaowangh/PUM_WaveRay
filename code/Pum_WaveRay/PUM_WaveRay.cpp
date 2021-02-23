@@ -65,8 +65,8 @@ PUM_WaveRay::SpMat_t PUM_WaveRay::prolongation(size_type l) {
 /*
  * v-cycle, mu1, mu2 -- pre and post smoothing times
  */
-PUM_WaveRay::Vec_t PUM_WaveRay::solve_multigrid(size_type start_layer, int num_wavelayer,
-    int mu1, int mu2) {
+void PUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, int num_wavelayer,
+    int nu1, int nu2, bool solve_coarest) {
     // in pum waveray, only start_layer = L makes sense.
     LF_ASSERT_MSG((num_wavelayer <= start_layer), 
         "please use a smaller number of wave layers");
@@ -85,8 +85,7 @@ PUM_WaveRay::Vec_t PUM_WaveRay::solve_multigrid(size_type start_layer, int num_w
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
         stride[i] = num_planwaves[idx];
     }
-    Vec_t initial = Vec_t::Random(A.rows());
-    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
+    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
     return initial;
 }
 

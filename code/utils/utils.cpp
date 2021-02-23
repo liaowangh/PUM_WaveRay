@@ -43,6 +43,28 @@ double L2_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int deg
     // return std::sqrt(res);
 }
 
+/*
+ * Do the linear regression, return {k, b} such that
+ *  y_i \approx k*x_i + b
+ */
+std::vector<double> linearFit(const std::vector<double> x, const std::vector<double> y) {
+    Eigen::Matrix2d XTX;
+    Eigen::Vector2d XTY;
+    XTX.setZero();
+    XTY.setZero();
+    for(int i = 0; i < x.size(); ++i) {
+        XTX(0,0) += x[i] * x[i];
+        XTX(0,1) += x[i];
+        XTY(0) += x[i] * y[i];
+        XTY(1) += y[i];
+    }
+    X(1,0) = X(0,1);
+    X(1,1) = x.size();
+
+    auto tmp = XTX.colPivHouseholderQr().solve(XTY);
+    return {tmp(0), tmp(1)};
+}
+
 void print_save_error(std::vector<std::vector<double>>& data, 
     std::vector<std::string>& data_label, const std::string& sol_name, 
     const std::string& output_folder) {
@@ -155,6 +177,7 @@ void test_solve(HE_FEM& he_fem, const std::string& sol_name,
     print_save_error(err_data, data_label, sol_name, output_folder);
 }
 
+/*
 void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol_name, 
     const std::string& output_folder, size_type L, const FHandle_t& u,
     const FunGradient_t& grad_u) {
@@ -181,6 +204,7 @@ void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol
     std::string sol_name_mg = std::to_string(num_grids) + "grids_" + sol_name;
     print_save_error(err_data, err_str, sol_name_mg, output_folder);
 }
+*/
 
 void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
     // u: initial value; mu: number of iterations

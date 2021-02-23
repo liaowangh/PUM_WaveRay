@@ -439,8 +439,8 @@ HE_PUM::SpMat_t HE_PUM::prolongation(size_type l) {
     return res;
 }
 
-HE_PUM::Vec_t HE_PUM::solve_multigrid(size_type start_layer, int num_coarserlayer, 
-    int mu1, int mu2) {
+void HE_PUM::solve_multigrid(Vec_t& initial, size_type start_layer, int num_coarserlayer, 
+    int nu1, int nu2, bool solve_coarest) {
 
     LF_ASSERT_MSG((num_coarserlayer <= L), 
         "please use a smaller number of wave layers");
@@ -458,8 +458,7 @@ HE_PUM::Vec_t HE_PUM::solve_multigrid(size_type start_layer, int num_coarserlaye
         prolongation_op[i] = prolongation(idx);
         stride[i] = num_planwaves[idx];
     }
-    Vec_t initial = Vec_t::Random(A.rows());
-    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2);
+    v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
     return initial;
 }
 
