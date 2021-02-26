@@ -58,8 +58,8 @@ std::vector<double> linearFit(const std::vector<double> x, const std::vector<dou
         XTY(0) += x[i] * y[i];
         XTY(1) += y[i];
     }
-    X(1,0) = X(0,1);
-    X(1,1) = x.size();
+    XTX(1,0) = XTX(0,1);
+    XTX(1,1) = x.size();
 
     auto tmp = XTX.colPivHouseholderQr().solve(XTY);
     return {tmp(0), tmp(1)};
@@ -176,35 +176,6 @@ void test_solve(HE_FEM& he_fem, const std::string& sol_name,
     std::vector<std::string> data_label{"h", "L2_err", "H1_err", "H1_serr"};
     print_save_error(err_data, data_label, sol_name, output_folder);
 }
-
-/*
-void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol_name, 
-    const std::string& output_folder, size_type L, const FHandle_t& u,
-    const FunGradient_t& grad_u) {
-
-    // std::vector<int> ndofs;
-    std::vector<double> mesh_width = he_fem.mesh_width();
-    std::vector<double> L2err, H1serr, H1err;
-    
-    for(size_type level = num_coarserlayer; level <= L; ++level) {
-        auto fe_sol = he_fem.solve_multigrid(level, num_coarserlayer, 10, 10);
-        
-        double l2_err = he_fem.L2_Err(level, fe_sol, u);
-        double h1_serr = he_fem.H1_semiErr(level, fe_sol, grad_u);
-        double h1_err = std::sqrt(l2_err*l2_err + h1_serr*h1_serr);
-        
-        // ndofs.push_back(fe_sol.size());
-        L2err.push_back(l2_err);
-        H1serr.push_back(h1_serr);
-        H1err.push_back(h1_err);
-    }
-    int num_grids = 1 + num_coarserlayer;
-    std::vector<std::vector<double>> err_data{mesh_width, L2err, H1err, H1serr};
-    std::vector<std::string> err_str{"h", "L2_err", "H1_err", "H1_serr"};
-    std::string sol_name_mg = std::to_string(num_grids) + "grids_" + sol_name;
-    print_save_error(err_data, err_str, sol_name_mg, output_folder);
-}
-*/
 
 void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
     // u: initial value; mu: number of iterations
@@ -605,8 +576,8 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
         initial[i] = Vec_t::Zero(op_size[i]);
     }
     for(int i = L; i > 0; --i) {
-        // Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
-        block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
+        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
+        // block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
         rhs_vec[i-1] = I[i-1].transpose() * (rhs_vec[i] - Op[i] * initial[i]);
     }
 
@@ -615,14 +586,14 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
         solver.compute(Op[0]);
         initial[0] = solver.solve(rhs_vec[0]);
     } else {
-        // Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], mu1 + mu2);
-        block_GS(Op[0], rhs_vec[0], initial[0], stride[0], mu1+mu2);
+        Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], mu1 + mu2);
+        // block_GS(Op[0], rhs_vec[0], initial[0], stride[0], mu1+mu2);
     }
     
     for(int i = 1; i <= L; ++i) {
         initial[i] += I[i-1] * initial[i-1];
-        // Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
-        block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
+        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
+        // block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
     }
     u = initial[L];
 }

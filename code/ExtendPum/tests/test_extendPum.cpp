@@ -30,10 +30,43 @@ using namespace std::complex_literals;
 class plan_wave_c: public HE_sol {
 public:
     plan_wave_c(double k_, double d1_, double d2_): HE_sol(k_), d1(d1_), d2(d2_){}
-//    Scalar operator()(const coordinate_t& x) override;
-    FHandle_t get_fun() override;
-    FunGradient_t get_gradient() override;
-    FHandle_t boundary_g() override;
+
+    FHandle_t get_fun() {
+        return [this](const coordinate_t& x)-> Scalar {
+            return std::exp(1i * k * (d1 * x(0) + d2 * x(1))) + 1. / (k * k);
+        };
+    }
+
+    FunGradient_t get_gradient() {
+        return [this](const coordinate_t& x) {
+            auto tmp = 1i * k * std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
+            Eigen::Matrix<Scalar, 2, 1> res;
+            res << tmp * d1, tmp * d2;
+            return res;
+        };
+    }
+    
+    FHandle_t boundary_g() {
+        auto g = [this](const coordinate_t& x) -> Scalar {
+            double x1 = x(0), y1 = x(1);
+            Scalar res = 1i * k * std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
+            if(y1 == 0 && x1 <= 1 && x1 >= 0) {
+                // (0,-1)
+                res *= (-d2 - 1);
+            } else if(x1 == 1 && y1 >= 0 && y1 <= 1) {
+                // (1,0)
+                res *= (d1 - 1);
+            } else if(y1 == 1 && x1 >= 0 && x1 <= 1) {
+                //(0, 1)
+                res *= (d2 - 1);
+            } else if(x1 == 0 && y1 >= 0 && y1 <= 1) {
+                // (-1,0)
+                res *= (-d1 - 1);
+            } 
+            return res - 1i / k;
+        };
+    return g;
+    }
 private:
     double d1;
     double d2;
@@ -76,11 +109,10 @@ void output_result(std::vector<std::vector<double>>& data,
 int main() {
     std::string square_hole = "../meshes/square_hole.msh";
     std::string square = "../meshes/square.msh";
-    std::string square_hole_output = "../result_squarehole/ExtendPUM/";
-    std::string square_output = "../result_square/ExtendPUM/";
-    int L = 3; // refinement steps
-    std::vector<int> number_waves{3, 5, 7};
-    std::vector<double> wave_number{3,5};
+    std::string square_output = "../result_square/non-homogeneous_HE/";
+    int L = 4; // refinement steps
+    std::vector<int> number_waves{5, 7, 9, 11};
+    std::vector<double> wave_number{6, 20};
 
     for(auto k: wave_number) {
         plan_wave_c sol(k, 0.8, 0.6);
@@ -106,8 +138,10 @@ int main() {
                 H1serr[i].push_back(h1_serr);
             }
         }
-        output_result(L2err, data_label, str + "_L2");
-        output_result(H1serr, data_label, str + "_H1serr");
+        // output_result(L2err, data_label, str + "_L2");
+        // output_result(H1serr, data_label, str + "_H1serr");
+        tabular_output(L2err, data_label, str + "_L2err", square_output, true);
+        tabular_output(H1serr, data_label, str + "_H1serr", square_output, true);
     }
 }
 
@@ -143,41 +177,4 @@ Vec_t solve_special_he(HE_ExtendPUM& he_epum, int l, int k, int degree = 20) {
         LF_ASSERT_MSG(false, "Eigen Factorization failed");
     }
     return fe_sol;
-}
-
-FHandle_t plan_wave_c::get_fun() {
-    return [this](const coordinate_t& x)-> Scalar {
-        return std::exp(1i * k * (d1 * x(0) + d2 * x(1))) + 1. / (k * k);
-    };
-}
-
-FunGradient_t plan_wave_c::get_gradient() {
-    return [this](const coordinate_t& x) {
-        auto tmp = 1i * k * std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
-        Eigen::Matrix<Scalar, 2, 1> res;
-        res << tmp * d1, tmp * d2;
-        return res;
-    };
-}
-
-FHandle_t plan_wave_c::boundary_g() {
-    auto g = [this](const coordinate_t& x) -> Scalar {
-        double x1 = x(0), y1 = x(1);
-        Scalar res = 1i * k * std::exp(1i * k * (d1 * x(0) + d2 * x(1)));
-        if(y1 == 0 && x1 <= 1 && x1 >= 0) {
-            // (0,-1)
-            res *= (-d2 - 1);
-        } else if(x1 == 1 && y1 >= 0 && y1 <= 1) {
-            // (1,0)
-            res *= (d1 - 1);
-        } else if(y1 == 1 && x1 >= 0 && x1 <= 1) {
-            //(0, 1)
-            res *= (d2 - 1);
-        } else if(x1 == 0 && y1 >= 0 && y1 <= 1) {
-            // (-1,0)
-            res *= (-d1 - 1);
-        } 
-        return res - 1i / k;
-    };
-    return g;
 }

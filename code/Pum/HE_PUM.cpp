@@ -34,7 +34,7 @@ HE_PUM::build_equation(size_type level) {
 
     // assemble for <grad(u), grad(v)> - k^2 <u,v>
     // (u, v) -> \int_K \alpha * (grad u, grad v) + \gamma * (u, v) dx
-    PUM_FEElementMatrix elmat_builder(N_wave, k, 1., -1. * k * k);
+    PUM_ElementMatrix elmat_builder(N_wave, k, 1., -1. * k * k, degree);
 
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
@@ -63,14 +63,14 @@ HE_PUM::build_equation(size_type level) {
     }
 
     // (u,v) -> \int_e gamma * (u,v) dS
-    PUM_EdgeMat edge_mat_builder(fe_space, outer_boundary, N_wave, k, -1i * k);                                  
+    PUM_EdgeMat edge_mat_builder(fe_space, outer_boundary, N_wave, k, -1i * k, degree);                                  
     lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
            
     // Assemble RHS vector, \int_{\Gamma_R} gv.conj dS
     Vec_t phi(N_dofs);
     phi.setZero();
     // l(v) = \int_e g * v.conj dS(x)
-    PUM_EdgeVec edgeVec_builder(fe_space, outer_boundary, N_wave, k, g);
+    PUM_EdgeVec edgeVec_builder(fe_space, outer_boundary, N_wave, k, g, degree);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
 
     if(hole_exist) {
@@ -149,7 +149,7 @@ HE_PUM::Vec_t HE_PUM::fun_in_vec(size_type l, const FHandle_t& f) {
     size_type N_dofs(dofh.NumDofs());
 
     // assemble for \int u * v.conj dx
-    PUM_FEElementMatrix elmat_builder(N_wave, k, 0, 1.);
+    PUM_ElementMatrix elmat_builder(N_wave, k, 0, 1., degree);
 
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
@@ -157,7 +157,7 @@ HE_PUM::Vec_t HE_PUM::fun_in_vec(size_type l, const FHandle_t& f) {
     // assemble for \int (f,v) dx
     Vec_t phi(N_dofs);
     phi.setZero();
-    PUM_ElemVec elvec_builder(fe_space, N_wave, k, f);
+    PUM_ElemVec elvec_builder(fe_space, N_wave, k, f, degree);
     lf::assemble::AssembleVectorLocally(0, dofh, elvec_builder, phi);
 
     const Eigen::SparseMatrix<Scalar> A_crs(A.makeSparse());
@@ -188,13 +188,13 @@ HE_PUM::Vec_t HE_PUM::h_in_vec(size_type l, lf::mesh::utils::CodimMeshDataSet<bo
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
 
     // assemble for \int_e (u,v) dx 
-    PUM_EdgeMat edge_mat_builder(fe_space, edge_selector, N_wave, k, 1.0);                                  
+    PUM_EdgeMat edge_mat_builder(fe_space, edge_selector, N_wave, k, 1.0, degree);                                  
     lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
 
     // assemble for \int_e (h,v) dx
     Vec_t phi(N_dofs);
     phi.setZero();
-    PUM_EdgeVec edgeVec_builder(fe_space, edge_selector, N_wave, k, h);
+    PUM_EdgeVec edgeVec_builder(fe_space, edge_selector, N_wave, k, h, degree);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
 
     std::vector<std::pair<bool, Scalar>> ess_dof_select{};
@@ -274,7 +274,7 @@ double HE_PUM::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
             }
             return std::abs((val_uh-val_u)*(val_uh-val_u));
         };
-        res += std::abs(LocalIntegral(*cell, 10, integrand));
+        res += std::abs(LocalIntegral(*cell, degree, integrand));
     }
     return std::sqrt(res);
 }
@@ -329,7 +329,7 @@ double HE_PUM::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& gra
             }
             return std::abs((val_grad_uh - val_grad_u).dot((val_grad_uh - val_grad_u)));
         };
-        res += std::abs(LocalIntegral(*cell, 10, integrand));
+        res += std::abs(LocalIntegral(*cell, degree, integrand));
     }
     return std::sqrt(res);
 }
@@ -380,7 +380,7 @@ double HE_PUM::L2_BoundaryErr(size_type l, const Vec_t& mu, const FHandle_t& u,
                 }
                 return std::abs((val_uh-val_u)*(val_uh-val_u));
             };
-            res += std::abs(LocalIntegral(*cell, 10, integrand));
+            res += std::abs(LocalIntegral(*cell, degree, integrand));
         }
     }
     return std::sqrt(res);
@@ -459,7 +459,6 @@ void HE_PUM::solve_multigrid(Vec_t& initial, size_type start_layer, int num_coar
         stride[i] = num_planwaves[idx];
     }
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
-    return initial;
 }
 
 std::pair<HE_PUM::Vec_t, HE_PUM::Scalar> 

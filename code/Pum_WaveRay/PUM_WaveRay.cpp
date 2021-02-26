@@ -86,7 +86,6 @@ void PUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, int num
         stride[i] = num_planwaves[idx];
     }
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
-    return initial;
 }
 
 std::pair<PUM_WaveRay::Vec_t, PUM_WaveRay::Scalar> 

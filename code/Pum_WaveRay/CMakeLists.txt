@@ -7,13 +7,9 @@ set(test_pum_waveray_sources
   ../LagrangeO1/HE_LagrangeO1.h
   ../LagrangeO1/HE_LagrangeO1.cpp
   ../Pum/PUM_EdgeMat.h
-  ../Pum/PUM_EdgeMat.cpp
   ../Pum/PUM_EdgeVector.h
-  ../Pum/PUM_EdgeVector.cpp
   ../Pum/PUM_ElementMatrix.h
-  ../Pum/PUM_ElementMatrix.cpp
   ../Pum/PUM_ElemVector.h
-  ../Pum/PUM_ElemVector.cpp
   ../Pum/HE_PUM.h
   ../Pum/HE_PUM.cpp
   ../utils/HE_solution.h

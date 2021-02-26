@@ -2,13 +2,9 @@ set(pum_resolution_sources
   ../Pum_WaveRay/HE_FEM.h
   ../Pum_WaveRay/HE_FEM.cpp
   PUM_EdgeMat.h
-  PUM_EdgeMat.cpp
   PUM_EdgeVector.h
-  PUM_EdgeVector.cpp
   PUM_ElementMatrix.h
-  PUM_ElementMatrix.cpp
   PUM_ElemVector.h
-  PUM_ElemVector.cpp
   HE_PUM.h
   HE_PUM.cpp
   tests/pum_resolution.cpp

@@ -18,26 +18,50 @@ using namespace std::complex_literals;
 using Scalar = std::complex<double>;
 using size_type = unsigned int;
 
+void ePUM_WaveRay(ExtendPUM_WaveRay& epum_waveray, int L, int nr_coarsemesh, FHandle_t u) {
+    auto zero_fun = [](const coordinate_t& x) -> Scalar { return 0.0; };
+
+    auto dofh = epum_waveray.get_dofh(L);
+    int N = dofh.NumDofs();
+
+    Vec_t v = Vec_t::Random(N); // initial value
+    Vec_t uh = epum_waveray.solve(L);
+
+    int nu1 = 3, nu2 = 3;
+
+    std::vector<double> L2_vk;
+    std::vector<double> L2_ek;
+
+    // std::cout << std::scientific << std::setprecision(1);
+    for(int k = 0; k < 10; ++k) {
+        std::cout << epum_waveray.L2_Err(L, v - uh, zero_fun) << " ";
+        std::cout << epum_waveray.L2_Err(L, v, u) << std::endl;
+        L2_vk.push_back(epum_waveray.L2_Err(L, v, zero_fun));
+        L2_ek.push_back(epum_waveray.L2_Err(L, v - uh, zero_fun));
+        epum_waveray.solve_multigrid(v, L, nr_coarsemesh, nu1, nu2, false);
+    }
+    std::cout << "||u-uh||_2 = " << epum_waveray.L2_Err(L, uh, u) << std::endl;
+    std::cout << "||v_{k+1}||/||v_k||" << std::endl;
+    for(int k = 0; k + 1 < L2_vk.size(); ++k) {
+        std::cout << k << " " << L2_vk[k+1] / L2_vk[k] 
+                       << " " << L2_ek[k+1] / L2_ek[k] << std::endl;
+    }
+} 
+
 /*
  * For square_hole.msh, h = 2^{-L-1}, and we can choose k = 2^{L-1}*pi
- * For square.msh, h_l = =2^{-l}, and we choose k = 2^{L-1}, then h_L * k = 0.5
+ * For square.msh, h_L = =2^{-L}, and we choose k = 2^{L-1}, then h_L * k = 0.5
  */
-// void test_Extend_WaveRay(int num_wavelayer, const std::string& mesh_path, bool hole_exist, size_type L, 
-//     std::vector<double> wave_number, const std::string& output_folder, const std::string& sol_name);
-
 int main(){
     std::string square_output = "../result_square/ExtendPUM_WaveRay/";
     std::string square_hole_output = "../result_squarehole/ExtendPUM_WaveRaay/";
     std::string square = "../meshes/square.msh";
     std::string square_hole = "../meshes/square_hole.msh";
     size_type L = 5; // refinement steps
-    std::vector<double> wave_nrs{2, 4, 8, 16, 32};
-    // test_Extend_WaveRay(3, square, false, L, wave_nrs, square_output, "waveray_plan_wave");
-    // test_Extend_WaveRay(1, square_hole, true, L, wave_nrs, square_hole_output, "waveray_plan_wave");
-
+ 
     auto zero_fun = [](const coordinate_t& x)->Scalar { return 0.0; };
 
-    double k = 8; // wave number
+    double k = 16; // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
     std::vector<std::shared_ptr<HE_sol>> solutions(3);
@@ -45,8 +69,6 @@ int main(){
     solutions[1] = std::make_shared<fundamental_sol>(k, c);
     solutions[2] = std::make_shared<Spherical_wave>(k, 2);
  
-    // std::vector<std::string> sol_name{"waveray_plan_wave", "waveray_fundamental_sol", "waveray_spherical_wave"};
-
     std::vector<int> num_planwaves(L+1);
     num_planwaves[L] = 2;
     for(int i = L - 1; i >= 0; --i) {
@@ -59,55 +81,9 @@ int main(){
         auto u = solutions[i]->get_fun();
         auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();
-        ExtendPUM_WaveRay extend_waveray(L, k, square, g, u, false, num_planwaves);
+        ExtendPUM_WaveRay extend_waveray(L, k, square, g, u, false, num_planwaves, 50);
  
-        int num_wavelayer = 3;
-        // extend_waveray.power_multigird(L, num_wavelayer, 3, 3);
-        Vec_t uh = extend_waveray.solve(L);
-        Vec_t v = Vec_t::Random(uh.size());
-        for(int j = 0; j < 10; ++j) {
-            std::cout << extend_waveray.L2_Err(L, v - uh, zero_fun) << " ";
-            std::cout << extend_waveray.L2_Err(L, v, u) << std::endl;
-            extend_waveray.solve_multigrid(v, L, num_wavelayer, 3, 3, false);
-        }
-        std::cout << extend_waveray.mesh_width()[L] << " "
-                  << extend_waveray.L2_Err(L, uh, u) << std::endl;
+        int num_wavelayer = 1;
+        ePUM_WaveRay(extend_waveray, L, num_wavelayer, u);
     }
 }
-
-// void test_Extend_WaveRay(int num_wavelayer, const std::string& mesh_path, bool hole_exist, size_type L, 
-//     std::vector<double> wave_number, const std::string& output_folder, const std::string& sol_name) {
-    
-//     std::vector<std::vector<double>> L2err(wave_number.size()), H1serr(wave_number.size());
-//     std::vector<std::string> data_label;
-//     for(int i = 0; i < wave_number.size(); ++i) {
-//         int k = wave_number[i];
-
-//         plan_wave sol(k, 0.8, 0.6);
-//         auto u = sol.get_fun();
-//         auto grad_u = sol.get_gradient();
-//         auto g = sol.boundary_g();
-
-//         data_label.push_back(std::to_string(int(k)));
-
-//         for(int l = num_wavelayer; l <= L; ++l) {
-//             std::vector<int> num_planwaves(l+1);
-//             num_planwaves[l] = 2;
-//             for(int j = l - 1; j >= 0; --j) {
-//                 num_planwaves[j] = 2 * num_planwaves[j+1];
-//             }
-
-//             ExtendPUM_WaveRay extend_waveray(l, k, mesh_path, g, u, hole_exist, num_planwaves, 20);
-
-//             auto fe_sol = extend_waveray.solve_multigrid(l, num_wavelayer, 3, 3);
-//             double l2_err = extend_waveray.L2_Err(l, fe_sol, u);
-//             double h1_serr = extend_waveray.H1_semiErr(l, fe_sol, grad_u);
-            
-//             // ndofs.push_back(fe_sol.size());
-//             L2err[i].push_back(l2_err);
-//             H1serr[i].push_back(h1_serr);
-//         }
-//     }
-//     tabular_output(L2err, data_label, sol_name + "_L2err", output_folder, false);
-//     // tabular_output(H1serr, data_label, sol_name + "_H1serr", output_folder, false);
-// }

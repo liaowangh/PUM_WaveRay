@@ -252,22 +252,50 @@ HE_LagrangeO1::power_multigird(size_type start_layer, int num_coarserlayer, int 
 }
 
 double HE_LagrangeO1::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u){
-    auto mesh = mesh_hierarchy->getMesh(l);
+    auto mesh = getmesh(l);
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
-    // u has to be wrapped into a mesh function for error computation
-    lf::mesh::utils::MeshFunctionGlobal mf_u{u};
-    // create mesh function representing finite element solution 
-    auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
+    double res = 0.0;
 
-    // conjugate functions
-    auto u_conj = [&u](const Eigen::Vector2d& x) -> Scalar {
-        return std::conj(u(x));};
-    lf::mesh::utils::MeshFunctionGlobal mf_u_conj{u_conj};
-    auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu.conjugate());
+    auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
+
+    for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
+        const lf::geometry::Geometry *geo_ptr = cell->Geometry();
     
-    auto mf_square = (mf_u - mf_mu) * (mf_u_conj - mf_mu_conj);
-    double L2err = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_square, 10));
-    return std::sqrt(L2err);
+        auto vertices = geo_ptr->Global(cell->RefEl().NodeCoords());
+        Eigen::Matrix3d X, tmp;
+        tmp.block<3,1>(0,0) = Eigen::Vector3d::Ones();
+        tmp.block<3,2>(0,1) = vertices.transpose();
+        X = tmp.inverse();
+
+        const lf::assemble::size_type no_dofs(dofh.NumLocalDofs(*cell));
+        nonstd::span<const lf::assemble::gdof_idx_t> dofarray{dofh.GlobalDofIndices(*cell)};
+
+        auto integrand = [&X, &mu, &dofarray, &u](const Eigen::Vector2d& x)->Scalar {
+            Scalar uh = 0.0;
+            for(int i = 0; i < 3; ++i) {
+                uh += mu(dofarray[i]) * (X(0,i) + x.dot(X.block<2,1>(1,i)));
+            }
+            return std::abs((uh - u(x)) * (uh - u(x)));
+        };
+        res += std::abs(LocalIntegral(*cell, degree, integrand));
+    }
+    return std::sqrt(res);
+    // auto mesh = mesh_hierarchy->getMesh(l);
+    // auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
+    // // u has to be wrapped into a mesh function for error computation
+    // lf::mesh::utils::MeshFunctionGlobal mf_u{u};
+    // // create mesh function representing finite element solution 
+    // auto mf_mu = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu);
+
+    // // conjugate functions
+    // auto u_conj = [&u](const Eigen::Vector2d& x) -> Scalar {
+    //     return std::conj(u(x));};
+    // lf::mesh::utils::MeshFunctionGlobal mf_u_conj{u_conj};
+    // auto mf_mu_conj = lf::uscalfe::MeshFunctionFE<double, Scalar>(fe_space, mu.conjugate());
+    
+    // auto mf_square = (mf_u - mf_mu) * (mf_u_conj - mf_mu_conj);
+    // double L2err = std::abs(lf::uscalfe::IntegrateMeshFunction(*mesh, mf_square, 10));
+    // return std::sqrt(L2err);
 }
 
 double HE_LagrangeO1::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) {

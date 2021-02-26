@@ -44,10 +44,6 @@ void test_solve(HE_FEM& he_fem, const std::string& sol_name,
     const std::string& output_folder, size_type L, const FHandle_t& u, 
     const FunGradient_t& grad_u);
 
-// void test_multigrid(HE_FEM& he_fem, int num_coarserlayer, const std::string& sol_name, 
-//     const std::string& output_folder, size_type L, const FHandle_t& u,
-//     const FunGradient_t& grad_u);
-
 void print_save_error(std::vector<std::vector<double>>& data, 
     std::vector<std::string>& data_label, const std::string& sol_name, 
     const std::string& output_folder);

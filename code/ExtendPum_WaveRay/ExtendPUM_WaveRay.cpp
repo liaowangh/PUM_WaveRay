@@ -121,8 +121,9 @@ void ExtendPUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, i
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
         stride[i] = num_planwaves[idx] + 1;
     }
-    HE_LagrangeO1::solve_multigrid(initial, start_layer, 1, 3, 3, true);
+    // HE_LagrangeO1::solve_multigrid(initial, start_layer, 2, 3, 3, false);
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
+    // HE_LagrangeO1::solve_multigrid(initial, start_layer, 3, 3, 3, false);
 }
 
 std::pair<ExtendPUM_WaveRay::Vec_t, ExtendPUM_WaveRay::Scalar> 
@@ -222,7 +223,8 @@ ExtendPUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
                 << std::setw(20) << (u - old_u).norm()
                 << std::endl;
         }
-        if(r.norm() < 0.01) {
+        if(double(r.norm()) < 0.01) {
+            std::cout << "Power iteration converges after " << cnt << " iterations" << std::endl;
             break;
         }
         if(cnt > 20) {

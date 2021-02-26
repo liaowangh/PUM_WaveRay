@@ -22,6 +22,37 @@
 
 using namespace std::complex_literals;
 
+void mg_O1(HE_LagrangeO1& he_O1, int L, int nr_coarsemesh, FHandle_t u) {
+    auto zero_fun = [](const coordinate_t& x) -> Scalar { return 0.0; };
+
+    auto dofh = he_O1.get_dofh(L);
+    int N = dofh.NumDofs();
+
+    Vec_t v = Vec_t::Random(N); // initial value
+    Vec_t uh = he_O1.solve(L);
+
+    int nu1 = 3, nu2 = 3;
+
+    std::vector<double> L2_vk;
+    std::vector<double> L2_ek;
+
+    // std::cout << std::scientific << std::setprecision(1);
+    for(int k = 0; k < 10; ++k) {
+        std::cout << he_O1.L2_Err(L, v - uh, zero_fun) << " ";
+        std::cout << he_O1.L2_Err(L, v, u) << std::endl;
+        L2_vk.push_back(he_O1.L2_Err(L, v, zero_fun));
+        L2_ek.push_back(he_O1.L2_Err(L, v - uh, zero_fun));
+        he_O1.solve_multigrid(v, L, nr_coarsemesh, nu1, nu2, true);
+    }
+    std::cout << "||u-uh||_2 = " << he_O1.L2_Err(L, uh, u) << std::endl;
+    std::cout << "||v_{k+1}||/||v_k||" << std::endl;
+    for(int k = 0; k + 1 < L2_vk.size(); ++k) {
+        std::cout << k << " " << L2_vk[k+1] / L2_vk[k] 
+                       << " " << L2_ek[k+1] / L2_ek[k] << std::endl;
+    }
+} 
+
+
 int main(){
     // mesh path
     // boost::filesystem::path here = __FILE__;
@@ -29,13 +60,13 @@ int main(){
 
     std::string square = "../meshes/square.msh";
     std::string square_output = "../result_square/LagrangeO1/";
-    size_type L = 3; // refinement steps
-    double k = 0.5; // wave number
+    size_type L = 5; // refinement steps
+    double k = 32; // wave number
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
     
     std::vector<std::shared_ptr<HE_sol>> solutions(3);
-    solutions[0] = std::make_shared<plan_wave>(k, 0.6, 0.8);
+    solutions[0] = std::make_shared<plan_wave>(k, 0.8, 0.6);
     solutions[1] = std::make_shared<fundamental_sol>(k, c);
     solutions[2] = std::make_shared<Spherical_wave>(k, 2);
  
@@ -49,12 +80,8 @@ int main(){
         auto grad_u = solutions[i]->get_gradient();
         HE_LagrangeO1 he_O1(L, k, square, g, u, false);
 
-        int num_coarserlayer = 2;
-        he_O1.power_multigird(L, num_coarserlayer, 10, 10);
-        Vec_t fem_sol = he_O1.solve_multigrid(L, num_coarserlayer, 10, 10);
-        std::cout << he_O1.mesh_width()[L] << " "
-                  << he_O1.L2_Err(L, fem_sol, u) << " " 
-                  << he_O1.H1_Err(L, fem_sol, u, grad_u) << std::endl;
+        int num_coarserlayer = 3;
+        mg_O1(he_O1, L, num_coarserlayer, u);
        
         // HE_LagrangeO1::Vec_t true_sol = he_O1.solve(L);
         // auto eq_pair = he_O1.build_equation(L);
