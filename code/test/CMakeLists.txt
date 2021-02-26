@@ -38,13 +38,9 @@
 #   ../Pum_WaveRay/PUM_WaveRay.h
 #   ../Pum_WaveRay/PUM_WaveRay.cpp
 #   ../Pum/PUM_EdgeMat.h
-#   ../Pum/PUM_EdgeMat.cpp
 #   ../Pum/PUM_EdgeVector.h
-#   ../Pum/PUM_EdgeVector.cpp
 #   ../Pum/PUM_ElementMatrix.h
-#   ../Pum/PUM_ElementMatrix.cpp
 #   ../Pum/PUM_ElemVector.h
-#   ../Pum/PUM_ElemVector.cpp
 #   ../Pum/HE_PUM.h
 #   ../Pum/HE_PUM.cpp
 #   ../ExtendPum/ExtendPUM_EdgeMat.h

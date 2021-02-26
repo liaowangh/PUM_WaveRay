@@ -224,7 +224,7 @@ public:
         return std::sqrt(res);
     }
 
-    Vec_t solve_multigrid(Vec_t& initial, size_type start_layer, int num_coarserlayer, int mu1, int mu2, bool solve_coarest=true) {
+    void solve_multigrid(Vec_t& initial, size_type start_layer, int num_coarserlayer, int mu1, int mu2, bool solve_coarest=true) {
         LF_ASSERT_MSG((num_coarserlayer <= start_layer), 
             "please use a smaller number of wave layers");
         auto eq_pair = build_equation(start_layer);
@@ -240,9 +240,46 @@ public:
             // auto tmp = build_equation(idx);
             // Op[i] = tmp.first.makeSparse();
         }
-
         v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, mu1, mu2, solve_coarest);
-        return initial;
+
+        // power iteration
+        // int N = initial.size();
+        // Vec_t u = Vec_t::Random(N);
+        // u.normalize();
+        // Vec_t old_u;
+        // Vec_t zero_vec = Vec_t::Zero(N);
+        // Scalar lambda;
+        // int cnt = 0;
+        
+        // std::cout << std::left << std::setw(10) << "Iteration" 
+        //     << std::setw(20) << "residual_norm" << std::endl;
+        // while(true) {
+        //     cnt++;
+        //     old_u = u;
+        //     v_cycle(u, zero_vec, Op, prolongation_op, stride, mu1, mu2, solve_coarest);
+            
+        //     lambda = old_u.dot(u);  // domainant eigenvalue
+        //     auto r = u - lambda * old_u;
+            
+        //     u.normalize();
+        
+        //     if(cnt % 1 == 0) {
+        //         std::cout << std::left << std::setw(10) << cnt 
+        //             << std::setw(20) << r.norm() 
+        //             << std::setw(20) << (u - old_u).norm()
+        //             << std::endl;
+        //     }
+        //     if(r.norm() < 0.1) {
+        //         break;
+        //     }
+        //     if(cnt > 20) {
+        //         std::cout << "Power iteration for multigrid doesn't converge." << std::endl;
+        //         break;
+        //     }
+        // }
+        // std::cout << "Number of iterations: " << cnt << std::endl;
+        // std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
+        // return std::make_pair(u, lambda);
     }
 private:
     int L_; // number of refinement steps
@@ -273,6 +310,34 @@ void Laplace_resolution(Laplace& laplace, int L, std::string& sol_name, std::str
     print_save_error(err_data, data_label, sol_name, output_folder);
 }
 
+void Laplace_mg(Laplace& laplace, int L, int nr_coarsemesh, FHandle_t u) {
+    auto zero_fun = [](const coordinate_t& x) -> Scalar { return 0.0; };
+
+    int N = laplace.nr_dofs(L);
+    Vec_t v = Vec_t::Random(N); // initial value
+    Vec_t uh = laplace.solve(L);
+
+    int nu1 = 3, nu2 = 3;
+
+    std::vector<double> L2_vk;
+    std::vector<double> L2_ek;
+
+    // std::cout << std::scientific << std::setprecision(1);
+    for(int k = 0; k < 10; ++k) {
+        std::cout << laplace.L2_Err(L, v - uh, zero_fun) << " ";
+        std::cout << laplace.L2_Err(L, v, u) << std::endl;
+        L2_vk.push_back(laplace.L2_Err(L, v, zero_fun));
+        L2_ek.push_back(laplace.L2_Err(L, v - uh, zero_fun));
+        laplace.solve_multigrid(v, L, nr_coarsemesh, nu1, nu2, false);
+    }
+    std::cout << "||u-uh||_2 = " << laplace.L2_Err(L, uh, u) << std::endl;
+    std::cout << "||v_{k+1}||/||v_k||" << std::endl;
+    for(int k = 0; k + 1 < L2_vk.size(); ++k) {
+        std::cout << k << " " << L2_vk[k+1] / L2_vk[k] 
+                       << " " << L2_ek[k+1] / L2_ek[k] << std::endl;
+    }
+}
+
 int main() {
     std::string square = "../meshes/square.msh";
     std::string square_output = "../result_square/Laplace/";
@@ -284,21 +349,7 @@ int main() {
     std::string sol_name = "Harmonic";
     Laplace laplace(L, square, u);
     // Laplace_resolution(laplace, L, sol_name, square_output, u, grad_u);
-
-    auto zero_fun = [](const coordinate_t& x) -> Scalar { return 0.0; };
-
-    int N = laplace.nr_dofs(L);
-    Vec_t v = Vec_t::Random(N); // initial value
-    Vec_t uh = laplace.solve(L);
-
-    int nr_coaremesh = 3;
-    int nu1 = 3, nu2 = 3;
-
-    for(int i = 0; i < 20; ++i) {
-        std::cout << laplace.L2_Err(L, v - uh, zero_fun) << " ";
-        std::cout << laplace.L2_Err(L, v, u) << std::endl;
-        laplace.solve_multigrid(v, L, nr_coaremesh, nu1, nu2, false);
-    }
-    std::cout << "||u-uh||_2 = " << laplace.L2_Err(L, uh, u) << std::endl;
+    int nr_coarsemesh = 3;
+    Laplace_mg(laplace, L, nr_coarsemesh, u);
 }
 

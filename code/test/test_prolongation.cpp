@@ -37,11 +37,11 @@ void test_prolongation(HE_FEM& he_fem, int L);
 
 int main() {
     std::string mesh_path = "../meshes/square.msh";
-    size_type L = 2; // refinement steps
-    double k = 60; // wave number
+    size_type L = 6; // refinement steps
+    double k = 20; // wave number
 
     std::vector<int> num_planwaves(L+1);
-    num_planwaves[L] = 3;
+    num_planwaves[L] = 2;
     for(int i = L - 1; i >= 0; --i) {
         num_planwaves[i] = 2 * num_planwaves[i+1];
     }
@@ -58,15 +58,15 @@ int main() {
     /************************************************************************/
     std::cout << "Test prolongation operator between Lagrangian finite element spaces." << std::endl;
     test_prolongation(he_O1, L);
-    auto test_f = [](const coordinate_t& x)->Scalar {
-        return 1.0;
-    };
+    // auto test_f = [](const coordinate_t& x)->Scalar {
+    //     return 1.0;
+    // };
     // Vec_t vec_f = he_O1.fun_in_vec(0, test_f);
     // test_prolongation(he_O1, vec_f, L, test_f);
 
     /************************************************************************/
-    // std::cout << "Test prolongation operator using best approximation between PUM sapces." << std::endl;
-    // test_prolongation(waveray, L);
+    std::cout << "Test prolongation operator using best approximation between PUM sapces." << std::endl;
+    test_prolongation(waveray, L);
     // auto vec_u = waveray.fun_in_vec(0, test_f);
     // Vec_t vec_u = Vec_t::Zero(5*N0);
     // for(int i = 0; i < 5*N0; i += N0) {
@@ -75,14 +75,14 @@ int main() {
     // test_prolongation(waveray, vec_u, L, test_f);
 
     /************************************************************************/
-    std::cout << "Test prolongation operator using best approximation between extend PUM sapces." << std::endl;
+    std::cout << "Test prolongation operator between extend PUM sapces." << std::endl;
     test_prolongation(extend_waveray, L);
-    auto vec_u2 = extend_waveray.fun_in_vec(0, u);
+    // auto vec_u2 = extend_waveray.fun_in_vec(0, u);
     // Vec_t vec_u2 = Vec_t::Zero(5*(N0+1));
     // for(int i = 1; i < 5*(N0+1); i += (N0+1)) {
     //     vec_u2(i) = 1.0;
     // }
-    test_prolongation(extend_waveray, vec_u2, L, u);
+    // test_prolongation(extend_waveray, vec_u2, L, u);
 
     // for(int i = 0; i <= L; ++i) {
     //     auto fe_sol = extend_waveray.solve(i);
