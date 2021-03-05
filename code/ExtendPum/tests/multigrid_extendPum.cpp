@@ -45,21 +45,21 @@ int main() {
         auto grad_u = solutions[i]->get_gradient();
         auto g = solutions[i]->boundary_g();
 
-        HE_ExtendPUM he_epum(L, k, square, g, u, false, num_planwaves, 20);
+        HE_ExtendPUM he_epum(L, k, square, g, u, false, num_planwaves, 40);
 
         auto eq_pair = he_epum.build_equation(L);
         SpMat_t A = eq_pair.first.makeSparse();
         int stride = num_planwaves[L]+1;
-        power_GS(A, stride);
+        // power_GS(A, stride);
 
-        // int num_wavelayer = 2;
-        // he_epum.power_multigird(L, num_wavelayer, 10, 10);
-        // Vec_t fem_sol = he_epum.solve_multigrid(L, num_wavelayer, 10, 10);
-        // Vec_t true_sol = he_epum.solve(L);
-        // std::cout << he_epum.mesh_width()[L] << " "
-        //           << he_epum.L2_Err(L, fem_sol, u) << " " 
-        //           << he_epum.H1_Err(L, fem_sol, u, grad_u) << " " 
-        //           << he_epum.L2_Err(L, true_sol, u) << std::endl;
+        int num_wavelayer = 1;
+        // he_epum.power_multigird(L, num_wavelayer, 5, 5);
+        Vec_t uh = Vec_t::Random(A.rows());
+        he_epum.solve_multigrid(uh, L, num_wavelayer, 5, 5, true);
+        Vec_t fem_sol = he_epum.solve(L);
+        std::cout << he_epum.mesh_width()[L] << " "
+                  << he_epum.L2_Err(L, fem_sol, u) << " " 
+                  << he_epum.L2_Err(L, uh, u) << std::endl;
     }
     
 }

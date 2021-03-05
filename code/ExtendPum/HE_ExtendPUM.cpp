@@ -389,8 +389,7 @@ HE_ExtendPUM::Vec_t HE_ExtendPUM::solve(size_type l) {
 }
 
 /*
- * SxE_l -> SxE_{l+1}, 
- *  is the kronecker product of prolongation_lagrange(l) and prolongation_planwave(l)
+ * SxE_l -> SxE_{l+1},  
  */
 HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation(size_type l) {
     LF_ASSERT_MSG((l < L), 

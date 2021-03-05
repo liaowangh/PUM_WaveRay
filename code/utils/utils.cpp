@@ -113,7 +113,7 @@ void tabular_output(std::vector<std::vector<double>>& data,
         std::cout << std::setw(10) << data_label[i];
     }
     std::cout << std::endl;
-    std::cout << std::left << std::scientific << std::setprecision(1);
+    // std::cout << std::left << std::scientific << std::setprecision(1);
     for(int l = 0; l < data[0].size(); ++l) {
         std::cout << l << " & ";
         for(int i = 0; i < data.size(); ++i) {
@@ -375,7 +375,7 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
             domainant_eival = eivals(i);
         }
     }
-    std::cout << eivals << std::endl;
+    // std::cout << eivals << std::endl;
     std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
     std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
     /**********************************************/
@@ -589,7 +589,6 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
         Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], mu1 + mu2);
         // block_GS(Op[0], rhs_vec[0], initial[0], stride[0], mu1+mu2);
     }
-    
     for(int i = 1; i <= L; ++i) {
         initial[i] += I[i-1] * initial[i-1];
         Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);

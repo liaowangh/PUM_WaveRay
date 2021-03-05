@@ -34,11 +34,11 @@ int main() {
     std::string square = "../meshes/square.msh";
     std::string square_hole_output = "../result_squarehole/ExtendPUM/";
     std::string square_output = "../result_square/ExtendPUM/";
-    int L = 5; // refinement steps
-    std::vector<int> number_waves{0, 3, 5, 7, 9, 11, 13};
+    int L = 4; // refinement steps
+    std::vector<int> number_waves{4, 8, 16, 32};
     // std::vector<int> number_waves{0};
     
-    std::vector<double> wave_number{6};
+    std::vector<double> wave_number{20};
 
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;
@@ -50,7 +50,7 @@ int main() {
         solutions[1] = std::make_shared<fundamental_sol>(k, c);
         solutions[2] = std::make_shared<Spherical_wave>(k, 2);
         for(int i = 0; i < solutions.size(); ++i) {
-            if(i > 0) { continue; }
+            if(i != 1) { continue; }
             std::string str = "resolution_k" + std::to_string(int(k)) + "_" + sol_name[i];
             // resolution_test(square_hole, true, L, k, number_waves, square_hole_output, solutions[i], str);
             resolution_test(square, false, L, k, number_waves, square_output, solutions[i], str);
@@ -84,6 +84,6 @@ void resolution_test(const std::string& mesh_path, bool hole_exist, size_type L,
             H1serr[i].push_back(h1_serr);
         }
     }
-    tabular_output(L2err, data_label, sol_name + "_L2err", output_folder);
-    tabular_output(H1serr, data_label, sol_name + "_H1serr", output_folder);
+    tabular_output(L2err, data_label, sol_name + "_L2err", output_folder, true);
+    tabular_output(H1serr, data_label, sol_name + "_H1serr", output_folder, true);
 }

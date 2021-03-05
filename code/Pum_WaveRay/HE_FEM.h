@@ -95,10 +95,11 @@ public:
 
     virtual ~HE_FEM() = default;
 
+    std::vector<int> num_planwaves;  // number of plan waves per mesh
 protected:
     size_type L;  // number of refinement steps
     double k;  // wave number in the Helmholtz equation
-    std::vector<int> num_planwaves;  // number of plan waves per mesh
+    
     std::shared_ptr<lf::io::GmshReader> reader; // read the coarest mesh
     std::shared_ptr<lf::refinement::MeshHierarchy> mesh_hierarchy;
     // mesh_hierarchy->getMesh(0) -- coarsest
