@@ -19,20 +19,19 @@ using Scalar = std::complex<double>;
 using size_type = unsigned int;
 
 std::pair<Vec_t, Scalar> power_waveray(SpMat_t& A, int stride) {
-    // Mat_t dense_A = Mat_t(A);
-    // Mat_t A_L = Mat_t(dense_A.triangularView<Eigen::Lower>());
-    // Mat_t A_U = A_L - dense_A;
-    // Mat_t GS_op = A_L.colPivHouseholderQr().solve(A_U);
-    // Vec_t eivals = GS_op.eigenvalues();
-    // Scalar domainant_eival = eivals(0);
-    // for(int i = 1; i < eivals.size(); ++i) {
-    //     if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
-    //         domainant_eival = eivals(i);
-    //     }
-    // }
-    // if(i == 0) std::cout << eivals << std::endl;
-    // std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
-    // std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+    Mat_t dense_A = Mat_t(A);
+    Mat_t A_L = Mat_t(dense_A.triangularView<Eigen::Lower>());
+    Mat_t A_U = A_L - dense_A;
+    Mat_t GS_op = A_L.colPivHouseholderQr().solve(A_U);
+    Vec_t eivals = GS_op.eigenvalues();
+    Scalar domainant_eival = eivals(0);
+    for(int i = 1; i < eivals.size(); ++i) {
+        if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
+            domainant_eival = eivals(i);
+        }
+    }
+    std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
+    std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
 
     /************************************************************************/
     double tol = 0.001;
@@ -80,11 +79,11 @@ std::pair<Vec_t, Scalar> power_waveray(SpMat_t& A, int stride) {
         }
     }
     std::cout << "Number of iterations: " << cnt << std::endl;
-    std::cout << "Domainant eigenvalue of Gauss-Seidel by power iteration: " << lambda << std::endl;
+    std::cout << "Domainant eigenvalue of Gauss-Seidel by power iteration: " << std::abs(lambda) << std::endl;
     return std::make_pair(u, lambda);
 }
 
-void relaxation_factor(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer) {
+void relaxation_factor(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer, int wave_number) {
 
     auto eq_pair = epum_waveray.build_equation(L);
     SpMat_t A(eq_pair.first.makeSparse());
@@ -109,17 +108,20 @@ void relaxation_factor(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer
 
         std::cout << "Power iteration of Mesh Operator " << i 
             << ", h = " << mesh_width[idx] << std::endl;
-        // power_waveray(Op[i], stride[i]);
-        power_kaczmarz(Op[i]);
+        std::cout << "k*h = " << wave_number * mesh_width[idx] << std::endl;
+        power_waveray(Op[i], stride[i]);
+        // power_kaczmarz(Op[i]);
     }
 } 
 
 int main(){
     std::string square_output = "../result_square/ExtendPUM_WaveRay/";
     std::string square = "../meshes/square.msh";
-    size_type L = 5; // refinement steps
+    std::string square_hole = "../meshes/square_hole.msh";
+    std::string triangle_hole = "../meshes/triangle_hole.msh";
+    size_type L = 4;; // refinement steps
  
-    double k = 16; // wave number
+    double k = 8.0; // wave number
     std::vector<int> num_planwaves(L+1);
     num_planwaves[L] = 2;
     for(int i = L - 1; i >= 0; --i) {
@@ -131,8 +133,10 @@ int main(){
     auto grad_u = sol.get_gradient();
     auto g = sol.boundary_g();
 
-    ExtendPUM_WaveRay extend_waveray(L, k, square, g, u, false, num_planwaves, 50);
+    // ExtendPUM_WaveRay extend_waveray(L, k, square, g, u, false, num_planwaves, 50);
+    // ExtendPUM_WaveRay extend_waveray(L, k, square_hole, g, u, true, num_planwaves, 50);
+    ExtendPUM_WaveRay extend_waveray(L, k, triangle_hole, g, u, true, num_planwaves, 50);
 
-    int num_wavelayer = 5;
-    relaxation_factor(extend_waveray, L, num_wavelayer);    
+    int num_wavelayer = L;
+    relaxation_factor(extend_waveray, L, num_wavelayer, k);    
 }

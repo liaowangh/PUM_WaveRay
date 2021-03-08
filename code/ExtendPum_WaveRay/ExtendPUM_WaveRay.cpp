@@ -142,8 +142,6 @@ ExtendPUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
         int idx = start_layer + i - num_coarserlayer;
         prolongation_op[i] = prolongation(idx);
-        // auto tmp = build_equation(idx);
-        // Op[i] = tmp.first.makeSparse();
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
         stride[i] = num_planwaves[idx] + 1;
     }
@@ -214,26 +212,26 @@ ExtendPUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
         
         lambda = old_u.dot(u);  // domainant eigenvalue
         auto r = u - lambda * old_u;
-        
+        double r_norm = r.norm();
         u.normalize();
     
-        if(cnt % 1 == 0) {
+        if(cnt % 5 == 0) {
             std::cout << std::left << std::setw(10) << cnt 
-                << std::setw(20) << r.norm() 
+                << std::setw(20) << r_norm
                 << std::setw(20) << (u - old_u).norm()
                 << std::endl;
         }
-        if(double(r.norm()) < 0.01) {
+        if(r_norm < 0.01) {
             std::cout << "Power iteration converges after " << cnt << " iterations" << std::endl;
             break;
         }
-        if(cnt > 20) {
+        if(cnt > 50) {
             std::cout << "Power iteration for multigrid doesn't converge." << std::endl;
             break;
         }
     }
     std::cout << "Number of iterations: " << cnt << std::endl;
     std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
-    vector_vtk(start_layer, u, "square_L3_k2pi_2mesh_Galerkin");
+    // vector_vtk(start_layer, u, "square_L3_k2pi_2mesh_Galerkin");
     return std::make_pair(u, lambda);
 }

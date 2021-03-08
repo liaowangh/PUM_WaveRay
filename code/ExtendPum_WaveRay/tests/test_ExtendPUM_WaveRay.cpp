@@ -101,26 +101,6 @@ void ePUM_WaveRay(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer,
         ms[i] = mesh_width[idx];
     }
 
-    // for(int i = 0; i < Op.size(); ++i) {
-    //     std::cout << "Power iteration of Mesh Operator " << i << std::endl;
-    //     Mat_t dense_A = Mat_t(Op[i]);
-    //     Mat_t A_L = Mat_t(dense_A.triangularView<Eigen::Lower>());
-    //     Mat_t A_U = A_L - dense_A;
-    //     Mat_t GS_op = A_L.colPivHouseholderQr().solve(A_U);
-    //     Vec_t eivals = GS_op.eigenvalues();
-
-    //     Scalar domainant_eival = eivals(0);
-    //     for(int i = 1; i < eivals.size(); ++i) {
-    //         if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
-    //             domainant_eival = eivals(i);
-    //         }
-    //     }
-    //     if(i == 0) std::cout << eivals << std::endl;
-    //     // std::cout << eivals << std::endl;
-    //     std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
-    //     std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
-    // }
-
     /***********************************************************************/
     auto zero_fun = [](const coordinate_t& x) -> Scalar { return 0.0; };
 
@@ -140,8 +120,9 @@ void ePUM_WaveRay(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer,
         L2_vk.push_back(epum_waveray.L2_Err(L, v, zero_fun));
         L2_ek.push_back(epum_waveray.L2_Err(L, v - uh, zero_fun));
         // epum_waveray.HE_LagrangeO1::solve_multigrid(v, L, 3, 3, 3, true);
-        waveray_vcycle(v, eq_pair.second, Op, prolongation_op, stride, k, ms, nu1, nu2, solve_coarest);
+        // waveray_vcycle(v, eq_pair.second, Op, prolongation_op, stride, k, ms, nu1, nu2, solve_coarest);
         // HE_LagrangeO1::solve_multigrid(v, L, 3, 3, 3, false);
+        v_cycle(v, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
     }
     std::cout << "||u-uh||_2 = " << epum_waveray.L2_Err(L, uh, u) << std::endl;
     std::cout << "||v_{k+1}||/||v_k||" << std::endl;
@@ -160,6 +141,7 @@ int main(){
     std::string square_hole_output = "../result_squarehole/ExtendPUM_WaveRaay/";
     std::string square = "../meshes/square.msh";
     std::string square_hole = "../meshes/square_hole.msh";
+    std::string square_hole2 = "../meshes/square_hole2.msh";
     size_type L = 5; // refinement steps
  
     double k = 30.0; // wave number
@@ -176,7 +158,7 @@ int main(){
     auto g = sol.boundary_g();
     ExtendPUM_WaveRay extend_waveray(L, k, square, g, u, false, num_planwaves, 50);
 
-    int num_wavelayer = 4;
+    int num_wavelayer = 1;
     ePUM_WaveRay(extend_waveray, L, num_wavelayer, k, u, true);
     
 }
