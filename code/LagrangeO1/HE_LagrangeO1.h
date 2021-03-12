@@ -34,7 +34,7 @@ public:
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
-    HE_LagrangeO1(size_type levels, Scalar wave_num, const std::string& mesh_path, 
+    HE_LagrangeO1(size_type levels, double wave_num, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole, int quad_degree=20): 
         HE_FEM(levels, wave_num, mesh_path, g, h, hole,
             std::vector<int>(levels+1, 1), quad_degree){};

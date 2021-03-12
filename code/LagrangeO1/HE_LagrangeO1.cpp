@@ -31,7 +31,7 @@ HE_LagrangeO1::build_equation(size_type l) {
     
     // assemble for <grad(u), grad(v)> - k^2 uv
     lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
-    lf::mesh::utils::MeshFunctionConstant<Scalar> mf_k(-1. * k_ * k_);
+    lf::mesh::utils::MeshFunctionConstant<double> mf_k(-1. * k_ * k_);
     lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_k)> 
     	elmat_builder(fe_space, mf_identity, mf_k);
     
@@ -46,8 +46,8 @@ HE_LagrangeO1::build_equation(size_type l) {
 
     if(hole_exist_){
         // there is a hole inside, need to distinguish between outer and inner boundar
-        auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
-        auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
+        auto outer_nr = reader_->PhysicalEntityName2Nr("outer_boundary");
+        auto inner_nr = reader_->PhysicalEntityName2Nr("inner_boundary");
 
         // modify it to classify inner and outer boundary
         for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
@@ -57,7 +57,7 @@ HE_LagrangeO1::build_equation(size_type l) {
                 for(int i = l; i > 0; --i) {
                     parent_edge = mesh_hierarchy_->ParentEntity(i, *parent_edge);
                 }
-                if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
+                if(reader_->IsPhysicalEntity(*parent_edge, inner_nr)) {
                     // it is the inner boundary
                     outer_boundary(*edge) = false;
                 }

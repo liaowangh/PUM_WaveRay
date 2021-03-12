@@ -32,8 +32,8 @@ HE_FEM::outerBdy_selector(size_type l) {
     auto mesh = getmesh(l);
     auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)};
     if(hole_exist_) {
-        auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
-        auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
+        auto outer_nr = reader_->PhysicalEntityName2Nr("outer_boundary");
+        auto inner_nr = reader_->PhysicalEntityName2Nr("inner_boundary");
 
         // modify it to classify inner and outer boundary
         for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
@@ -43,7 +43,7 @@ HE_FEM::outerBdy_selector(size_type l) {
                 for(int i = l; i > 0; --i) {
                     parent_edge = mesh_hierarchy_->ParentEntity(i, *parent_edge);
                 }
-                if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
+                if(reader_->IsPhysicalEntity(*parent_edge, inner_nr)) {
                     // it is the inner boundary
                     outer_boundary(*edge) = false;
                 }

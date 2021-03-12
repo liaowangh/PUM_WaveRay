@@ -98,7 +98,7 @@ public:
     std::vector<int> num_planwaves_;  // number of plan waves per mesh
 protected:
     size_type L_;  // number of refinement steps
-    Scalar k_;  // wave number in the Helmholtz equation
+    double k_;  // wave number in the Helmholtz equation
     
     std::shared_ptr<lf::io::GmshReader> reader_; // read the coarest mesh
     std::shared_ptr<lf::refinement::MeshHierarchy> mesh_hierarchy_;

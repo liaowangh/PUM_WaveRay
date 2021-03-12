@@ -161,7 +161,7 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
     size_type L = 5; // refinement steps
-    Scalar k = 20.0; // wave number
+    double k = 20.0; // wave number
     plan_wave sol(k, 0.8, 0.6);
 
     auto u = sol.get_fun();

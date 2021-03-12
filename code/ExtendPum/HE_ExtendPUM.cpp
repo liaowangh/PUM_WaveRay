@@ -445,8 +445,8 @@ HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation(size_type l) {
     // Extend_P.block(1, 1, n2, m2) = Mat_t(P);
     // Extend_P(0, 0) = 1.0;
     // Mat_t res = Mat_t::Zero(n1*(n2+1), m1*(m2+1));
-    // for(int k = 0; k < Q.outerSize(); ++k) {
-    //     for(SpMat_t::InnerIterator it(Q, k); it; ++it) {
+    // for(int t = 0; t < Q.outerSize(); ++t) {
+    //     for(SpMat_t::InnerIterator it(Q, t); it; ++it) {
     //         int i = it.row();
     //         int j = it.col();
     //         Scalar qij = it.value();
@@ -642,8 +642,8 @@ HE_ExtendPUM::Mat_t HE_ExtendPUM::Assemble_EnergyProjection(size_type l, Scalar 
         for(int I = 0; I < n*(Nl1+1); ++I) {
             int i = I / (Nl1 + 1);
             int t = I % (Nl1 + 1);
-            for(int k = 0; k < n; ++k) {
-                Phi(I,J) += Dense_Q(k,j) * Dense_Z(I, k*(Nl+1) + s);
+            for(int w = 0; w < n; ++w) {
+                Phi(I,J) += Dense_Q(w,j) * Dense_Z(I, w*(Nl+1) + s);
             }
         }
     }
@@ -679,8 +679,8 @@ HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation_SE_S() {
             int i = it.row();
             int j = it.col();
             Scalar qij = it.value(); 
-            for(int k = 0; k <= N; ++k) {
-                triplets.push_back(triplet_t(i, j*(N+1)+k, qij*E(i,k)));
+            for(int w = 0; w <= N; ++w) {
+                triplets.push_back(triplet_t(i, j*(N+1)+w, qij*E(i,w)));
             }
         }
     }

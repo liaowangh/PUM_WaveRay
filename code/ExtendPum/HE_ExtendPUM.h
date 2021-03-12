@@ -35,7 +35,7 @@ public:
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
 
     /* Construcotr */
-    HE_ExtendPUM(size_type levels, Scalar wave_num, const std::string& mesh_path, 
+    HE_ExtendPUM(size_type levels,double wave_num, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20): 
         HE_FEM(levels, wave_num, mesh_path, g, h, hole, num_waves, quad_degree){};
 

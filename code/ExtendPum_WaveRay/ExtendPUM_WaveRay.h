@@ -46,7 +46,7 @@ public:
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
-    ExtendPUM_WaveRay(size_type levels, Scalar wave_number, const std::string& mesh_path, 
+    ExtendPUM_WaveRay(size_type levels, double wave_number, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20): 
             HE_FEM(levels, wave_number, mesh_path, g, h, hole, num_waves, quad_degree),
             HE_LagrangeO1(levels, wave_number, mesh_path, g, h, hole),
@@ -70,7 +70,7 @@ public:
 
     SpMat_t prolongation(size_type l) override;
     Vec_t solve(size_type l) override;
-    void solve_multigrid(Vec_t& initial, size_type start_layer, int num_wavelayer, int nu1, int nu2, bool solve_coarest=false);
+    void solve_multigrid(Vec_t& initial, size_type start_layer, int num_wavelayer, int nu1, int nu2, bool solve_coarest=false) override;
     std::pair<Vec_t, Scalar> power_multigird(size_type start_layer, int num_coarserlayer, 
         int mu1, int mu2) override;
 };
