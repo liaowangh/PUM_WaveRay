@@ -37,7 +37,7 @@ public:
     using Scalar = std::complex<double>;
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     
-    PUM_ElementMatrix(size_type N, double k, double alpha, double gamma, int degree=20): 
+    PUM_ElementMatrix(size_type N, Scalar k, Scalar alpha, Scalar gamma, int degree=20): 
         N_(N), k_(k), alpha_(alpha), gamma_(gamma), degree_(degree) {}
     
     bool isActive(const lf::mesh::Entity & /*cell*/) { return true; }
@@ -106,9 +106,9 @@ public:
     }
 private:
     size_type N_; // number of planner waves
-    double k_;
-    double alpha_;
-    double gamma_;
+    Scalar k_;
+    Scalar alpha_;
+    Scalar gamma_;
     int degree_;
 };
 

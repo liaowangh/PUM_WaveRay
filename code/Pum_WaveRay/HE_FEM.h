@@ -18,7 +18,7 @@ using namespace std::complex_literals;
 
 /*
  * Helmholtz equation (HE):
- *  (\Laplace + k^2) u = 0 on \Omega
+ *  (\Laplace + k_^2) u = 0 on \Omega
  *   \partial u / \partial n - iku = g in \Gamma_R
  *   u = h in \Gamma_D
  * 
@@ -48,11 +48,11 @@ public:
 
     /******* Constructor *******/
     HE_FEM(size_type levels, double wave_num, const std::string& mesh_path, 
-        FHandle_t g_, FHandle_t h_, bool hole, std::vector<int> num_waves, int quad_degree=20):
-        L(levels), k(wave_num), num_planwaves(num_waves), g(g_), h(h_), hole_exist(hole), degree(quad_degree) {
+        FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20):
+        L_(levels), k_(wave_num), num_planwaves_(num_waves), g_(g), h_(h), hole_exist_(hole), degree_(quad_degree) {
         auto mesh_factory = std::make_unique<lf::mesh::hybrid2d::MeshFactory>(2);
-        reader = std::make_shared<lf::io::GmshReader>(std::move(mesh_factory), mesh_path);
-        mesh_hierarchy = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(reader->mesh(), L);
+        reader_ = std::make_shared<lf::io::GmshReader>(std::move(mesh_factory), mesh_path);
+        mesh_hierarchy_ = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(reader_->mesh(), L_);
     }
 
     /******** general functions ********/
@@ -66,7 +66,7 @@ public:
 
     std::vector<double> mesh_width();
     // return mesh at l-th level
-    std::shared_ptr<lf::mesh::Mesh> getmesh(size_type l) { return mesh_hierarchy->getMesh(l); }
+    std::shared_ptr<lf::mesh::Mesh> getmesh(size_type l) { return mesh_hierarchy_->getMesh(l); }
     lf::mesh::utils::CodimMeshDataSet<bool> outerBdy_selector(size_type l);
 
     void vector_vtk(size_type l, const Vec_t& v, const std::string& name_str);
@@ -95,18 +95,18 @@ public:
 
     virtual ~HE_FEM() = default;
 
-    std::vector<int> num_planwaves;  // number of plan waves per mesh
+    std::vector<int> num_planwaves_;  // number of plan waves per mesh
 protected:
-    size_type L;  // number of refinement steps
-    double k;  // wave number in the Helmholtz equation
+    size_type L_;  // number of refinement steps
+    Scalar k_;  // wave number in the Helmholtz equation
     
-    std::shared_ptr<lf::io::GmshReader> reader; // read the coarest mesh
-    std::shared_ptr<lf::refinement::MeshHierarchy> mesh_hierarchy;
-    // mesh_hierarchy->getMesh(0) -- coarsest
-    // mesh_hierarchy->getMesh(L) -- finest
+    std::shared_ptr<lf::io::GmshReader> reader_; // read the coarest mesh
+    std::shared_ptr<lf::refinement::MeshHierarchy> mesh_hierarchy_;
+    // mesh_hierarchy_->getMesh(0) -- coarsest
+    // mesh_hierarchy_->getMesh(L) -- finest
     
-    FHandle_t g;
-    FHandle_t h;
-    bool hole_exist; // whether the domain contains a hole inside
-    int degree; // degree of quadrature rules
+    FHandle_t g_;
+    FHandle_t h_;
+    bool hole_exist_; // whether the domain contains a hole inside
+    int degree_; // degree of quadrature rules
 };

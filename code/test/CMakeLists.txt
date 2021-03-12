@@ -44,13 +44,9 @@
 #   ../Pum/HE_PUM.h
 #   ../Pum/HE_PUM.cpp
 #   ../ExtendPum/ExtendPUM_EdgeMat.h
-#   ../ExtendPum/ExtendPUM_EdgeMat.cpp
 #   ../ExtendPum/ExtendPUM_EdgeVector.h
-#   ../ExtendPum/ExtendPUM_EdgeVector.cpp
 #   ../ExtendPum/ExtendPUM_ElementMatrix.h
-#   ../ExtendPum/ExtendPUM_ElementMatrix.cpp
 #   ../ExtendPum/ExtendPUM_ElemVector.h
-#   ../ExtendPum/ExtendPUM_ElemVector.cpp
 #   ../ExtendPum/HE_ExtendPUM.h
 #   ../ExtendPum/HE_ExtendPUM.cpp
 #   ../ExtendPum_WaveRay/ExtendPUM_WaveRay.h
@@ -114,13 +110,9 @@
 #   ../Pum_WaveRay/HE_FEM.h
 #   ../Pum_WaveRay/HE_FEM.cpp
 #   ../ExtendPum/ExtendPUM_EdgeMat.h
-#   ../ExtendPum/ExtendPUM_EdgeMat.cpp
 #   ../ExtendPum/ExtendPUM_EdgeVector.h
-#   ../ExtendPum/ExtendPUM_EdgeVector.cpp
 #   ../ExtendPum/ExtendPUM_ElementMatrix.h
-#   ../ExtendPum/ExtendPUM_ElementMatrix.cpp
 #   ../ExtendPum/ExtendPUM_ElemVector.h
-#   ../ExtendPum/ExtendPUM_ElemVector.cpp
 #   ../ExtendPum/HE_ExtendPUM.h
 #   ../ExtendPum/HE_ExtendPUM.cpp
 #   ../ExtendPum_WaveRay/ExtendPUM_WaveRay.h
@@ -182,13 +174,9 @@
 set(waveray_Laplace_sources
   waveray_Laplace.cpp
   ../ExtendPum/ExtendPUM_EdgeMat.h
-  ../ExtendPum/ExtendPUM_EdgeMat.cpp
   ../ExtendPum/ExtendPUM_EdgeVector.h
-  ../ExtendPum/ExtendPUM_EdgeVector.cpp
   ../ExtendPum/ExtendPUM_ElementMatrix.h
-  ../ExtendPum/ExtendPUM_ElementMatrix.cpp
   ../ExtendPum/ExtendPUM_ElemVector.h
-  ../ExtendPum/ExtendPUM_ElemVector.cpp
   ../Pum_WaveRay/HE_FEM.h
   ../Pum_WaveRay/HE_FEM.cpp
   ../utils/utils.h

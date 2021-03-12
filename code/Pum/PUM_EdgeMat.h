@@ -25,7 +25,7 @@ public:
     
     PUM_EdgeMat(std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space, 
         lf::mesh::utils::CodimMeshDataSet<bool> &edge_selector, 
-        size_type N, double k, Scalar gamma, int degree=20): 
+        size_type N, Scalar k, Scalar gamma, int degree=20): 
         fe_space_(fe_space), edge_selector_(edge_selector), N_(N), k_(k), gamma_(gamma), degree_(degree) {}
 
     bool isActive(const lf::mesh::Entity &edge) {
@@ -66,7 +66,7 @@ private:
     std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space_;
     lf::mesh::utils::CodimMeshDataSet<bool> edge_selector_;
     size_type N_; // number of planar waves
-    double k_;
+    Scalar k_;
     Scalar gamma_;
     int degree_;
 };

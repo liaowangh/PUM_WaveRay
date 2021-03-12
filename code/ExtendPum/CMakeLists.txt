@@ -3,13 +3,9 @@ set(ExtendPum_resolution_sources
   ../Pum_WaveRay/HE_FEM.h
   ../Pum_WaveRay/HE_FEM.cpp
   ExtendPUM_EdgeMat.h
-  ExtendPUM_EdgeMat.cpp
   ExtendPUM_EdgeVector.h
-  ExtendPUM_EdgeVector.cpp
   ExtendPUM_ElementMatrix.h
-  ExtendPUM_ElementMatrix.cpp
   ExtendPUM_ElemVector.h
-  ExtendPUM_ElemVector.cpp
   HE_ExtendPUM.h
   HE_ExtendPUM.cpp
   ../utils/utils.h
@@ -41,13 +37,9 @@ target_link_libraries(ExtendPum_resolution
 #   ../Pum_WaveRay/HE_FEM.h
 #   ../Pum_WaveRay/HE_FEM.cpp
 #   ExtendPUM_EdgeMat.h
-#   ExtendPUM_EdgeMat.cpp
 #   ExtendPUM_EdgeVector.h
-#   ExtendPUM_EdgeVector.cpp
 #   ExtendPUM_ElementMatrix.h
-#   ExtendPUM_ElementMatrix.cpp
 #   ExtendPUM_ElemVector.h
-#   ExtendPUM_ElemVector.cpp
 #   HE_ExtendPUM.h
 #   HE_ExtendPUM.cpp
 #   tests/boundary_projection.cpp
@@ -79,13 +71,9 @@ target_link_libraries(ExtendPum_resolution
 # set(mg_extendPum_sources
 #   tests/multigrid_extendPum.cpp
 #   ExtendPUM_EdgeMat.h
-#   ExtendPUM_EdgeMat.cpp
 #   ExtendPUM_EdgeVector.h
-#   ExtendPUM_EdgeVector.cpp
 #   ExtendPUM_ElementMatrix.h
-#   ExtendPUM_ElementMatrix.cpp
 #   ExtendPUM_ElemVector.h
-#   ExtendPUM_ElemVector.cpp
 #   HE_ExtendPUM.h
 #   HE_ExtendPUM.cpp
 #   ../Pum_WaveRay/HE_FEM.h
@@ -118,13 +106,9 @@ target_link_libraries(ExtendPum_resolution
 # set(test_extendPum_sources
 #   tests/test_extendPum.cpp
 #   ExtendPUM_EdgeMat.h
-#   ExtendPUM_EdgeMat.cpp
 #   ExtendPUM_EdgeVector.h
-#   ExtendPUM_EdgeVector.cpp
 #   ExtendPUM_ElementMatrix.h
-#   ExtendPUM_ElementMatrix.cpp
 #   ExtendPUM_ElemVector.h
-#   ExtendPUM_ElemVector.cpp
 #   HE_ExtendPUM.h
 #   HE_ExtendPUM.cpp
 #   ../Pum_WaveRay/HE_FEM.h

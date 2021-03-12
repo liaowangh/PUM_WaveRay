@@ -29,17 +29,17 @@ PUM_WaveRay::FHandle_t exp_wave(const Eigen::Vector2d& d, double k) {
 
 std::pair<lf::assemble::COOMatrix<PUM_WaveRay::Scalar>, PUM_WaveRay::Vec_t> 
 PUM_WaveRay::build_equation(size_type level) {
-    return level == L ? HE_LagrangeO1::build_equation(level) :
+    return level == L_ ? HE_LagrangeO1::build_equation(level) :
                         HE_PUM::build_equation(level);
 }
 
 double PUM_WaveRay::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
-    return l == L ? HE_LagrangeO1::L2_Err(l, mu, u) :
+    return l == L_ ? HE_LagrangeO1::L2_Err(l, mu, u) :
                     HE_PUM::L2_Err(l, mu, u);
 }
 
 double PUM_WaveRay::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) {
-    return l == L ? HE_LagrangeO1::H1_semiErr(l, mu, grad_u):
+    return l == L_ ? HE_LagrangeO1::H1_semiErr(l, mu, grad_u):
                     HE_PUM::H1_semiErr(l, mu, grad_u);
 }
 
@@ -50,16 +50,16 @@ double PUM_WaveRay::H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, con
 }
 
 PUM_WaveRay::Vec_t PUM_WaveRay::fun_in_vec(size_type l, const FHandle_t& f) {
-    return l == L ? HE_LagrangeO1::fun_in_vec(l, f) :
+    return l == L_ ? HE_LagrangeO1::fun_in_vec(l, f) :
                     HE_PUM::fun_in_vec(l, f);
 }
 
 PUM_WaveRay::Vec_t PUM_WaveRay::solve(size_type l) {
-    return l == L ? HE_LagrangeO1::solve(l) : HE_PUM::solve(l);
+    return l == L_ ? HE_LagrangeO1::solve(l) : HE_PUM::solve(l);
 }
 
 PUM_WaveRay::SpMat_t PUM_WaveRay::prolongation(size_type l) {
-    return l == L - 1 ? HE_PUM::prolongation_SE_S() : HE_PUM::prolongation(l);
+    return l == L_ - 1 ? HE_PUM::prolongation_SE_S() : HE_PUM::prolongation(l);
 }
 
 /*
@@ -67,7 +67,7 @@ PUM_WaveRay::SpMat_t PUM_WaveRay::prolongation(size_type l) {
  */
 void PUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, int num_wavelayer,
     int nu1, int nu2, bool solve_coarest) {
-    // in pum waveray, only start_layer = L makes sense.
+    // in pum waveray, only start_layer = L_ makes sense.
     LF_ASSERT_MSG((num_wavelayer <= start_layer), 
         "please use a smaller number of wave layers");
     auto eq_pair = build_equation(start_layer);
@@ -83,7 +83,7 @@ void PUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, int num
         // Op[i] = tmp.first.makeSparse();
         prolongation_op[i] = prolongation(idx);
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves[idx];
+        stride[i] = num_planwaves_[idx];
     }
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
 }
@@ -107,7 +107,7 @@ PUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
         auto tmp = build_equation(idx);
         Op[i] = tmp.first.makeSparse();
         // Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves[idx];
+        stride[i] = num_planwaves_[idx];
     }
 
     int N = A.rows();

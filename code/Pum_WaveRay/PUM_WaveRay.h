@@ -29,7 +29,7 @@ using namespace std::complex_literals;
  *  E_i : plan wave spaces {exp(ikd x)}
  * 
  * Some notation:
- *  Nl  = 2^{N+1-l} = num_planwaves[l]
+ *  Nl  = 2^{N+1-l} = num_planwaves_[l]
  *  dtl = [cos(2pi * t/Nl), sin(2pi * t/Nl)] 
  *  etl = exp(ik* dtl x)
  */
@@ -45,7 +45,7 @@ public:
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     using FunGradient_t = std::function<Eigen::Matrix<Scalar, 2, 1>(const coordinate_t&)>;
 
-    PUM_WaveRay(size_type levels, double wave_number, const std::string& mesh_path, 
+    PUM_WaveRay(size_type levels, Scalar wave_number, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20): 
             HE_FEM(levels, wave_number, mesh_path, g, h, hole, num_waves, quad_degree),
             HE_LagrangeO1(levels, wave_number, mesh_path, g, h, hole),
@@ -61,7 +61,7 @@ public:
 
     // get the vector representation of function f
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
-    size_type Dofs_perNode(size_type l) override { return l == L ? 1 : num_planwaves[l]; };
+    size_type Dofs_perNode(size_type l) override { return l == L_ ? 1 : num_planwaves_[l]; };
     lf::assemble::UniformFEDofHandler get_dofh(size_type l) override {
         return lf::assemble::UniformFEDofHandler(getmesh(l), 
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});

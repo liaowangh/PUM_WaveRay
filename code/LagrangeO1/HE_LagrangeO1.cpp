@@ -23,7 +23,7 @@ using namespace std::complex_literals;
 std::pair<lf::assemble::COOMatrix<HE_LagrangeO1::Scalar>, HE_LagrangeO1::Vec_t>
 HE_LagrangeO1::build_equation(size_type l) {
     
-    auto mesh = mesh_hierarchy->getMesh(l);  // get mesh
+    auto mesh = mesh_hierarchy_->getMesh(l);  // get mesh
     
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     
@@ -31,7 +31,7 @@ HE_LagrangeO1::build_equation(size_type l) {
     
     // assemble for <grad(u), grad(v)> - k^2 uv
     lf::mesh::utils::MeshFunctionConstant<double> mf_identity(1.);
-    lf::mesh::utils::MeshFunctionConstant<double> mf_k(-1. * k * k);
+    lf::mesh::utils::MeshFunctionConstant<Scalar> mf_k(-1. * k_ * k_);
     lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_identity), decltype(mf_k)> 
     	elmat_builder(fe_space, mf_identity, mf_k);
     
@@ -40,11 +40,11 @@ HE_LagrangeO1::build_equation(size_type l) {
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
     
     // assemble boundary edge matrix, -i*k*u*v over \Gamma_R (outer boundary)
-    lf::mesh::utils::MeshFunctionConstant<Scalar> mf_ik(-1i * k);
+    lf::mesh::utils::MeshFunctionConstant<Scalar> mf_ik(-1i * k_);
 
     auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)}; 
 
-    if(hole_exist){
+    if(hole_exist_){
         // there is a hole inside, need to distinguish between outer and inner boundar
         auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
         auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
@@ -55,7 +55,7 @@ HE_LagrangeO1::build_equation(size_type l) {
                 // find a boundary edge, need to determine if it's outer boundary
                 const lf::mesh::Entity* parent_edge = edge;
                 for(int i = l; i > 0; --i) {
-                    parent_edge = mesh_hierarchy->ParentEntity(i, *parent_edge);
+                    parent_edge = mesh_hierarchy_->ParentEntity(i, *parent_edge);
                 }
                 if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
                     // it is the inner boundary
@@ -72,14 +72,14 @@ HE_LagrangeO1::build_equation(size_type l) {
     // Assemble RHS vector, \int_{\Gamma_R} gvdS
     Vec_t phi(N_dofs);
     phi.setZero();
-    lf::mesh::utils::MeshFunctionGlobal mf_g{g};
-    lf::mesh::utils::MeshFunctionGlobal mf_h{h};
+    lf::mesh::utils::MeshFunctionGlobal mf_g{g_};
+    lf::mesh::utils::MeshFunctionGlobal mf_h{h_};
     lf::uscalfe::ScalarLoadEdgeVectorProvider<double, decltype(mf_g), decltype(outer_boundary)>
     	edgeVec_builder(fe_space, mf_g, 
         lf::quad::make_QuadRule(lf::base::RefEl::kSegment(), 10), outer_boundary);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
     
-    if(hole_exist) {
+    if(hole_exist_) {
         // Treatment of Dirichlet boundary conditions h = u|_{\Gamma_D} (inner boundary condition)
         // flag all nodes on the boundary
         auto inner_point{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 2)};
@@ -98,7 +98,7 @@ HE_LagrangeO1::build_equation(size_type l) {
         for(size_type dofnum = 0; dofnum < N_dofs; ++dofnum) {
             const lf::mesh::Entity &dof_node{dofh.Entity(dofnum)};
             const Eigen::Vector2d node_pos{lf::geometry::Corners(*dof_node.Geometry()).col(0)};
-            const Scalar h_val = h(node_pos);
+            const Scalar h_val = h_(node_pos);
             if(inner_point(dof_node)) {
                 // Dof associated with a entity on the boundary: "essential dof"
                 // The value of the dof should be set to the value of the function h
@@ -277,10 +277,10 @@ double HE_LagrangeO1::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u){
             }
             return std::abs((uh - u(x)) * (uh - u(x)));
         };
-        res += std::abs(LocalIntegral(*cell, degree, integrand));
+        res += std::abs(LocalIntegral(*cell, degree_, integrand));
     }
     return std::sqrt(res);
-    // auto mesh = mesh_hierarchy->getMesh(l);
+    // auto mesh = mesh_hierarchy_->getMesh(l);
     // auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     // // u has to be wrapped into a mesh function for error computation
     // lf::mesh::utils::MeshFunctionGlobal mf_u{u};
@@ -299,7 +299,7 @@ double HE_LagrangeO1::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u){
 }
 
 double HE_LagrangeO1::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) {
-    auto mesh = mesh_hierarchy->getMesh(l);
+    auto mesh = mesh_hierarchy_->getMesh(l);
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     double res = 0.0;
 

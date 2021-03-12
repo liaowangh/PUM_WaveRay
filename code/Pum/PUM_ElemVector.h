@@ -26,7 +26,7 @@ public:
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
     
     PUM_ElemVec(std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space,
-        size_type N, double k, FHandle_t f, int degree=20): 
+        size_type N, Scalar k, FHandle_t f, int degree=20): 
         fe_space_(fe_space), N_(N), k_(k), f_(f), degree_(degree){}
     
     bool isActive(const lf::mesh::Entity& cell) { return true; }
@@ -63,7 +63,7 @@ public:
 private:
     std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space_;
     size_type N_; // number of planner waves
-    double k_;
+    Scalar k_;
     FHandle_t f_;
     int degree_;
 };

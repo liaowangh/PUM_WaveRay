@@ -22,17 +22,17 @@ using namespace std::complex_literals;
 
 std::pair<lf::assemble::COOMatrix<ExtendPUM_WaveRay::Scalar>, ExtendPUM_WaveRay::Vec_t> 
 ExtendPUM_WaveRay::build_equation(size_type level) {
-    return level == L ? HE_LagrangeO1::build_equation(level) :
+    return level == L_ ? HE_LagrangeO1::build_equation(level) :
                         HE_ExtendPUM::build_equation(level);
 }
 
 double ExtendPUM_WaveRay::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
-    return l == L ? HE_LagrangeO1::L2_Err(l, mu, u) :
+    return l == L_ ? HE_LagrangeO1::L2_Err(l, mu, u) :
                     HE_ExtendPUM::L2_Err(l, mu, u);
 }
 
 double ExtendPUM_WaveRay::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) {
-    return l == L ? HE_LagrangeO1::H1_semiErr(l, mu, grad_u):
+    return l == L_ ? HE_LagrangeO1::H1_semiErr(l, mu, grad_u):
                     HE_ExtendPUM::H1_semiErr(l, mu, grad_u);
 }
 
@@ -43,23 +43,23 @@ double ExtendPUM_WaveRay::H1_Err(size_type l, const Vec_t& mu, const FHandle_t& 
 }
 
 ExtendPUM_WaveRay::Vec_t ExtendPUM_WaveRay::fun_in_vec(size_type l, const FHandle_t& f) {
-    return l == L ? HE_LagrangeO1::fun_in_vec(l, f) :
+    return l == L_ ? HE_LagrangeO1::fun_in_vec(l, f) :
                     HE_ExtendPUM::fun_in_vec(l, f);
 }
 
 ExtendPUM_WaveRay::Vec_t ExtendPUM_WaveRay::solve(size_type l) {
-    return l == L ? HE_LagrangeO1::solve(l) : HE_ExtendPUM::solve(l);
+    return l == L_ ? HE_LagrangeO1::solve(l) : HE_ExtendPUM::solve(l);
 }
 
 ExtendPUM_WaveRay::SpMat_t ExtendPUM_WaveRay::prolongation(size_type l) {
-    return l == L - 1 ? HE_ExtendPUM::prolongation_SE_S() : HE_ExtendPUM::prolongation(l);
-    // if(l == L -1) {
+    return l == L_ - 1 ? HE_ExtendPUM::prolongation_SE_S() : HE_ExtendPUM::prolongation(l);
+    // if(l == L_ -1) {
     //     return HE_ExtendPUM::prolongation_SE_S();
     // }
     // double pi = std::acos(-1.);
     // auto Q = prolongation_lagrange(l);
     // int n1 = Q.cols(), n2 = Q.rows(); // n1: n_l, n2: n_{l+1}
-    // int N1 = num_planwaves[l], N2 = num_planwaves[l+1]; // N1: N_l, N2: N_{l+1}
+    // int N1 = num_planwaves_[l], N2 = num_planwaves_[l+1]; // N1: N_l, N2: N_{l+1}
 
     // auto mesh = getmesh(l+1);  // fine mesh
     // auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
@@ -88,7 +88,7 @@ ExtendPUM_WaveRay::SpMat_t ExtendPUM_WaveRay::prolongation(size_type l) {
     //             Eigen::Vector2d d1, d2;
     //             d1 << std::cos(2*pi*(2*t-1)/N1), std::sin(2*pi*(2*t-1)/N1); // d_{2t}^l
     //             d2 << std::cos(2*pi*(  t-1)/N2), std::sin(2*pi*(  t-1)/N2); // d_{t}^{l+1}
-    //             Scalar tmp = qij * std::exp(1i*k*(d1-d2).dot(pi_coordinate));
+    //             Scalar tmp = qij * std::exp(1i*k_*(d1-d2).dot(pi_coordinate));
     //             triplets.push_back(triplet_t(i*(N2+1)+t, j*(N1+1)+2*t, tmp));
     //         }
 
@@ -103,7 +103,7 @@ ExtendPUM_WaveRay::SpMat_t ExtendPUM_WaveRay::prolongation(size_type l) {
  */
 void ExtendPUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, int num_wavelayer,
     int nu1, int nu2, bool solve_coarest) {
-    // in pum waveray, only start_layer = L makes sense.
+    // in pum waveray, only start_layer = L_ makes sense.
     LF_ASSERT_MSG((num_wavelayer <= start_layer), 
         "please use a smaller number of wave layers");
     auto eq_pair = build_equation(start_layer);
@@ -119,7 +119,7 @@ void ExtendPUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, i
         // Op[i] = tmp.first.makeSparse();
         prolongation_op[i] = prolongation(idx);
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves[idx] + 1;
+        stride[i] = num_planwaves_[idx] + 1;
     }
     // HE_LagrangeO1::solve_multigrid(initial, start_layer, 2, 3, 3, false);
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
@@ -143,7 +143,7 @@ ExtendPUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
         int idx = start_layer + i - num_coarserlayer;
         prolongation_op[i] = prolongation(idx);
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves[idx] + 1;
+        stride[i] = num_planwaves_[idx] + 1;
     }
 
     int N = A.rows();

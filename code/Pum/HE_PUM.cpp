@@ -24,23 +24,23 @@ using namespace std::complex_literals;
  */
 std::pair<lf::assemble::COOMatrix<HE_PUM::Scalar>, HE_PUM::Vec_t> 
 HE_PUM::build_equation(size_type level) {
-    auto mesh = mesh_hierarchy->getMesh(level);  // get mesh
+    auto mesh = getmesh(level);  // get mesh
     
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
 
-    size_type N_wave(num_planwaves[level]);
+    size_type N_wave(num_planwaves_[level]);
     auto dofh = get_dofh(level);
     size_type N_dofs(dofh.NumDofs());
 
     // assemble for <grad(u), grad(v)> - k^2 <u,v>
     // (u, v) -> \int_K \alpha * (grad u, grad v) + \gamma * (u, v) dx
-    PUM_ElementMatrix elmat_builder(N_wave, k, 1., -1. * k * k, degree);
+    PUM_ElementMatrix elmat_builder(N_wave, k_, 1., -1. * k_ * k_, degree_);
 
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
     
     auto outer_boundary{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 1)};
-    if(hole_exist) {
+    if(hole_exist_) {
         // assemble boundary edge matrix, -i*k*u*v over \Gamma_R (outer boundary)
         // first need to distinguish between outer and inner boundar
         auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
@@ -52,7 +52,7 @@ HE_PUM::build_equation(size_type level) {
                 // find a boundary edge, need to determine if it's outer boundary
                 const lf::mesh::Entity* parent_edge = edge;
                 for(int i = level; i > 0; --i) {
-                    parent_edge = mesh_hierarchy->ParentEntity(i, *parent_edge);
+                    parent_edge = mesh_hierarchy_->ParentEntity(i, *parent_edge);
                 }
                 if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
                     // it is the inner boundary
@@ -63,17 +63,17 @@ HE_PUM::build_equation(size_type level) {
     }
 
     // (u,v) -> \int_e gamma * (u,v) dS
-    PUM_EdgeMat edge_mat_builder(fe_space, outer_boundary, N_wave, k, -1i * k, degree);                                  
+    PUM_EdgeMat edge_mat_builder(fe_space, outer_boundary, N_wave, k_, -1i * k_, degree_);                                  
     lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
            
     // Assemble RHS vector, \int_{\Gamma_R} gv.conj dS
     Vec_t phi(N_dofs);
     phi.setZero();
     // l(v) = \int_e g * v.conj dS(x)
-    PUM_EdgeVec edgeVec_builder(fe_space, outer_boundary, N_wave, k, g, degree);
+    PUM_EdgeVec edgeVec_builder(fe_space, outer_boundary, N_wave, k_, g_, degree_);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
 
-    if(hole_exist) {
+    if(hole_exist_) {
         // Treatment of Dirichlet boundary conditions h = u|_{\Gamma_D} (inner boundary condition)
         // flag all nodes on the boundary
         auto inner_point{lf::mesh::utils::flagEntitiesOnBoundary(mesh, 2)};
@@ -99,12 +99,12 @@ HE_PUM::build_equation(size_type level) {
             }
         }
       
-        auto h_vec = fun_in_vec(level, h);
+        auto h_vec = fun_in_vec(level, h_);
         // auto h_vec_2 = h_in_vec(level, inner_boundary, inner_point);
 
         // if(level <= 1){
-        //     std::cout << L2_BoundaryErr(level, h_vec, h, inner_boundary) << std::endl;
-        //     std::cout << L2_BoundaryErr(level, h_vec_2, h, inner_boundary) << std::endl;
+        //     std::cout << L2_BoundaryErr(level, h_vec, h_, inner_boundary) << std::endl;
+        //     std::cout << L2_BoundaryErr(level, h_vec_2, h_, inner_boundary) << std::endl;
         //     std::cout << h_vec << std::endl << std::endl;
         //     std::cout << h_vec_2 << std::endl;
         // }
@@ -117,7 +117,7 @@ HE_PUM::build_equation(size_type level) {
             if(inner_point(dof_node)) {
                 // Dof associated with an entity on the boundary: "essential dof"
                 // The value of the dof should be set to the correspoinding value of the 
-                // vector representation of h
+                // vector representation of h_
                 ess_dof_select.push_back({true, h_val});
             } else {
                 ess_dof_select.push_back({false, h_val});
@@ -141,15 +141,15 @@ HE_PUM::build_equation(size_type level) {
  * find uh such that (uh, v) = (f,v) for all v in the PUM space
  */
 HE_PUM::Vec_t HE_PUM::fun_in_vec(size_type l, const FHandle_t& f) {
-    auto mesh = mesh_hierarchy->getMesh(l);  // get mesh
+    auto mesh = mesh_hierarchy_->getMesh(l);  // get mesh
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     
-    size_type N_wave(num_planwaves[l]);
+    size_type N_wave(num_planwaves_[l]);
     auto dofh = get_dofh(l);
     size_type N_dofs(dofh.NumDofs());
 
     // assemble for \int u * v.conj dx
-    PUM_ElementMatrix elmat_builder(N_wave, k, 0, 1., degree);
+    PUM_ElementMatrix elmat_builder(N_wave, k_, 0, 1., degree_);
 
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
     lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
@@ -157,7 +157,7 @@ HE_PUM::Vec_t HE_PUM::fun_in_vec(size_type l, const FHandle_t& f) {
     // assemble for \int (f,v) dx
     Vec_t phi(N_dofs);
     phi.setZero();
-    PUM_ElemVec elvec_builder(fe_space, N_wave, k, f, degree);
+    PUM_ElemVec elvec_builder(fe_space, N_wave, k_, f, degree_);
     lf::assemble::AssembleVectorLocally(0, dofh, elvec_builder, phi);
 
     const Eigen::SparseMatrix<Scalar> A_crs(A.makeSparse());
@@ -178,23 +178,23 @@ HE_PUM::Vec_t HE_PUM::fun_in_vec(size_type l, const FHandle_t& f) {
  */
 HE_PUM::Vec_t HE_PUM::h_in_vec(size_type l, lf::mesh::utils::CodimMeshDataSet<bool> edge_selector,
     lf::mesh::utils::CodimMeshDataSet<bool> inner_point) {
-    auto mesh = mesh_hierarchy->getMesh(l);  // get mesh
+    auto mesh = mesh_hierarchy_->getMesh(l);  // get mesh
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
 
-    size_type N_wave(num_planwaves[l]);
+    size_type N_wave(num_planwaves_[l]);
     auto dofh = get_dofh(l);
     size_type N_dofs(dofh.NumDofs());
 
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
 
     // assemble for \int_e (u,v) dx 
-    PUM_EdgeMat edge_mat_builder(fe_space, edge_selector, N_wave, k, 1.0, degree);                                  
+    PUM_EdgeMat edge_mat_builder(fe_space, edge_selector, N_wave, k_, 1.0, degree_);                                  
     lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
 
     // assemble for \int_e (h,v) dx
     Vec_t phi(N_dofs);
     phi.setZero();
-    PUM_EdgeVec edgeVec_builder(fe_space, edge_selector, N_wave, k, h, degree);
+    PUM_EdgeVec edgeVec_builder(fe_space, edge_selector, N_wave, k_, h_, degree_);
     lf::assemble::AssembleVectorLocally(1, dofh, edgeVec_builder, phi);
 
     std::vector<std::pair<bool, Scalar>> ess_dof_select{};
@@ -232,11 +232,11 @@ HE_PUM::Vec_t HE_PUM::h_in_vec(size_type l, lf::mesh::utils::CodimMeshDataSet<bo
 
 // quadrature based norm computation for ||uh-u||
 double HE_PUM::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
-    auto mesh = mesh_hierarchy->getMesh(l);
+    auto mesh = mesh_hierarchy_->getMesh(l);
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     double res = 0.0;
 
-    size_type N_wave(num_planwaves[l]);
+    size_type N_wave(num_planwaves_[l]);
     auto dofh = get_dofh(l);
 
     for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
@@ -269,22 +269,22 @@ double HE_PUM::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
                     Eigen::Matrix<Scalar, 2, 1> d;
                     double pi = std::acos(-1);
                     d << std::cos(2*pi*t/N_wave), std::sin(2*pi*t/N_wave);
-                    val_uh += mu(dofarray[i*N_wave+t]) * (X(0,i) + X(1,i)*x(0) + X(2,i)*x(1)) * std::exp(1i*k*d.dot(x));
+                    val_uh += mu(dofarray[i*N_wave+t]) * (X(0,i) + X(1,i)*x(0) + X(2,i)*x(1)) * std::exp(1i*k_*d.dot(x));
                 }
             }
             return std::abs((val_uh-val_u)*(val_uh-val_u));
         };
-        res += std::abs(LocalIntegral(*cell, degree, integrand));
+        res += std::abs(LocalIntegral(*cell, degree_, integrand));
     }
     return std::sqrt(res);
 }
 
 double HE_PUM::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& grad_u) {
-    auto mesh = mesh_hierarchy->getMesh(l);
+    auto mesh = mesh_hierarchy_->getMesh(l);
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     double res = 0.0;
 
-    size_type N_wave(num_planwaves[l]);
+    size_type N_wave(num_planwaves_[l]);
     auto dofh = get_dofh(l);
 
     for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
@@ -324,12 +324,12 @@ double HE_PUM::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_t& gra
                     d << std::cos(2*pi*t/N_wave), std::sin(2*pi*t/N_wave);
                     beta << X(1,i), X(2,i);
                     double lambda = X(0,i) + beta.dot(x);
-                    val_grad_uh += mu(dofarray[i*N_wave+t]) * std::exp(1i*k*d.dot(x)) * (beta + 1i*k*lambda*d);
+                    val_grad_uh += mu(dofarray[i*N_wave+t]) * std::exp(1i*k_*d.dot(x)) * (beta + 1i*k_*lambda*d);
                 }
             }
             return std::abs((val_grad_uh - val_grad_u).dot((val_grad_uh - val_grad_u)));
         };
-        res += std::abs(LocalIntegral(*cell, degree, integrand));
+        res += std::abs(LocalIntegral(*cell, degree_, integrand));
     }
     return std::sqrt(res);
 }
@@ -343,11 +343,11 @@ double HE_PUM::H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const Fu
 // compute \int_{\partial Omega} |mu-u|^2dS
 double HE_PUM::L2_BoundaryErr(size_type l, const Vec_t& mu, const FHandle_t& u,
     lf::mesh::utils::CodimMeshDataSet<bool> edge_selector) {
-    auto mesh = mesh_hierarchy->getMesh(l);
+    auto mesh = mesh_hierarchy_->getMesh(l);
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     double res = 0.0;
 
-    size_type N_wave(num_planwaves[l]);
+    size_type N_wave(num_planwaves_[l]);
     auto dofh = get_dofh(l);
 
     for(const lf::mesh::Entity* cell: mesh->Entities(1)) {
@@ -376,11 +376,11 @@ double HE_PUM::L2_BoundaryErr(size_type l, const Vec_t& mu, const FHandle_t& u,
                     Eigen::Matrix<double, 2, 1> d;
                     double pi = std::acos(-1.);
                     d << std::cos(2*pi*t/N_wave), std::sin(2*pi*t/N_wave);
-                    val_uh += (mu(dofarray[t]) * tmp + mu(dofarray[t+N_wave]) * (1-tmp)) * std::exp(1i*k*d.dot(x));
+                    val_uh += (mu(dofarray[t]) * tmp + mu(dofarray[t+N_wave]) * (1-tmp)) * std::exp(1i*k_*d.dot(x));
                 }
                 return std::abs((val_uh-val_u)*(val_uh-val_u));
             };
-            res += std::abs(LocalIntegral(*cell, degree, integrand));
+            res += std::abs(LocalIntegral(*cell, degree_, integrand));
         }
     }
     return std::sqrt(res);
@@ -405,8 +405,8 @@ HE_PUM::Vec_t HE_PUM::solve(size_type l) {
  *  is the kronecker product of prolongation_lagrange(l) and prolongation_planwave(l)
  */
 HE_PUM::SpMat_t HE_PUM::prolongation(size_type l) {
-    LF_ASSERT_MSG((l < L), 
-        "in prolongation, level should smaller than" << L);
+    LF_ASSERT_MSG((l < L_), 
+        "in prolongation, level should smaller than" << L_);
     auto Q = prolongation_lagrange(l);
     auto P = prolongation_planwave(l);
     // auto Q = Mat_t(prolongation_lagrange(l));
@@ -442,21 +442,21 @@ HE_PUM::SpMat_t HE_PUM::prolongation(size_type l) {
 void HE_PUM::solve_multigrid(Vec_t& initial, size_type start_layer, int num_coarserlayer, 
     int nu1, int nu2, bool solve_coarest) {
 
-    LF_ASSERT_MSG((num_coarserlayer <= L), 
+    LF_ASSERT_MSG((num_coarserlayer <= L_), 
         "please use a smaller number of wave layers");
-    auto eq_pair = build_equation(L);
+    auto eq_pair = build_equation(L_);
     SpMat_t A(eq_pair.first.makeSparse());
 
     std::vector<SpMat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
     std::vector<int> stride(num_coarserlayer + 1);
     Op[num_coarserlayer] = A;
-    stride[num_coarserlayer] = num_planwaves[start_layer];
+    stride[num_coarserlayer] = num_planwaves_[start_layer];
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
-        int idx = L + i - num_coarserlayer;
+        int idx = L_ + i - num_coarserlayer;
         auto tmp = build_equation(idx);
         Op[i] = tmp.first.makeSparse();
         prolongation_op[i] = prolongation(idx);
-        stride[i] = num_planwaves[idx];
+        stride[i] = num_planwaves_[idx];
     }
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
 }

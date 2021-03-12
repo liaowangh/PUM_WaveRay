@@ -35,7 +35,7 @@ public:
     using FHandle_t = std::function<Scalar(const Eigen::Vector2d &)>;
 
     /* Construcotr */
-    HE_ExtendPUM(size_type levels, double wave_num, const std::string& mesh_path, 
+    HE_ExtendPUM(size_type levels, Scalar wave_num, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20): 
         HE_FEM(levels, wave_num, mesh_path, g, h, hole, num_waves, quad_degree){};
 
@@ -46,7 +46,7 @@ public:
     double H1_Err(size_type l, const Vec_t& mu, const FHandle_t& u, const FunGradient_t& grad_u) override;
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
 
-    size_type Dofs_perNode(size_type l) override { return num_planwaves[l]+1; }
+    size_type Dofs_perNode(size_type l) override { return num_planwaves_[l]+1; }
     lf::assemble::UniformFEDofHandler get_dofh(size_type l) override {
         return lf::assemble::UniformFEDofHandler(getmesh(l), 
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});

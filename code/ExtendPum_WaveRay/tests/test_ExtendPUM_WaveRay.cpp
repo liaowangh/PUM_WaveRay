@@ -18,7 +18,7 @@ using namespace std::complex_literals;
 using Scalar = std::complex<double>;
 using size_type = unsigned int;
 
-void waveray_vcycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
+void epum_vcycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
     std::vector<int>& stride, double k, std::vector<double> mesh_width, 
     size_type mu1, size_type mu2, bool solve_on_coarest) {
 
@@ -77,7 +77,7 @@ void waveray_vcycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<Sp
     u = initial[L];
 }
 
-void ePUM_WaveRay(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer, 
+void epum_WaveRay(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer, 
     double k, FHandle_t u, bool solve_coarest) {
 
     auto eq_pair = epum_waveray.build_equation(L);
@@ -119,9 +119,6 @@ void ePUM_WaveRay(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer,
         std::cout << epum_waveray.L2_Err(L, v, u) << std::endl;
         L2_vk.push_back(epum_waveray.L2_Err(L, v, zero_fun));
         L2_ek.push_back(epum_waveray.L2_Err(L, v - uh, zero_fun));
-        // epum_waveray.HE_LagrangeO1::solve_multigrid(v, L, 3, 3, 3, true);
-        // waveray_vcycle(v, eq_pair.second, Op, prolongation_op, stride, k, ms, nu1, nu2, solve_coarest);
-        // HE_LagrangeO1::solve_multigrid(v, L, 3, 3, 3, false);
         v_cycle(v, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
     }
     std::cout << "||u-uh||_2 = " << epum_waveray.L2_Err(L, uh, u) << std::endl;
@@ -132,19 +129,15 @@ void ePUM_WaveRay(ExtendPUM_WaveRay& epum_waveray, int L, int num_wavelayer,
     }
 } 
 
-/*
- * For square_hole.msh, h = 2^{-L-1}, and we can choose k = 2^{L-1}*pi
- * For square.msh, h_L = =2^{-L}, and we choose k = 2^{L-1}, then h_L * k = 0.5
- */
 int main(){
     std::string square_output = "../result_square/ExtendPUM_WaveRay/";
     std::string square_hole_output = "../result_squarehole/ExtendPUM_WaveRaay/";
     std::string square = "../meshes/square.msh";
     std::string square_hole = "../meshes/square_hole.msh";
     std::string square_hole2 = "../meshes/square_hole2.msh";
-    size_type L = 5; // refinement steps
+    size_type L = 2; // refinement steps
  
-    double k = 30.0; // wave number
+    double k = 4.0; // wave number
     std::vector<int> num_planwaves(L+1);
     num_planwaves[L] = 2;
     for(int i = L - 1; i >= 0; --i) {
@@ -159,6 +152,6 @@ int main(){
     ExtendPUM_WaveRay extend_waveray(L, k, square, g, u, false, num_planwaves, 50);
 
     int num_wavelayer = 1;
-    ePUM_WaveRay(extend_waveray, L, num_wavelayer, k, u, true);
+    epum_WaveRay(extend_waveray, L, num_wavelayer, k, u, true);
     
 }

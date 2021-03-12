@@ -27,7 +27,7 @@ using namespace std::complex_literals;
 
 class HE_sol {
 public:
-    HE_sol(double wave_num): k(wave_num){};
+    HE_sol(Scalar wave_num): k(wave_num){};
     
     //virtual Scalar operator()(const coordinate_t&) = 0;
     virtual FHandle_t get_fun() = 0;
@@ -36,7 +36,7 @@ public:
     virtual ~HE_sol() = default;
 
 public:
-    double k;
+    Scalar k;
 };
 
 
@@ -48,7 +48,7 @@ public:
  */
 class plan_wave: public HE_sol {
 public:
-    plan_wave(double k_, double d1_, double d2_): HE_sol(k_), d1(d1_), d2(d2_){}
+    plan_wave(Scalar k_, double d1_, double d2_): HE_sol(k_), d1(d1_), d2(d2_){}
 //    Scalar operator()(const coordinate_t& x) override;
     FHandle_t get_fun() override;
     FunGradient_t get_gradient() override;
@@ -75,75 +75,75 @@ private:
  * d/dx Kv(x) = v/x * Kv(x) - K_{v+1}(x)
  */
 
-// Jv(ix) = exp(iv\pi/2)*Iv(x), x \in R
-Scalar bessel_j_ix(double v, double x);
-// Yv(ix) = exp(i(v+1)\pi/2)*Iv(x) - 2exp(-iv\pi/2)/pi*Kv(x)
-Scalar bessel_y_ix(double v, double x);
+// // Jv(ix) = exp(iv\pi/2)*Iv(x), x \in R
+// Scalar bessel_j_ix(double v, double x);
+// // Yv(ix) = exp(i(v+1)\pi/2)*Iv(x) - 2exp(-iv\pi/2)/pi*Kv(x)
+// Scalar bessel_y_ix(double v, double x);
 
-// derivative of Jv at x
-Scalar cyl_bessel_j_dx(double v, double x);
-// derivative of Yv at x
-Scalar cyl_neumann_dx(double v, double x);
-// Hankel function of first kind: Hv = Jv + i Yv
-Scalar hankel_1(double v, double x);
-// derivative of Hv
-Scalar hankel_1_dx(double v, double x);
-// Hankel function taking pure imaginary argument
-Scalar hankel_1_ix(double v, double x);
-// Derivative of Hankel function taking pure imaginary argument
-Scalar hankel_1_dx_ix(double v, double x);
+// // derivative of Jv at x
+// Scalar cyl_bessel_j_dx(double v, double x);
+// // derivative of Yv at x
+// Scalar cyl_neumann_dx(double v, double x);
+// // Hankel function of first kind: Hv = Jv + i Yv
+// Scalar hankel_1(double v, double x);
+// // derivative of Hv
+// Scalar hankel_1_dx(double v, double x);
+// // Hankel function taking pure imaginary argument
+// Scalar hankel_1_ix(double v, double x);
+// // Derivative of Hankel function taking pure imaginary argument
+// Scalar hankel_1_dx_ix(double v, double x);
 
-/*
- * Fundamental solutions: u(x) = H0(k||x-c||) (not sure)
- * H0 is the Hankel function of first kind
- * c is the center point, and it should be outside the domain
- *
- * And H0 = J0 + iY0, where
- * J0 is the Bessel function of the first kind with order 0
- * Y0 is the Bessel function of the second kind with order 0
- */
-class fundamental_sol: public HE_sol {
-public:
-    fundamental_sol(double wave_num, coordinate_t c_): HE_sol(wave_num), c(c_){}
-    FHandle_t get_fun() override;
-    FunGradient_t get_gradient() override;
-    FHandle_t boundary_g() override;
-private:
-    coordinate_t c;
-};
+// /*
+//  * Fundamental solutions: u(x) = H0(k||x-c||) (not sure)
+//  * H0 is the Hankel function of first kind
+//  * c is the center point, and it should be outside the domain
+//  *
+//  * And H0 = J0 + iY0, where
+//  * J0 is the Bessel function of the first kind with order 0
+//  * Y0 is the Bessel function of the second kind with order 0
+//  */
+// class fundamental_sol: public HE_sol {
+// public:
+//     fundamental_sol(Scalar wave_num, coordinate_t c_): HE_sol(wave_num), c(c_){}
+//     FHandle_t get_fun() override;
+//     FunGradient_t get_gradient() override;
+//     FHandle_t boundary_g() override;
+// private:
+//     coordinate_t c;
+// };
 
 
-/*
- * Spherical wave: u(r, \phi)=J_{|l|}(kr) * exp(i*l*\phi)
- * where r = ||x||, and 0 <= \phi <= 2\pi, l is an integer
- * and J is the Bessel functions of first find
- *
- */
-class Spherical_wave: public HE_sol {
-public:
-    Spherical_wave(double wave_num, double l_): HE_sol(wave_num), l(l_){}
-    FHandle_t get_fun() override;
-    FunGradient_t get_gradient() override;
-    FHandle_t boundary_g() override;
-private:
-    double l;
-};
+// /*
+//  * Spherical wave: u(r, \phi)=J_{|l|}(kr) * exp(i*l*\phi)
+//  * where r = ||x||, and 0 <= \phi <= 2\pi, l is an integer
+//  * and J is the Bessel functions of first find
+//  *
+//  */
+// class Spherical_wave: public HE_sol {
+// public:
+//     Spherical_wave(Scalar wave_num, double l_): HE_sol(wave_num), l(l_){}
+//     FHandle_t get_fun() override;
+//     FunGradient_t get_gradient() override;
+//     FHandle_t boundary_g() override;
+// private:
+//     double l;
+// };
 
-/*
- * Manufacture solutions for Laplace equation
- *  \Laplace u = 0 (special case for Helmholtz equation)
- *  \partial u / \partial n - iku = g on \Gamma_R
- *  u = h on \Gamma_D
+// /*
+//  * Manufacture solutions for Laplace equation
+//  *  \Laplace u = 0 (special case for Helmholtz equation)
+//  *  \partial u / \partial n - iku = g on \Gamma_R
+//  *  u = h on \Gamma_D
  
- * The domain is [0,1] x [0,1] \ [0.375, 0.375] x [0.375, 0.375]
- * And \Gamma_R is the boundary of square [0,1] x [0,1]
- *     \Gamma_D is the boundary of square [0.375, 0.375] x [0.375, 0.375]
- */
- class Harmonic_fun {
- public:
-    Harmonic_fun(){};
-    FHandle_t get_fun();
-    FunGradient_t get_gradient();
-    FHandle_t boundary_g();
- };
+//  * The domain is [0,1] x [0,1] \ [0.375, 0.375] x [0.375, 0.375]
+//  * And \Gamma_R is the boundary of square [0,1] x [0,1]
+//  *     \Gamma_D is the boundary of square [0.375, 0.375] x [0.375, 0.375]
+//  */
+//  class Harmonic_fun {
+//  public:
+//     Harmonic_fun(){};
+//     FHandle_t get_fun();
+//     FunGradient_t get_gradient();
+//     FHandle_t boundary_g();
+//  };
 

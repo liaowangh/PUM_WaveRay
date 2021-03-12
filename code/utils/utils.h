@@ -41,7 +41,7 @@ double L2_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int deg
 
 // Test the manufacture solution, directly solve the equation in finest coarse.
 void test_solve(HE_FEM& he_fem, const std::string& sol_name, 
-    const std::string& output_folder, size_type L, const FHandle_t& u, 
+    const std::string& output_folder, int L, const FHandle_t& u, 
     const FunGradient_t& grad_u);
 
 void print_save_error(std::vector<std::vector<double>>& data, 
@@ -81,4 +81,10 @@ std::pair<Vec_t, Scalar> power_block_GS(SpMat_t& A, int stride);
 std::pair<Vec_t, Scalar> power_kaczmarz(SpMat_t& A);
 
 void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
-    std::vector<int>& stride, size_type mu1, size_type mu2, bool solve_on_coarest=true);
+    std::vector<int>& stride, int mu1, int mu2, bool solve_on_coarest=true);
+
+void mg_factor(HE_FEM& he_fem, int L, int nr_coarsemesh, double k, 
+    std::vector<int>& stride, FHandle_t u, bool solve_coarest);
+
+std::pair<Vec_t, Scalar> power_multigird(HE_FEM& he_fem, int start_layer, 
+    int num_coarserlayer, std::vector<int>& stride, int nu1, int nu2, bool verbose);

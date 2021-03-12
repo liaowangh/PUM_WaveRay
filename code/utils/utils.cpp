@@ -36,11 +36,6 @@ double L2_norm(std::shared_ptr<lf::mesh::Mesh> mesh, const FHandle_t& f, int deg
     };
     auto res = integrate(mesh, f_square, degree);
     return std::sqrt(std::abs(res));
-    // double res = 0.0;
-    // for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
-    //     res += std::abs(LocalIntegral(*cell, degree, f_square));
-    // }
-    // return std::sqrt(res);
 }
 
 /*
@@ -153,13 +148,13 @@ void tabular_output(std::vector<std::vector<double>>& data,
 }
 
 void test_solve(HE_FEM& he_fem, const std::string& sol_name, 
-    const std::string& output_folder, size_type L, const FHandle_t& u, 
+    const std::string& output_folder, int L, const FHandle_t& u, 
     const FunGradient_t& grad_u) {
     // std::vector<int> ndofs;
     std::vector<double> mesh_width = he_fem.mesh_width();
     std::vector<double> L2err, H1serr, H1err;
     
-    for(size_type level = 0; level <= L; ++level) {
+    for(int level = 0; level <= L; ++level) {
         auto fe_sol = he_fem.solve(level);
         
         double l2_err = he_fem.L2_Err(level, fe_sol, u);
@@ -425,7 +420,7 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
         }
     }
     std::cout << "Number of iterations: " << cnt << std::endl;
-    std::cout << "Domainant eigenvalue of Gauss-Seidel by power iteration: " << lambda << std::endl;
+    std::cout << "Domainant eigenvalue of Gauss-Seidel by power iteration: " << std::abs(lambda) << std::endl;
     return std::make_pair(u, lambda);
 }
 
@@ -548,27 +543,24 @@ std::pair<Vec_t, Scalar> power_kaczmarz(SpMat_t& A) {
  * Op: container storing all the operators.
  * I: transfer operators, I[i]: Mesh_i -> Mesh_{i+1}
  * stride: stride in Gaussian Seidel relaxation
- * mu1, mu2: pre and post relaxation times
+ * nu1, nu1: pre and post relaxation times
  */
 void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
-    std::vector<int>& stride, size_type mu1, size_type mu2, bool solve_on_coarest) {
+    std::vector<int>& stride, int nu1, int nu2, bool solve_on_coarest) {
 
     int L = I.size();
     LF_ASSERT_MSG(Op.size() == L + 1 && stride.size() == L + 1, 
         "#{transfer operator} should be #{Operator} - 1");
-    
     std::vector<int> op_size(L+1);
     for(int i = 0; i <= L; ++i) {
         op_size[i] = Op[i].rows();
     }
-
     for(int i = 0; i < L; ++i) {
         LF_ASSERT_MSG(I[i].rows() == op_size[i+1] && I[i].cols() == op_size[i],
             "transfer operator size does not mathch grid operator size.");
     }
 
     std::vector<Vec_t> initial(L + 1), rhs_vec(L + 1);
-
     initial[L] = u;
     rhs_vec[L] = f;
     // initial guess on coarser mesh are all zero
@@ -576,8 +568,7 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
         initial[i] = Vec_t::Zero(op_size[i]);
     }
     for(int i = L; i > 0; --i) {
-        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
-        // block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
+        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], nu1);
         rhs_vec[i-1] = I[i-1].transpose() * (rhs_vec[i] - Op[i] * initial[i]);
     }
 
@@ -586,54 +577,137 @@ void v_cycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t>&
         solver.compute(Op[0]);
         initial[0] = solver.solve(rhs_vec[0]);
     } else {
-        Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], mu1 + mu2);
-        // block_GS(Op[0], rhs_vec[0], initial[0], stride[0], mu1+mu2);
+        Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], nu1 + nu1);
     }
+
     for(int i = 1; i <= L; ++i) {
         initial[i] += I[i-1] * initial[i-1];
-        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
-        // block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu2);
+        Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], nu1);
     }
     u = initial[L];
 }
 
-
 /*
- * Return the multigrid operator
- * 
- * For a 2-grid correction scheme
- *  mg_op = R^{mu2}*(Id - I_H^h * A_H^{-1} * I_h^H * A_h) * R^{mu1}
- * 
- * l : indicator level, useful in a recursive method
- * Op: mesh operator
- * I: prolongation operator
- * R: relaxation operator
- * mu1, mu2: pre and post relaxation 
+ * return the convergence factor of the multigrid method
  */
-// Mat_t multigrid_op(int l, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, size_type mu1, size_type mu2) {
-//     int N = Op[l].rows();
-//     Mat_t Id = Mat_t::Identity(N, N);
-//     if(l == 0) {
-//         return Op[0].colPivHouseholderQr().solve(Id);
-//     } else {
-//         Mat_t A = Mat_t(Op[l]);
-//         Mat_t L = Mat_t(A.triangularView<Eigen::Lower>());
-//         Mat_t U = L - A;
-//         Mat_t GS_op = L.colPivHouseholderQr().solve(U);
-// 
-//         Mat_t R_mu1 = Mat_t::Identity(N, N);
-//         Mat_t R_mu2 = Mat_t::Identity(N, N);
-//         for(int i = 0; i < mu1; ++i) {
-//             auto tmp = R_mu1 * GS_op;
-//             R_mu1 = tmp;
-//         }
-//         for(int i = 0; i < mu2; ++i) {
-//             auto tmp = R_mu2 * GS_op;
-//             R_mu2 = tmp;
-//         }
-//         Mat_t mg_op = Id - I[l] * multigrid_op(l-1, Op, I, mu1, mu2) *  
-//         auto tmp = R_mu2 * mg_op * R_mu1;
-// 
-//         return Id - I[l] * multigrid_op(l-1, Op, I, mu1, mu2) * 
-//     }
-// }
+void mg_factor(HE_FEM& he_fem, int L, int nr_coarsemesh, double k, 
+    std::vector<int>& stride, FHandle_t u, bool solve_coarest) {
+    auto eq_pair = he_fem.build_equation(L);
+    SpMat_t A(eq_pair.first.makeSparse());
+
+    std::vector<SpMat_t> Op(nr_coarsemesh + 1), prolongation_op(nr_coarsemesh);
+    std::vector<double> ms(nr_coarsemesh + 1);
+    auto mesh_width = he_fem.mesh_width();
+    Op[nr_coarsemesh] = A;
+    ms[nr_coarsemesh] = mesh_width[L];
+    for(int i = nr_coarsemesh - 1; i >= 0; --i) {
+        int idx = L + i - nr_coarsemesh;
+        prolongation_op[i] = he_fem.prolongation(idx);
+        auto tmp = he_fem.build_equation(idx);
+        Op[i] = tmp.first.makeSparse();
+        // Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
+        ms[i] = mesh_width[idx];
+    }
+
+    /**************************************************************************/
+    auto zero_fun = [](const coordinate_t& x) -> Scalar { return 0.0; };
+
+    int N = A.rows();
+
+    Vec_t v = Vec_t::Random(N); // initial value
+    Vec_t uh = he_fem.solve(L); // finite element solution
+
+    int nu1 = 1, nu2 = 1;
+
+    std::vector<double> L2_vk;
+    std::vector<double> L2_ek;  // error norm
+
+    // std::cout << std::scientific << std::setprecision(1);
+    std::cout << std::setw(11) << "||v-uh||_2" << std::setw(11) << "||v-u||_2" << std::endl;
+    for(int k = 0; k < 10; ++k) {
+        std::cout << std::setw(11) << he_fem.L2_Err(L, v - uh, zero_fun) << " ";
+        std::cout << std::setw(11) << he_fem.L2_Err(L, v, u) << std::endl;
+        L2_vk.push_back(he_fem.L2_Err(L, v, zero_fun));
+        L2_ek.push_back(he_fem.L2_Err(L, v - uh, zero_fun));
+        v_cycle(v, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
+    }
+
+    std::cout << "||u-uh||_2 = " << he_fem.L2_Err(L, uh, u) << std::endl;
+    std::cout << "k " 
+        << std::setw(20) << "||v_{k+1}||/||v_k||" 
+        << std::setw(20) << "||e_{k+1}||/||e_k||" << std::endl;
+    std::cout << std::left;
+    for(int k = 0; k + 1 < L2_vk.size(); ++k) {
+        std::cout << k << " " << std::setw(20) << L2_vk[k+1] / L2_vk[k] 
+                       << " " << std::setw(20) << L2_ek[k+1] / L2_ek[k] << std::endl;
+    }
+} 
+
+std::pair<Vec_t, Scalar> 
+power_multigird(HE_FEM& he_fem, int start_layer, int num_coarserlayer, 
+    std::vector<int>& stride, int nu1, int nu2, bool verbose) {
+
+    LF_ASSERT_MSG((num_coarserlayer <= start_layer), 
+        "please use a smaller number of wave layers");
+
+    auto eq_pair = he_fem.build_equation(start_layer);
+    SpMat_t A(eq_pair.first.makeSparse());
+
+    std::vector<SpMat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
+    Op[num_coarserlayer] = A;
+    for(int i = num_coarserlayer - 1; i >= 0; --i) {
+        int idx = start_layer + i - num_coarserlayer;
+        prolongation_op[i] = he_fem.prolongation(idx);
+        Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
+    }
+
+    /***************************************/
+    int N = A.rows();
+    Vec_t u = Vec_t::Random(N);
+    u.normalize();
+    Vec_t old_u;
+    Vec_t zero_vec = Vec_t::Zero(N);
+    Scalar lambda;
+    int cnt = 0;
+    
+    if(verbose) {
+        std::cout << std::left << std::setw(10) << "Iteration" 
+            << std::setw(20) << "residual_norm" << std::endl;
+    }
+    
+    while(true) {
+        cnt++;
+        old_u = u;
+        v_cycle(u, zero_vec, Op, prolongation_op, stride, nu1, nu2);
+        
+        lambda = old_u.dot(u);  // domainant eigenvalue
+        auto r = u - lambda * old_u;
+        double r_norm = r.norm();
+        u.normalize();
+    
+        if(verbose && cnt % 5 == 0) {
+            std::cout << std::left << std::setw(10) << cnt 
+                << std::setw(20) << r_norm
+                << std::setw(20) << (u - old_u).norm()
+                << std::endl;
+        }
+        
+        if(r_norm < 0.01) {
+            if(verbose) {
+                std::cout << "Power iteration converges after " << cnt << " iterations" << std::endl;
+            }
+            break;
+        }
+        if(cnt > 30) {
+            if(verbose) {
+                std::cout << "Power iteration for multigrid doesn't converge." << std::endl;
+            }
+            break;
+        }
+    }
+    if(verbose) {
+        std::cout << "Number of iterations: " << cnt << std::endl;
+        std::cout << "Domainant eigenvalue by power iteration: " << lambda << std::endl;
+    }
+    return std::make_pair(u, lambda);
+}
