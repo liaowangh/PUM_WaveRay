@@ -424,6 +424,73 @@ std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride) {
     return std::make_pair(u, lambda);
 }
 
+std::pair<Vec_t, Scalar> power_GS(Mat_t& A, int stride) {
+    /* Compute the Eigen value of the GS operator manually */
+    Mat_t A_L = A.triangularView<Eigen::Lower>();
+    Mat_t A_U = A_L - A;
+    Mat_t GS_op = A_L.colPivHouseholderQr().solve(A_U);
+    Vec_t eivals = GS_op.eigenvalues();
+
+    Scalar domainant_eival = eivals(0);
+    for(int i = 1; i < eivals.size(); ++i) {
+        if(std::abs(eivals(i)) > std::abs(domainant_eival)) {
+            domainant_eival = eivals(i);
+        }
+    }
+    // std::cout << eivals << std::endl;
+    std::cout << "Domainant eigenvalue: " << domainant_eival << std::endl;
+    std::cout << "Absolute value: " << std::abs(domainant_eival) << std::endl;
+    /**********************************************/
+
+    double tol = 0.0001;
+    int N = A.rows();
+    Vec_t u = Vec_t::Random(N);
+
+    u.normalize();    
+    Scalar lambda;
+    int cnt = 0;
+
+    std::cout << std::left << std::setw(10) << "Iteration"
+        << std::setw(20) << "residual_norm" << std::endl;
+    while(1){
+        cnt++;
+        Vec_t old_u = u;
+        for(int t = 0; t < stride; ++t) {
+            for(int k = 0; k < N / stride; ++k) {
+                int j = k * stride + t;
+                Scalar tmp = (A.row(j) * u)(0,0);
+                Scalar Ajj = A(j,j);
+                u(j) = (u(j) * Ajj - tmp) / Ajj;
+            }
+        }
+        // now u should be GS_op * old_u
+        lambda = old_u.dot(u); // Rayleigh quotient
+        // compute the residual and check vs tolerance
+        auto r = u - lambda * old_u;
+        double r_norm = r.norm();
+        if(cnt % 20 == 0){
+            std::cout << std::left << std::setw(10) << cnt
+                << std::setw(20) << r_norm << std::endl;
+        }
+
+        u.normalize();
+        
+        if(r_norm < tol) {
+            std::cout << "Power iteration for Gauss-Seidel converges after " << cnt 
+                << " iterations." << std::endl;
+            break;
+        }
+        if(cnt >= 500) {
+            std::cout << "Power iteration for Gauss-Seidel doesn't converge after " << cnt 
+                << " iterations." << std::endl; 
+            break;
+        }
+    }
+    std::cout << "Number of iterations: " << cnt << std::endl;
+    std::cout << "Domainant eigenvalue of Gauss-Seidel by power iteration: " << std::abs(lambda) << std::endl;
+    return std::make_pair(u, lambda);
+}
+
 std::pair<Vec_t, Scalar> power_block_GS(SpMat_t& A, int stride) {
     
     double tol = 0.001;

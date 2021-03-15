@@ -11,14 +11,14 @@
 
 #include "../../utils/HE_solution.h"
 #include "../../utils/utils.h"
-#include "../ExtendPUM_WaveRay.h"
+#include "../PUM_WaveRay.h"
 
 using namespace std::complex_literals;
 
 using Scalar = std::complex<double>;
 using size_type = unsigned int;
 
-void ray_cycle(Vec_t& v, Vec_t& phi, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
+void pum_ray_cycle(Vec_t& v, Vec_t& phi, std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, 
     std::vector<int>& stride, std::vector<double>& ms, double k, bool solve_coarest) {
 
     int nu1 = 3, nu2 = 3;
@@ -69,7 +69,7 @@ void ray_cycle(Vec_t& v, Vec_t& phi, std::vector<SpMat_t>& Op, std::vector<SpMat
     v = initial[nr_raylayer];
 } 
 
-void wave_ray(HE_LagrangeO1& he_O1, ExtendPUM_WaveRay& epum, int wave_start, int wave_coarselayers,
+void pum_wave_cycle(HE_LagrangeO1& he_O1, PUM_WaveRay& epum, int wave_start, int wave_coarselayers,
     int ray_start, int ray_coarselayers, double k, FHandle_t u) {
 
     auto eq_pair = he_O1.build_equation(wave_start);
@@ -146,7 +146,7 @@ void wave_ray(HE_LagrangeO1& he_O1, ExtendPUM_WaveRay& epum, int wave_start, int
         for(int i = 1; i <= wave_coarselayers; ++i) {
             initial[i] += wave_I[i-1] * initial[i-1];
             if(wave_start + i - wave_coarselayers == ray_start){
-                ray_cycle(initial[i], rhs_vec[i], ray_op, ray_I, stride, ray_ms, k, true);
+                pum_ray_cycle(initial[i], rhs_vec[i], ray_op, ray_I, stride, ray_ms, k, true);
             } else if(k * wave_ms[i] < 2.0 || k * wave_ms[i] > 6.0){
                 Gaussian_Seidel(wave_op[i], rhs_vec[i], initial[i], 1, nu2);
                 // block_GS(wave_op[i], rhs_vec[i], initial[i], stride[i], nu2);
@@ -176,7 +176,7 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    size_type wave_L = 5, ray_L = 3; // refinement steps
+    size_type wave_L = 5, ray_L = 5; // refinement steps
     double k = 20.0; // wave number
     std::vector<int> num_planwaves(ray_L+1);
     num_planwaves[ray_L] = 2;
@@ -190,13 +190,15 @@ int main(){
     auto grad_u = sol.get_gradient();
     auto g = sol.boundary_g();
 
+    HE_LagrangeO1 he_O1(wave_L, k, square_hole2, g, u, true, 50);
+    PUM_WaveRay pum(ray_L, k, square_hole2, g, u, true, num_planwaves, 50);
     // HE_LagrangeO1 he_O1(wave_L, k, square, g, u, false, 50);
-    // ExtendPUM_WaveRay epum(ray_L, k, square, g, u, false, num_planwaves, 50);
+    // PUM_WaveRay pum(ray_L, k, square, g, u, false, num_planwaves, 50);
     // HE_LagrangeO1 he_O1(wave_L, k, square_hole2, g, u, true, 50);
-    // ExtendPUM_WaveRay epum(ray_L, k, square_hole2, g, u, true, num_planwaves, 50);
-    HE_LagrangeO1 he_O1(wave_L, k, triangle_hole, g, u, false, 50);
-    ExtendPUM_WaveRay epum(ray_L, k, triangle_hole, g, u, false, num_planwaves, 50);
+    // PUM_WaveRay pum(ray_L, k, square_hole2, g, u, true, num_planwaves, 50);
+    // HE_LagrangeO1 he_O1(wave_L, k, triangle_hole, g, u, false, 50);
+    // PUM_WaveRay pum(ray_L, k, triangle_hole, g, u, false, num_planwaves, 50);
 
-    int wave_coarselayers = 4, ray_coarselayers = 1;
-    wave_ray(he_O1, epum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k, u);
+    int wave_coarselayers = 5, ray_coarselayers = 1;
+    pum_wave_cycle(he_O1, pum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k, u);
 }

@@ -43,8 +43,8 @@ HE_PUM::build_equation(size_type level) {
     if(hole_exist_) {
         // assemble boundary edge matrix, -i*k*u*v over \Gamma_R (outer boundary)
         // first need to distinguish between outer and inner boundar
-        auto outer_nr = reader->PhysicalEntityName2Nr("outer_boundary");
-        auto inner_nr = reader->PhysicalEntityName2Nr("inner_boundary");
+        auto outer_nr = reader_->PhysicalEntityName2Nr("outer_boundary");
+        auto inner_nr = reader_->PhysicalEntityName2Nr("inner_boundary");
 
         // modify it to classify inner and outer boundary
         for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
@@ -54,7 +54,7 @@ HE_PUM::build_equation(size_type level) {
                 for(int i = level; i > 0; --i) {
                     parent_edge = mesh_hierarchy_->ParentEntity(i, *parent_edge);
                 }
-                if(reader->IsPhysicalEntity(*parent_edge, inner_nr)) {
+                if(reader_->IsPhysicalEntity(*parent_edge, inner_nr)) {
                     // it is the inner boundary
                     outer_boundary(*edge) = false;
                 }

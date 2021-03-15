@@ -77,6 +77,7 @@ void Kaczmarz(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol);
 // use the power iteration to compute the domainant eigenvalue of GS operator and 
 // an associated eigenvector
 std::pair<Vec_t, Scalar> power_GS(SpMat_t& A, int stride);
+std::pair<Vec_t, Scalar> power_GS(Mat_t& A, int stride);
 std::pair<Vec_t, Scalar> power_block_GS(SpMat_t& A, int stride);
 std::pair<Vec_t, Scalar> power_kaczmarz(SpMat_t& A);
 
