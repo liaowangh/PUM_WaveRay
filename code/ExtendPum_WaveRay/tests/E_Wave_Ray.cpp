@@ -36,10 +36,10 @@ void ray_cycle(Vec_t& v, Vec_t& phi, std::vector<SpMat_t>& Op, std::vector<SpMat
         initial[i] = Vec_t::Zero(op_size[i]);
     }
     for(int i = nr_raylayer; i > 0; --i) {
-        if(k * ms[i] < 2.0 || k * ms[i] > 6.0){
-            Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], nu1);
-        } else {
+        if(i == nr_raylayer + 1 || (k * ms[i] >= 1.5 && k * ms[i] <= 8.0)) {
             Kaczmarz(Op[i], rhs_vec[i], initial[i], 5 * nu1);
+        } else {
+            Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], nu1);
         }
         rhs_vec[i-1] = I[i-1].transpose() * (rhs_vec[i] - Op[i] * initial[i]);
     }
@@ -130,7 +130,7 @@ void wave_ray(HE_LagrangeO1& he_O1, ExtendPUM_WaveRay& epum, int wave_start, int
             initial[i] = Vec_t::Zero(op_size[i]);
         }
         for(int i = wave_coarselayers; i > 0; --i) {
-            if(k * wave_ms[i] < 2.0 || k * wave_ms[i] > 6.0){
+            if(k * wave_ms[i] < 1.5 || k * wave_ms[i] > 8.0){
                 Gaussian_Seidel(wave_op[i], rhs_vec[i], initial[i], 1, nu1);
             } else {
                 // Kaczmarz(wave_op[i], rhs_vec[i], initial[i], 5 * nu1);
@@ -147,7 +147,7 @@ void wave_ray(HE_LagrangeO1& he_O1, ExtendPUM_WaveRay& epum, int wave_start, int
             initial[i] += wave_I[i-1] * initial[i-1];
             if(wave_start + i - wave_coarselayers == ray_start){
                 ray_cycle(initial[i], rhs_vec[i], ray_op, ray_I, stride, ray_ms, k, true);
-            } else if(k * wave_ms[i] < 2.0 || k * wave_ms[i] > 6.0){
+            } else if(k * wave_ms[i] < 1.5 || k * wave_ms[i] > 8.0){
                 Gaussian_Seidel(wave_op[i], rhs_vec[i], initial[i], 1, nu2);
                 // block_GS(wave_op[i], rhs_vec[i], initial[i], stride[i], nu2);
             } else {
@@ -176,8 +176,8 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    size_type wave_L = 5, ray_L = 3; // refinement steps
-    double k = 20.0; // wave number
+    size_type wave_L = 5, ray_L = 4; // refinement steps
+    double k = 30.0; // wave number
     std::vector<int> num_planwaves(ray_L+1);
     num_planwaves[ray_L] = 2;
     for(int i = ray_L - 1; i >= 0; --i) {
@@ -190,13 +190,13 @@ int main(){
     auto grad_u = sol.get_gradient();
     auto g = sol.boundary_g();
 
-    // HE_LagrangeO1 he_O1(wave_L, k, square, g, u, false, 50);
-    // ExtendPUM_WaveRay epum(ray_L, k, square, g, u, false, num_planwaves, 50);
+    HE_LagrangeO1 he_O1(wave_L, k, square, g, u, false, 50);
+    ExtendPUM_WaveRay epum(ray_L, k, square, g, u, false, num_planwaves, 50);
     // HE_LagrangeO1 he_O1(wave_L, k, square_hole2, g, u, true, 50);
     // ExtendPUM_WaveRay epum(ray_L, k, square_hole2, g, u, true, num_planwaves, 50);
-    HE_LagrangeO1 he_O1(wave_L, k, triangle_hole, g, u, false, 50);
-    ExtendPUM_WaveRay epum(ray_L, k, triangle_hole, g, u, false, num_planwaves, 50);
+    // HE_LagrangeO1 he_O1(wave_L, k, triangle_hole, g, u, false, 50);
+    // ExtendPUM_WaveRay epum(ray_L, k, triangle_hole, g, u, false, num_planwaves, 50);
 
-    int wave_coarselayers = 4, ray_coarselayers = 1;
+    int wave_coarselayers = 5, ray_coarselayers = 1;
     wave_ray(he_O1, epum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k, u);
 }

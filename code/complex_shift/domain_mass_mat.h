@@ -32,10 +32,10 @@ SpMat_t O1_mass_mat(std::shared_ptr<lf::mesh::Mesh> mesh, Scalar gamma) {
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
 
-    lf::mesh::utils::MeshFunctionConstant<double> mf_alpha(0.0);
+    lf::mesh::utils::MeshFunctionConstant<double> mf_zero(0.0);
     lf::mesh::utils::MeshFunctionConstant<Scalar> mf_gamma(gamma);
-    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_alpha), decltype(mf_gamma)> 
-    	elmat_builder(fe_space, mf_alpha, mf_gamma);
+    lf::uscalfe::ReactionDiffusionElementMatrixProvider<double, decltype(mf_zero), decltype(mf_gamma)> 
+    	elmat_builder(fe_space, mf_zero, mf_gamma);
     
     int N_dofs(dofh.NumDofs());
     lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);

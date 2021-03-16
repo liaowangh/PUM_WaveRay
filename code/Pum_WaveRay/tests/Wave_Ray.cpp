@@ -176,7 +176,7 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    size_type wave_L = 5, ray_L = 5; // refinement steps
+    size_type wave_L = 5, ray_L = 4; // refinement steps
     double k = 20.0; // wave number
     std::vector<int> num_planwaves(ray_L+1);
     num_planwaves[ray_L] = 2;
