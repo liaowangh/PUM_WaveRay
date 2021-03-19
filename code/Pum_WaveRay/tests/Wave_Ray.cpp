@@ -11,6 +11,7 @@
 
 #include "../../utils/HE_solution.h"
 #include "../../utils/utils.h"
+#include "../../Krylov/GMRES.h"
 #include "../PUM_WaveRay.h"
 
 using namespace std::complex_literals;
@@ -36,10 +37,10 @@ void pum_ray_cycle(Vec_t& v, Vec_t& phi, std::vector<SpMat_t>& Op, std::vector<S
         initial[i] = Vec_t::Zero(op_size[i]);
     }
     for(int i = nr_raylayer; i > 0; --i) {
-        if(k * ms[i] < 2.0 || k * ms[i] > 6.0){
+        if(k * ms[i] < 2 || k * ms[i] > 60.0){
             Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], nu1);
         } else {
-            Kaczmarz(Op[i], rhs_vec[i], initial[i], 5 * nu1);
+            gmres(Op[i], rhs_vec[i], initial[i], 10, 1);
         }
         rhs_vec[i-1] = I[i-1].transpose() * (rhs_vec[i] - Op[i] * initial[i]);
     }
@@ -49,21 +50,21 @@ void pum_ray_cycle(Vec_t& v, Vec_t& phi, std::vector<SpMat_t>& Op, std::vector<S
         solver.compute(Op[0]);
         initial[0] = solver.solve(rhs_vec[0]);
     } else {
-        if(k * ms[0] < 2.0 || k * ms[0] > 6.0){
+        if(k * ms[0] < 2 || k * ms[0] > 60.0){
             Gaussian_Seidel(Op[0], rhs_vec[0], initial[0], stride[0], nu1 + nu2);
             // block_GS(Op[i], rhs_vec[i], initial[i], stride[i], nu2);
         } else {
-            Kaczmarz(Op[0], rhs_vec[0], initial[0], 5 * nu2);
+            gmres(Op[0], rhs_vec[0], initial[0], 20, 1);
         }
     }
 
     for(int i = 1; i <= nr_raylayer; ++i) {
         initial[i] += I[i-1] * initial[i-1];
-        if(k * ms[i] < 2.0 || k * ms[i] > 6.0){
+        if(k * ms[i] < 2 || k * ms[i] > 60.0){
             Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], nu2);
             // block_GS(Op[i], rhs_vec[i], initial[i], stride[i], nu2);
         } else {
-            Kaczmarz(Op[i], rhs_vec[i], initial[i], 5 * nu2);
+            gmres(Op[i], rhs_vec[i], initial[i], 20, 1);
         }
     }
     v = initial[nr_raylayer];
@@ -130,10 +131,11 @@ void pum_wave_cycle(HE_LagrangeO1& he_O1, PUM_WaveRay& epum, int wave_start, int
             initial[i] = Vec_t::Zero(op_size[i]);
         }
         for(int i = wave_coarselayers; i > 0; --i) {
-            if(k * wave_ms[i] < 2.0 || k * wave_ms[i] > 6.0){
+            if(k * wave_ms[i] < 2 || k * wave_ms[i] > 60.0){
                 Gaussian_Seidel(wave_op[i], rhs_vec[i], initial[i], 1, nu1);
             } else {
                 // Kaczmarz(wave_op[i], rhs_vec[i], initial[i], 5 * nu1);
+                gmres(wave_op[i], rhs_vec[i], initial[i], 10, 1);
             }
             rhs_vec[i-1] = wave_I[i-1].transpose() * (rhs_vec[i] - wave_op[i] * initial[i]);
         }
@@ -147,11 +149,11 @@ void pum_wave_cycle(HE_LagrangeO1& he_O1, PUM_WaveRay& epum, int wave_start, int
             initial[i] += wave_I[i-1] * initial[i-1];
             if(wave_start + i - wave_coarselayers == ray_start){
                 pum_ray_cycle(initial[i], rhs_vec[i], ray_op, ray_I, stride, ray_ms, k, true);
-            } else if(k * wave_ms[i] < 2.0 || k * wave_ms[i] > 6.0){
+            } else if(k * wave_ms[i] < 2 || k * wave_ms[i] > 60.0){
                 Gaussian_Seidel(wave_op[i], rhs_vec[i], initial[i], 1, nu2);
                 // block_GS(wave_op[i], rhs_vec[i], initial[i], stride[i], nu2);
             } else {
-                // Kaczmarz(wave_op[i], rhs_vec[i], initial[i], 5 * nu2);
+                gmres(wave_op[i], rhs_vec[i], initial[i], 20, 1);
             }
         }
         v = initial[wave_coarselayers];
@@ -176,7 +178,7 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    size_type wave_L = 5, ray_L = 4; // refinement steps
+    size_type wave_L = 5, ray_L = 3; // refinement steps
     double k = 20.0; // wave number
     std::vector<int> num_planwaves(ray_L+1);
     num_planwaves[ray_L] = 2;

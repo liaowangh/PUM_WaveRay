@@ -49,9 +49,8 @@ void O1_vcycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t
         initial[i] = Vec_t::Zero(op_size[i]);
     }
     for(int i = L; i > 0; --i) {
-        if(k * mesh_width[i] < 2.0 || k * mesh_width[i] > 6.0){
+        if(k * mesh_width[i] < 1.5 || k * mesh_width[i] > 8.0){
             Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
-            // block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
         } else {
             // Kaczmarz(Op[i], rhs_vec[i], initial[i], 5 * mu1);
         }
@@ -72,9 +71,8 @@ void O1_vcycle(Vec_t& u, Vec_t& f, std::vector<SpMat_t>& Op, std::vector<SpMat_t
     }
     for(int i = 1; i <= L; ++i) {
         initial[i] += I[i-1] * initial[i-1];
-        if(k * mesh_width[i] < 2.0 || k * mesh_width[i] > 6.0){
+        if(k * mesh_width[i] < 1.5 || k * mesh_width[i] > 8.0){
             Gaussian_Seidel(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
-            // block_GS(Op[i], rhs_vec[i], initial[i], stride[i], mu1);
         } else {
             // Kaczmarz(Op[i], rhs_vec[i], initial[i], 5 * mu1);
         }
@@ -169,7 +167,7 @@ int main(){
     // HE_LagrangeO1 he_O1(L, k, square_hole2, g, u, true, 50);
     // convergence_factor(he_O1, L, k);
     
-    int num_coarserlayer = 3;
+    int num_coarserlayer = 5;
     std::vector<int> stride(num_coarserlayer + 1, 1);
     // mg_factor(he_O1, L, num_coarserlayer, k, stride, u, true);
     mg_O1(he_O1, L, num_coarserlayer, k, u, true);

@@ -176,8 +176,8 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    size_type wave_L = 5, ray_L = 4; // refinement steps
-    double k = 30.0; // wave number
+    size_type wave_L = 5, ray_L = 3; // refinement steps
+    double k = 20.0; // wave number
     std::vector<int> num_planwaves(ray_L+1);
     num_planwaves[ray_L] = 2;
     for(int i = ray_L - 1; i >= 0; --i) {
@@ -190,10 +190,10 @@ int main(){
     auto grad_u = sol.get_gradient();
     auto g = sol.boundary_g();
 
-    HE_LagrangeO1 he_O1(wave_L, k, square, g, u, false, 50);
-    ExtendPUM_WaveRay epum(ray_L, k, square, g, u, false, num_planwaves, 50);
-    // HE_LagrangeO1 he_O1(wave_L, k, square_hole2, g, u, true, 50);
-    // ExtendPUM_WaveRay epum(ray_L, k, square_hole2, g, u, true, num_planwaves, 50);
+    // HE_LagrangeO1 he_O1(wave_L, k, square, g, u, false, 50);
+    // ExtendPUM_WaveRay epum(ray_L, k, square, g, u, false, num_planwaves, 50);
+    HE_LagrangeO1 he_O1(wave_L, k, square_hole2, g, u, true, 50);
+    ExtendPUM_WaveRay epum(ray_L, k, square_hole2, g, u, true, num_planwaves, 50);
     // HE_LagrangeO1 he_O1(wave_L, k, triangle_hole, g, u, false, 50);
     // ExtendPUM_WaveRay epum(ray_L, k, triangle_hole, g, u, false, num_planwaves, 50);
 

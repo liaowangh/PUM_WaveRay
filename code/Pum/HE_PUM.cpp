@@ -407,36 +407,65 @@ HE_PUM::Vec_t HE_PUM::solve(size_type l) {
 HE_PUM::SpMat_t HE_PUM::prolongation(size_type l) {
     LF_ASSERT_MSG((l < L_), 
         "in prolongation, level should smaller than" << L_);
+    
+    double pi = std::acos(-1.);
     auto Q = prolongation_lagrange(l);
-    auto P = prolongation_planwave(l);
-    // auto Q = Mat_t(prolongation_lagrange(l));
-    // auto P = Mat_t(prolongation_planwave(l));
-    size_type n1 = Q.rows(), n2 = P.rows();
-    size_type m1 = Q.cols(), m2 = P.cols();
-    // Mat_t res = Mat_t(n1*n2, m1*m2);
-    // for(int i = 0; i < n1; ++i) {
-    //     for(int j = 0; j < m1; ++j) {
-    //         res.block(i*n2, j*m2, n2, m2) = Q(i, j) * P;
-    //     }
-    // }
-    // return res.sparseView();
-    SpMat_t res(n1*n2, m1*m2);
+    int n1 = Q.cols(), n2 = Q.rows(); // n1: n_l, n2: n_{l+1}
+    int N1 = num_planwaves_[l], N2 = num_planwaves_[l+1]; // N1: N_l, N2: N_{l+1}
+
+    auto mesh = getmesh(l+1);  // fine mesh
+    auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
+
+    SpMat_t res(n2 * N2, n1 * N1); // transfer operator
     std::vector<triplet_t> triplets;
-    for(int j1 = 0; j1 < Q.outerSize(); ++j1) {
-        for(SpMat_t::InnerIterator it1(Q, j1); it1; ++it1) {
-            int i1 = it1.row();
-            Scalar qij = it1.value();
-            for(int j2 = 0; j2 < P.outerSize(); ++j2) {
-                for(SpMat_t::InnerIterator it2(P, j2); it2; ++it2) {
-                    int i2 = it2.row();
-                    Scalar pij = it2.value();
-                    triplets.push_back(triplet_t(i1*n2+i2, j1*m2+j2, qij * pij));
-                }
+    
+    for(int outer_idx = 0; outer_idx < Q.outerSize(); ++outer_idx) {
+        for(SpMat_t::InnerIterator it(Q, outer_idx); it; ++it) {
+            int i = it.row();
+            int j = it.col();
+            Scalar qij = it.value(); 
+            
+            // b_j^l e_{2t-1}^l = \sum_i qij b_i^{l+1} e_t^{l+1}
+            for(int t = 1; t <= N2; ++t) {
+                triplets.push_back(triplet_t(i*N2+t, j*N1+2*t-1, qij));
+            } 
+
+            const lf::mesh::Entity& p_i = dofh.Entity(i); // the entity to which i-th global shape function is associated
+            coordinate_t pi_coordinate = lf::geometry::Corners(*p_i.Geometry()).col(0);
+
+            for(int t = 1; t <= N2; ++t) {
+                Eigen::Vector2d d1, d2;
+                d1 << std::cos(2*pi*(2*t-1)/N1), std::sin(2*pi*(2*t-1)/N1); // d_{2t}^l
+                d2 << std::cos(2*pi*(  t-1)/N2), std::sin(2*pi*(  t-1)/N2); // d_{t}^{l+1}
+                Scalar tmp = qij * std::exp(1i*k_*(d1-d2).dot(pi_coordinate));
+                triplets.push_back(triplet_t(i*N2+t, j*N1+2*t, tmp));
             }
         }
     }
     res.setFromTriplets(triplets.begin(), triplets.end());
     return res;
+
+    // auto Q = prolongation_lagrange(l);
+    // auto P = prolongation_planwave(l);
+    // size_type n1 = Q.rows(), n2 = P.rows();
+    // size_type m1 = Q.cols(), m2 = P.cols();
+    // SpMat_t res(n1*n2, m1*m2);
+    // std::vector<triplet_t> triplets;
+    // for(int j1 = 0; j1 < Q.outerSize(); ++j1) {
+    //     for(SpMat_t::InnerIterator it1(Q, j1); it1; ++it1) {
+    //         int i1 = it1.row();
+    //         Scalar qij = it1.value();
+    //         for(int j2 = 0; j2 < P.outerSize(); ++j2) {
+    //             for(SpMat_t::InnerIterator it2(P, j2); it2; ++it2) {
+    //                 int i2 = it2.row();
+    //                 Scalar pij = it2.value();
+    //                 triplets.push_back(triplet_t(i1*n2+i2, j1*m2+j2, qij * pij));
+    //             }
+    //         }
+    //     }
+    // }
+    // res.setFromTriplets(triplets.begin(), triplets.end());
+    // return res;
 }
 
 void HE_PUM::solve_multigrid(Vec_t& initial, size_type start_layer, int num_coarserlayer, 
