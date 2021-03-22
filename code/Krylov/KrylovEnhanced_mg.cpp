@@ -181,11 +181,11 @@ void KrylovEnhance(HE_LagrangeO1& he_O1, int L, int nr_coarsemesh, double k, FHa
      * since GMRES is used as smoothing in certain level of MG and 
      * GMRES is not linear iterations, so we need to use flexible GMRES here.
      */
-    Vec_t x = Vec_t::Random(A.rows()); // initial value
-    Vec_t b = eq_pair.second;
-    Vec_t tmp = Vec_t::Random(A.rows());
     int n = A.rows();
-    int m = 20;
+    int m = 10;
+    Vec_t x = Vec_t::Random(n); // initial value
+    Vec_t b = eq_pair.second;
+    Vec_t tmp = Vec_t::Random(n);
     for(int t = 0; t < 10; ++t) {
         std::cout << std::setw(15) << he_O1.L2_Err(L, x - uh, zero_fun) << " ";
         std::cout << std::setw(15) << he_O1.L2_Err(L, x, u) << std::endl;
@@ -253,14 +253,16 @@ int main(){
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
     size_type L = 5; // refinement steps
-    double k = 20.0; // wave number
+    double k = 10.0; // wave number
     plan_wave sol(k, 0.8, 0.6);
     auto u = sol.get_fun();
     auto g = sol.boundary_g();
     auto grad_u = sol.get_gradient();
-    HE_LagrangeO1 he_O1(L, k, square, g, u, false, 50);
+    // HE_LagrangeO1 he_O1(L, k, square, g, u, false, 50);
+    // HE_LagrangeO1 he_O1(L, k, square_hole2, g, u, true, 50);
+    HE_LagrangeO1 he_O1(L, k, triangle_hole, g, u, true, 50);
     
-    int num_coarserlayer = 2;
-    mg_O1_gmres(he_O1, L, num_coarserlayer, k, u);
-    // KrylovEnhance(he_O1, L, num_coarserlayer, k, u);
+    int num_coarserlayer = 5;
+    // mg_O1_gmres(he_O1, L, num_coarserlayer, k, u);
+    KrylovEnhance(he_O1, L, num_coarserlayer, k, u);
 }
