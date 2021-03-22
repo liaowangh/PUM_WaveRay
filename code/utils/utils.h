@@ -62,10 +62,12 @@ void tabular_output(std::vector<std::vector<double>>& data,
  * stride: number of plan waves
  * sol: true solution
  */
+// void Gaussian_Seidel(const SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
 void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
 
 void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride);
 
+// void block_GS(const SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
 void block_GS(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu);
 
 void block_GS(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride);

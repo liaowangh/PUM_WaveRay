@@ -172,6 +172,23 @@ void test_solve(HE_FEM& he_fem, const std::string& sol_name,
     print_save_error(err_data, data_label, sol_name, output_folder);
 }
 
+// void Gaussian_Seidel(const SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
+//     // u: initial value; mu: number of iterations
+//     int N = A.rows();
+//     for(int i = 0; i < mu; ++i){
+//         for(int t = 0; t < stride; ++t) {
+//             // stride/direction
+//             for(int k = 0; k < N / stride; ++k) {
+//                 int j = k * stride + t;
+//                 Scalar tmp = (A.row(j) * u)(0,0);
+//                 // u(j) = (phi(j) - tmp + u(j) * A(j,j)) / A(j,j);
+//                 Scalar Ajj = A.coeffRef(j,j);
+//                 u(j) = (phi(j) - tmp + u(j) * Ajj) / Ajj;
+//             }
+//         }
+//     }
+// }
+
 void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
     // u: initial value; mu: number of iterations
     int N = A.rows();
@@ -231,6 +248,25 @@ void Gaussian_Seidel(SpMat_t& A, Vec_t& phi, Vec_t& u, Vec_t& sol, int stride){
  *  1. {u[i*N],...,u[(i+1)*N-1]}, i = 0, 1, ..., n (divid according to nodes)
  *  2. {u[t], u[N+t], u[2N+t], ... , u[(n-1)N+t]}, t = 0, 1, ... , N-1 (divid according to waves)
  */
+// void block_GS(const SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
+//     LF_ASSERT_MSG(phi.size() % stride == 0, 
+//         "the size of unknows should divide stride!");
+//     if(stride == 1) {
+//         Gaussian_Seidel(A, phi, u, stride, mu);
+//         return;
+//     }
+//     int N = stride;
+//     int n = u.size() / N;
+//     for(int nu = 0; nu < mu; ++nu) {
+//         for(int i = 0; i < n; ++i) {
+//             Mat_t Ai = A.block(i*N, i*N, N, N);
+//             Vec_t rhs_i = phi.segment(i*N, N) - A.block(i*N, 0, N, N*n) * u 
+//                 + Ai * u.segment(i*N, N);
+//             u.segment(i*N, N) = Ai.colPivHouseholderQr().solve(rhs_i);
+//         }
+//     }
+// }
+
 void block_GS(SpMat_t& A, Vec_t& phi, Vec_t& u, int stride, int mu){
     LF_ASSERT_MSG(phi.size() % stride == 0, 
         "the size of unknows should divide stride!");

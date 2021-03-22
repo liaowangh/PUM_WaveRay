@@ -427,7 +427,7 @@ HE_PUM::SpMat_t HE_PUM::prolongation(size_type l) {
             
             // b_j^l e_{2t-1}^l = \sum_i qij b_i^{l+1} e_t^{l+1}
             for(int t = 1; t <= N2; ++t) {
-                triplets.push_back(triplet_t(i*N2+t, j*N1+2*t-1, qij));
+                triplets.push_back(triplet_t(i*N2+t-1, j*N1+2*t-2, qij));
             } 
 
             const lf::mesh::Entity& p_i = dofh.Entity(i); // the entity to which i-th global shape function is associated
@@ -438,7 +438,7 @@ HE_PUM::SpMat_t HE_PUM::prolongation(size_type l) {
                 d1 << std::cos(2*pi*(2*t-1)/N1), std::sin(2*pi*(2*t-1)/N1); // d_{2t}^l
                 d2 << std::cos(2*pi*(  t-1)/N2), std::sin(2*pi*(  t-1)/N2); // d_{t}^{l+1}
                 Scalar tmp = qij * std::exp(1i*k_*(d1-d2).dot(pi_coordinate));
-                triplets.push_back(triplet_t(i*N2+t, j*N1+2*t, tmp));
+                triplets.push_back(triplet_t(i*N2+t-1, j*N1+2*t-1, tmp));
             }
         }
     }
