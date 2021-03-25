@@ -53,6 +53,27 @@ HE_FEM::outerBdy_selector(size_type l) {
     return outer_boundary;
 }
 
+lf::mesh::utils::CodimMeshDataSet<bool> 
+HE_FEM::innerBdy_selector(size_type l) {
+    auto mesh = getmesh(l);
+    lf::mesh::utils::CodimMeshDataSet<bool> inner_boundary(mesh, 1, false);
+    if(hole_exist_) {
+        auto inner_nr = reader_->PhysicalEntityName2Nr("inner_boundary");
+        // modify it to classify inner and outer boundary
+        for(const lf::mesh::Entity* edge: mesh->Entities(1)) {
+            const lf::mesh::Entity* parent_edge = edge;
+            for(int i = l; i > 0; --i) {
+                parent_edge = mesh_hierarchy_->ParentEntity(i, *parent_edge);
+            }
+            if(reader_->IsPhysicalEntity(*parent_edge, inner_nr)) {
+                // it is the inner boundary
+                inner_boundary(*edge) = true;
+            }
+        }
+    }
+    return inner_boundary;
+}
+
 // S_l -> S_{l+1}， 0 <= l < L_
 HE_FEM::SpMat_t HE_FEM::prolongation_lagrange(size_type l) {
     LF_ASSERT_MSG(l >= 0 && l < L_, "l in prolongation should be smaller to L_");

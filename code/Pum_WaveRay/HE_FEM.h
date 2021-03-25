@@ -68,6 +68,7 @@ public:
     // return mesh at l-th level
     std::shared_ptr<lf::mesh::Mesh> getmesh(size_type l) { return mesh_hierarchy_->getMesh(l); }
     lf::mesh::utils::CodimMeshDataSet<bool> outerBdy_selector(size_type l);
+    lf::mesh::utils::CodimMeshDataSet<bool> innerBdy_selector(size_type l);
 
     void vector_vtk(size_type l, const Vec_t& v, const std::string& name_str);
 
