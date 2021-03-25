@@ -131,6 +131,16 @@ public:
     }
 
     Scalar local_solver(int l, Scalar rl) {
+        auto tmp = localMatrix_idx(l);
+        Mat_t Al = tmp.first;       
+        Vec_t local_residual = Vec_t::Zero(Al.rows());
+        local_residual(tmp.second) = rl;
+        
+        Vec_t el = Al.colPivHouseholderQr().solve(local_residual);
+        return el(tmp.second);
+    }
+
+    std::pair<Mat_t, int> localMatrix_idx(int l) {
         auto patch_bdy = patch_boundary_selector(l);
         auto patch_element = patch_element_selector(l);
         auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh_);
@@ -155,11 +165,7 @@ public:
 
         auto Q = index_info.second;
         Mat_t Al = Q * A.makeSparse() * Q.transpose();
-        Vec_t local_residual = Vec_t::Zero(Al.rows());
-        local_residual(index_info.first) = rl;
-        
-        Vec_t el = Al.colPivHouseholderQr().solve(local_residual);
-        return el(index_info.first);
+        return {Al, index_info.first};
     }
 
     void relaxation(Vec_t& v, Vec_t& r) {
