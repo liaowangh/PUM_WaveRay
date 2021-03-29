@@ -34,3 +34,4 @@ execute $m$ steps of GMRES, then restart with $u_m$ as initial approximation of 
 | $i$       | 0    | 1    | 2    | 3    | 4        | 5        | 6        |
 | --------- | ---- | ---- | ---- | ---- | -------- | -------- | -------- |
 | $||e_i||$ | 1.07 | 0.49 | 0.25 | 0.11 | $4.6e-2$ | $2.0e-2$ | $8.7e-3$ |
+
