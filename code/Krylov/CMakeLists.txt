@@ -27,3 +27,18 @@ target_link_libraries(mg_krylov
   LF::lf.uscalfe
   LF::lf.base
 )
+
+###################################################
+
+set(test_gmres_sources
+  GMRES.h
+  test_gmres.cpp
+)
+
+# define executable
+add_executable(test_gmres ${test_gmres_sources})
+
+#link executable with LehrFEM++
+target_link_libraries(test_gmres
+  PUBLIC Eigen3::Eigen
+)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 
 #include <Eigen/Dense>
@@ -26,7 +27,7 @@ using triplet_t = Eigen::Triplet<Scalar>;
  * where U is a upper triangle matrix
  * we have uii * xi + ui, {i+1} x_{i+1} + ... + uin * xn = bi
  */
-Vec_t solve_upper_triangle(Mat_t U, Vec_t b) {
+Vec_t solve_upper_triangle(const Mat_t& U, const Vec_t& b) {
     int n = b.size();
     Vec_t x = Vec_t(n);
     for(int i = n - 1; i >= 0; --i) {
@@ -64,29 +65,33 @@ void applay_givens_roataion(Mat_t& H, Vec_t& cs, Vec_t& sn, int j) {
 }
 
 template <typename Mat_type>
-void gmres(Mat_type& A, Vec_t& b, Vec_t& x, int max_iterations, double threshold) {
+void gmres(Mat_type& A, Vec_t& b, Vec_t& x, int max_iterations, double threshold, bool verbose = false) {
     int n = A.rows();
     int m = max_iterations;
-    Vec_t r = b - A * x;
-    double b_norm = b.norm();
+    Vec_t r = b - A * x; // initial residual
     double r_norm = r.norm();
-    double error = r_norm / b_norm;
-
-    // For givens roatation
-    Vec_t sn = Vec_t::Zero(m), cs = Vec_t::Zero(m);
-    Vec_t e1 = Vec_t::Zero(m+1);
-    e1(0) = 1.0;
+    double error = r_norm / r_norm;
     std::vector<double> e;
     e.push_back(error);
 
-    Vec_t beta = r_norm * e1;
+    // For givens roatation
+    Vec_t sn = Vec_t::Zero(m), cs = Vec_t::Zero(m);
 
-    Mat_t V(n, m+1);
+    // beta is initialized to r_norm*e1
+    Vec_t beta = Vec_t::Zero(m+1);
+    beta(0) = r_norm;
+  
+    Mat_t V(n, m+1);  // to store the orthonormal bases 
     Mat_t H = Mat_t::Zero(m+1, m);
     V.col(0) = r / r_norm;
 
     int j;
+    if(verbose) {
+        std::cout << std::left;
+        std::cout << std::setw(5) << "m" << std::setw(15) << "||rm||" << std::endl;
+    }
     for(j = 1; j <= m; ++j) {
+        // arnoldi process
         Vec_t wj = A * V.col(j-1);
         for(int i = 0; i < j; ++i) {
             H(i, j-1) = wj.dot(V.col(i));
@@ -102,18 +107,27 @@ void gmres(Mat_type& A, Vec_t& b, Vec_t& x, int max_iterations, double threshold
         beta(j)  = -sn(j-1) * beta(j-1);
         beta(j-1) = cs(j-1) * beta(j-1);
         
-        error = std::abs(beta(j)) / b_norm;
+        error = std::abs(beta(j)) / r_norm;
         e.push_back(error);
-        // if(error <= threshold) {
-        //     break;
-        // }
+        if(verbose) {
+            Vec_t y_tmp = solve_upper_triangle(H.topLeftCorner(j, j), beta.head(j));
+            Vec_t x_tmp = x + V.leftCols(j) * y_tmp;
+            std::cout << std::setw(5) << j << std::setw(15) << error 
+                      << std::setw(15) << (b-A*x_tmp).norm() / r_norm << std::endl; 
+        }
+        if(error <= threshold) {
+            if(verbose) {
+                std::cout << "GMRES ends after " << j << " iterations." << std::endl;
+            }
+            break;
+        }
     }
-     // calculate the result
-    Vec_t y = solve_upper_triangle(H.block(0, 0, j-1, j-1), beta.segment(0, j-1));
-    x = x + V.block(0, 0, n, j-1) * y;
-
-    // std::cout << "m = " << m << std::endl;
-    // std::cout << H << std::endl;
+    // calculate the result
+    if(j == m + 1) {
+        --j;
+    }
+    Vec_t y = solve_upper_triangle(H.topLeftCorner(j, j), beta.head(j));
+    x = x + V.leftCols(j) * y;
 }
 
 
