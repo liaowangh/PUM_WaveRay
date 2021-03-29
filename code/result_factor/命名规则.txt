@@ -1,5 +1,0 @@
-epum_planwave_5541.txt
-
-epum: extend pum wave ray multigrid
-planwave: the manufacture solution is plan wave
-5541: wave_L = 5, wave_coarselayers = 5, ray_L=4, ray_coarselayers = 1

@@ -14,6 +14,9 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
+#include "../ExtendPum/ExtendPUM_ElementMatrix.h"
+#include "../ExtendPum/ExtendPUM_EdgeMat.h"
+
 using Scalar = std::complex<double>;
 using Vec_t = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
@@ -90,9 +93,9 @@ public:
     * the edges appear once belong to the boundary
     * appear twice belong to the interior of the vertex patch
     */
-    lf::mesh::utils::CodimMeshDataSet<bool> patch_boundary_selector(int i) {
+    lf::mesh::utils::CodimMeshDataSet<bool> patch_boundary_selector(int l) {
         lf::mesh::utils::CodimMeshDataSet<bool> patch_bdy(mesh_, 1, false);
-        for(int cell_idx: adjacent_cell_[i]) {
+        for(int cell_idx: adjacent_cell_[l]) {
             const lf::mesh::Entity* cell = mesh_->EntityByIndex(0, cell_idx);
             for(const lf::mesh::Entity* edge: cell->SubEntities(1)) {
                 if(!inner_boundary_(*edge)){
@@ -104,7 +107,7 @@ public:
     }
 
     lf::mesh::utils::CodimMeshDataSet<bool> patch_element_selector(int l) {
-        lf::mesh::utils::CodimMeshDataSet<bool> patch_element(mesh_, 1, false);
+        lf::mesh::utils::CodimMeshDataSet<bool> patch_element(mesh_, 0, false);
         for(int cell_idx: adjacent_cell_[l]) {
             const lf::mesh::Entity* cell = mesh_->EntityByIndex(0, cell_idx);
             patch_element(*cell) = true;
@@ -112,7 +115,7 @@ public:
         return patch_element;
     }
 
-    std::pair<int, Eigen::SparseMatrix<double>> patch_idx_map(int l) {
+    virtual std::pair<int, Eigen::SparseMatrix<double>> patch_idx_map(int l) {
         int center_vertex_local_idx; // 
         int N = mesh_->NumEntities(2); // number of global basis functions
         int n = adjacent_vertex_.size(); // number of basis functions in vertex patch
@@ -130,17 +133,7 @@ public:
         return {center_vertex_local_idx, Q};
     }
 
-    Scalar local_solver(int l, Scalar rl) {
-        auto tmp = localMatrix_idx(l);
-        Mat_t Al = tmp.first;       
-        Vec_t local_residual = Vec_t::Zero(Al.rows());
-        local_residual(tmp.second) = rl;
-        
-        Vec_t el = Al.colPivHouseholderQr().solve(local_residual);
-        return el(tmp.second);
-    }
-
-    std::pair<Mat_t, int> localMatrix_idx(int l) {
+    virtual std::pair<Mat_t, int> localMatrix_idx(int l) {
         auto patch_bdy = patch_boundary_selector(l);
         auto patch_element = patch_element_selector(l);
         auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh_);
@@ -168,9 +161,15 @@ public:
         return {Al, index_info.first};
     }
 
-    void relaxation(Vec_t& v, Vec_t& r) {
-        for(int i = 0; i < v.size(); ++i) {
-            v[i] += local_solver(i, r[i]);
+    virtual void relaxation(Vec_t& v, Vec_t& r) {
+        for(int l = 0; l < v.size(); ++l) {
+            auto tmp = localMatrix_idx(l);
+            Mat_t Al = tmp.first;       
+            Vec_t local_residual = Vec_t::Zero(Al.rows());
+            local_residual(tmp.second) = r(l);
+        
+            Vec_t el = Al.colPivHouseholderQr().solve(local_residual);
+            v(l) += el(tmp.second);
         }
     }
 public:
@@ -180,4 +179,85 @@ public:
     std::vector<std::vector<int>> adjacent_vertex_;
     std::vector<std::vector<int>> adjacent_cell_;
     lf::mesh::utils::CodimMeshDataSet<bool> inner_boundary_;
+};
+
+class patch_ExtendPUM_ElementMatrix: public ExtendPUM_ElementMatrix {
+public:
+    // constructor
+    patch_ExtendPUM_ElementMatrix(size_type N, double k, Scalar alpha, Scalar gamma,
+        lf::mesh::utils::CodimMeshDataSet<bool> patch_element_selector, int degree=20):
+        patch_element_selector_(patch_element_selector),
+        ExtendPUM_ElementMatrix(N, k, alpha, gamma, degree){}
+
+    bool isActive(const lf::mesh::Entity & cell) override {
+         return patch_element_selector_(cell); 
+    }
+private:
+    lf::mesh::utils::CodimMeshDataSet<bool> patch_element_selector_;
+};
+
+class epum_vertex_patch_info: public vertex_patch_info {
+public:
+    epum_vertex_patch_info(double wave_number, int nr_waves, std::shared_ptr<lf::mesh::Mesh> mesh, 
+        bool hole,lf::mesh::utils::CodimMeshDataSet<bool> inner_bdy, int degree=30): 
+        N_wave(nr_waves), quad_degree(degree),
+        vertex_patch_info(wave_number, mesh, hole, inner_bdy) {}
+
+    std::pair<int, Eigen::SparseMatrix<double>> patch_idx_map(int l) override {
+        int center_vertex_local_idx; // 
+        int N_nodal = mesh_->NumEntities(2); // number of nodal global basis functions
+        int n = adjacent_vertex_.size(); // number of nodal basis functions in vertex patch
+        Eigen::SparseMatrix<double> Q(n * (N_wave + 1), N_nodal * (N_wave + 1));
+
+        std::vector<int>& adj_vertex = adjacent_vertex_[l];
+        std::vector<Eigen::Triplet<double>> triplets;
+        for(int i = 0; i < adj_vertex.size(); ++i) {
+            if(adj_vertex[i] == l) {
+                center_vertex_local_idx = i;
+            }
+            for(int t = 0; t <= N_wave; ++t) {
+                triplets.push_back(Eigen::Triplet<double>(i*(N_wave + 1)+t, adj_vertex[i]*(N_wave + 1)+t, 1.0));
+            }
+        }
+        Q.setFromTriplets(triplets.begin(), triplets.end());
+        return {center_vertex_local_idx, Q};
+    }
+
+    std::pair<Mat_t, int> localMatrix_idx(int l) override {
+        auto patch_bdy = patch_boundary_selector(l);
+        auto patch_element = patch_element_selector(l);
+        auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh_);
+        lf::assemble::UniformFEDofHandler dofh(mesh_, {{lf::base::RefEl::kPoint(), N_wave}});
+        int N_dofs(dofh.NumDofs());
+        lf::assemble::COOMatrix<Scalar> A(N_dofs, N_dofs);
+
+        // assembel for <grad u, grad v> - k^2 uv over vertex patch space l
+        patch_ExtendPUM_ElementMatrix elmat_builder(N_wave-1, k_, 1.0, -k_ * k_, patch_element);
+        lf::assemble::AssembleMatrixLocally(0, dofh, dofh, elmat_builder, A);
+
+        // assemble for <u, v> over boundary of patch space withoud the inner boundary
+        ExtendPUM_EdgeMat edge_mat_builder(fe_space, patch_bdy, N_wave, k_, 1.0, quad_degree);
+        lf::assemble::AssembleMatrixLocally(1, dofh, dofh, edge_mat_builder, A);
+        
+        auto index_info = patch_idx_map(l);
+
+        auto Q = index_info.second;
+        Mat_t Al = Q * A.makeSparse() * Q.transpose();
+        return {Al, index_info.first};
+    }
+
+    void relaxation(Vec_t& v, Vec_t& r) override {
+        for(int l = 0; l < v.size() / (N_wave + 1); ++l) {
+            auto tmp = localMatrix_idx(l);
+            int local_idx = tmp.second;
+            Mat_t Al = tmp.first;       
+            Vec_t local_residual = Vec_t::Zero(Al.rows());
+            local_residual.segment(local_idx*(N_wave+1), N_wave+1) = r.segment(l*(N_wave+1), N_wave+1);
+            Vec_t el = Al.colPivHouseholderQr().solve(local_residual);
+            v.segment(l*(N_wave+1), N_wave+1) += el.segment(local_idx*(N_wave+1), N_wave+1);
+        }
+    }
+public:
+    int N_wave; // number of plan waves
+    int quad_degree;
 };

@@ -37,6 +37,8 @@ set(local_impedance_smoothing_sources
   ../LagrangeO1/HE_LagrangeO1.cpp
   ../Pum_WaveRay/HE_FEM.h
   ../Pum_WaveRay/HE_FEM.cpp
+  ../ExtendPum/ExtendPUM_ElementMatrix.h
+  ../ExtendPum/ExtendPUM_EdgeMat.h
   ../Krylov/GMRES.h
   ../utils/utils.h
   ../utils/utils.cpp

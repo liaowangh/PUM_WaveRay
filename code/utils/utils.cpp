@@ -60,42 +60,6 @@ std::vector<double> linearFit(const std::vector<double> x, const std::vector<dou
     return {tmp(0), tmp(1)};
 }
 
-void print_save_error(std::vector<std::vector<double>>& data, 
-    std::vector<std::string>& data_label, const std::string& sol_name, 
-    const std::string& output_folder) {
-    
-    std::cout << sol_name << std::endl;
-    std::cout << std::left;
-    for(int i = 0; i < data_label.size(); ++i){
-        std::cout << std::setw(10) << data_label[i];
-    }
-    std::cout << std::endl;
-    std::cout << std::left << std::scientific << std::setprecision(1);
-    for(int l = 0; l < data[0].size(); ++l) {
-        for(int i = 0; i < data.size(); ++i) {
-            std::cout << std::setw(10) << data[i][l];
-        }
-        std::cout << std::endl;
-    }
-
-    // write the result to the file
-    std::string output_file = output_folder + sol_name + ".txt";
-    std::ofstream out(output_file);
-
-    out << data_label[0];
-    for(int i = 1; i < data_label.size(); ++i) {
-        out << " " << data_label[i];
-    }
-    out << std::endl;
-    for(int l = 0; l < data[0].size(); ++l) {
-        out << data[0][l];
-        for(int i = 1; i < data.size(); ++i) {
-            out << " " << data[i][l];
-        }
-        out << std::endl;
-    } 
-}
-
 void tabular_output(std::vector<std::vector<double>>& data, 
     std::vector<std::string>& data_label, const std::string& sol_name, 
     const std::string& output_folder, bool save) {
