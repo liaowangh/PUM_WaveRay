@@ -24,68 +24,6 @@
 
 using namespace std::complex_literals;
 
-class impedance_smoothing_element {
-public:
-    impedance_smoothing_element(HE_FEM& he_fem, int L, int nr_coarselayers, 
-        double k, double kh_threshold): k_(k), kh_threshold_(kh_threshold){
-        
-        auto eq_pair = he_fem.build_equation(L);
-        SpMat_t A(eq_pair.first.makeSparse());
-        auto mesh_width = he_fem.mesh_width();
-        mw = std::vector<double>(nr_coarselayers + 1);
-        I = std::vector<SpMat_t>(nr_coarselayers);
-        Op = std::vector<SpMat_t>(nr_coarselayers + 1);
-        Op[nr_coarselayers] = A;
-        for(int i = nr_coarselayers - 1; i >= 0; --i) {
-            int idx = L + i - nr_coarselayers;
-            I[i] = he_fem.prolongation(idx);
-            Op[i] = I[i].transpose() * Op[i+1] * I[i];
-            // auto tmp = he_fem.build_equation(idx);
-            // Op[i] = tmp.first.makeSparse();
-            mw[i] = mesh_width[idx];
-        }
-
-        for(int i = nr_coarselayers; i >= 0; --i) {
-            int idx = L + i - nr_coarselayers;
-            if(k_ * mw[i] >= kh_threshold_) {
-                int n = Op[i].rows();
-                impedance_matrix[i] = std::vector<Mat_t>(n);
-                impedance_idx[i] = std::vector<int>(n);
-                vertex_patch_info patch(k_, he_fem.getmesh(idx), false, he_fem.innerBdy_selector(idx));
-                for(int l = 0; l < n; ++l) {
-                    auto local_info_pair = patch.localMatrix_idx(l);
-                    impedance_matrix[i][l] = local_info_pair.first;
-                    impedance_idx[i][l] = local_info_pair.second;
-                }
-            }
-        }        
-    }
-
-    void smoothing(int l, Vec_t& u, Vec_t& rhs) {
-        if(mw[l] * k_ < kh_threshold_) {
-            Gaussian_Seidel(Op[l], rhs, u, 1, 3);
-        } else {
-            for(int i = 0; i < u.size(); ++i) {
-                Mat_t Al = impedance_matrix[l][i];
-                int local_idx = impedance_idx[l][i];
-                Vec_t local_residual = Vec_t::Zero(Al.rows());
-                local_residual(local_idx) = rhs(i);
-                Vec_t el = Al.colPivHouseholderQr().solve(local_residual);
-                u(i) += el(local_idx);
-            }
-        }
-    }
-
-public:
-    double kh_threshold_;
-    double k_;
-    std::vector<double> mw;  // mesh_width
-    std::vector<SpMat_t> Op;
-    std::vector<SpMat_t> I;   // prolongation operator
-    std::unordered_map<int, std::vector<Mat_t>> impedance_matrix;
-    std::unordered_map<int, std::vector<int>> impedance_idx;
-};
-
 void O1_impedance_vcycle(Vec_t& u, Vec_t& f, HE_LagrangeO1& he_O1,
     std::vector<SpMat_t>& Op, std::vector<SpMat_t>& I, int L, 
     double k, std::vector<double> mesh_width) {
@@ -185,6 +123,7 @@ Vec_t O1_impedance_vcycle(Vec_t f, impedance_smoothing_element& imp) {
 
     std::vector<SpMat_t>& I = imp.I;
     std::vector<SpMat_t>& Op = imp.Op;
+    std::vector<double>& mw = imp.mw;
     int n = I.size();
     std::vector<int> op_size(n+1);
     for(int i = 0; i <= n; ++i) {
@@ -209,6 +148,10 @@ Vec_t O1_impedance_vcycle(Vec_t f, impedance_smoothing_element& imp) {
     for(int i = 1; i <= n; ++i) {
         initial[i] += I[i-1] * initial[i-1];
         imp.smoothing(i, initial[i], rhs_vec[i]);
+        // skip local smoothing with impedance boundary condition on second leg
+        // if(mw[i] * imp.k_ < imp.kh_threshold_){
+        //     imp.smoothing(i, initial[i], rhs_vec[i]);
+        // }
     }
     return initial[n];
 }
@@ -358,7 +301,7 @@ int KrylovEnhance_impedance(HE_LagrangeO1& he_O1, int L, int nr_coarsemesh, doub
      * GMRES is not linear iterations, so we need to use flexible GMRES here.
      */
     int n = A.rows();
-    int m = 60;
+    int m = 300;
     Vec_t x = Vec_t::Random(n); // initial value
     Vec_t b = eq_pair.second;
     double r_norm_initial = (b - A*x).norm();
@@ -417,14 +360,15 @@ int KrylovEnhance_impedance(HE_LagrangeO1& he_O1, int L, int nr_coarsemesh, doub
 void iteration_count() {
     std::string output = "../result/impedance_count/";
     std::vector<std::string> meshes{"../meshes/square.msh", "../meshes/square_hole2.msh", "../meshes/triangle_hole.msh"};
+    // std::vector<std::string> meshes{"../meshes/square_hole2.msh"};
     std::vector<bool> hole{false, true, true};
     // std::vector<double> wave_number{2, 4, 6, 8, 10, 12, 14, 16, 18, 20};
-    std::vector<int> wave_number{20};
-    int L = 4;
+    std::vector<int> wave_number{42, 44, 46};
+    int L = 5;
     int num_coarserlayer = L;
 
     double error_threshold = 0.000001;
-    double relaxation_threshold = 1.0;
+    double relaxation_threshold = 1.5;
 
     int nr_mesh = meshes.size();
     std::vector<std::vector<int>> counts(nr_mesh+1);
@@ -443,6 +387,7 @@ void iteration_count() {
         std::cout << meshes[mesh_idx] << " finished" << std::endl;
     } 
     std::vector<std::string> mesh_name{"unit_square", "square_hole", "triangle_hole", "k"};
+    // std::vector<std::string> mesh_name{"square_hole", "k"};
     std::string str = "L" + std::to_string(L);
     print_save_error(counts, mesh_name, str, output);
 }
@@ -452,19 +397,20 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    iteration_count();
-    // size_type L = 4; // refinement steps
-    // double k = 2.0; // wave number
-    // plan_wave sol(k, 0.8, 0.6);
-    // auto u = sol.get_fun();
-    // auto g = sol.boundary_g();
-    // auto grad_u = sol.get_gradient();
-    // // HE_LagrangeO1 he_O1(L, k, square, g, u, false, 50);
+    // iteration_count();
+    size_type L = 5; // refinement steps
+    double k = 30.0; // wave number
+    plan_wave sol(k, 0.8, 0.6);
+    auto u = sol.get_fun();
+    auto g = sol.boundary_g();
+    auto grad_u = sol.get_gradient();
+    HE_LagrangeO1 he_O1(L, k, square, g, u, false, 50);
     // HE_LagrangeO1 he_O1(L, k, square_hole2, g, u, true, 50);
-    // // HE_LagrangeO1 he_O1(L, k, triangle_hole, g, u, true, 50);
+    // HE_LagrangeO1 he_O1(L, k, triangle_hole, g, u, true, 50);
     
-    // int num_coarserlayer = 4;
-    // // mg_O1_impedance(he_O1, L, num_coarserlayer, k, u);    
-    // KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, u, 1.0, 10, 10);
-    // return 0;
+    int num_coarserlayer = L;
+    // mg_O1_impedance(he_O1, L, num_coarserlayer, k, u);    
+    KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, u, 1.5, 20, 20);
+    KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, 1.5, 0.000001, true);
+    return 0;
 }

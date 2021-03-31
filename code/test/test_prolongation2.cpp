@@ -4,14 +4,13 @@
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
-
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
 #include "../utils/HE_solution.h"
 #include "../utils/utils.h"
 #include "../Pum_WaveRay/PUM_WaveRay.h"
+#include "../ExtendPum_WaveRay/ExtendPUM_WaveRay.h"
 
 using namespace std::complex_literals;
 
@@ -30,8 +29,8 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    size_type L = 5; // refinement steps
-    double k = 20.0; // wave number
+    size_type L = 4; // refinement steps
+    double k = 10.0; // wave number
     std::vector<int> num_planwaves(L+1);
     num_planwaves[L] = 2;
     for(int i = L - 1; i >= 0; --i) {
@@ -44,20 +43,22 @@ int main(){
     auto grad_u = sol.get_gradient();
     auto g = sol.boundary_g();
 
-    PUM_WaveRay pum(L, k, square, g, u, false, num_planwaves, 50);
+    ExtendPUM_WaveRay pum(L, k, square, g, u, false, num_planwaves, 50);
     Mat_t P1 = Mat_t(pum.prolongation(L-1)); // prolongation operator: L-1 -> L
     Mat_t P2 = Mat_t(pum.prolongation(L-2));
     auto eq_pair1 = pum.build_equation(L);
     auto eq_pair2 = pum.build_equation(L-1);
     Mat_t A1 = eq_pair1.first.makeDense();
     Vec_t f = eq_pair1.second; // rhs, also the residual if vh = 0
-    Mat_t A2 = P1.transpose() * A1 * P1;
-    Mat_t A3 = P2.transpose() * A2 * P2;
-    // Mat_t A2 = eq_pair2.first.makeDense();
+    // Mat_t A2 = P1.transpose() * A1 * P1;
+    Mat_t A2 = eq_pair2.first.makeDense();
+    // Mat_t A3 = P2.transpose() * A2 * P2;
     auto uh = pum.solve(L);
     Vec_t vh, vH;
+    vH = pum.solve(L-1);
     // vh = P1 * P2 * A3.colPivHouseholderQr().solve(P2.transpose() * P1.transpose() * f);
-    vh = P1 * A2.colPivHouseholderQr().solve(P1.transpose() * f);
+    // vh = P1 * A2.colPivHouseholderQr().solve(P1.transpose() * f);
+    vh = P1 * vH;
     // std::cout << ((P1.transpose() * f) - eq_pair2.second).norm() << std::endl;
     std::cout << "||uh-u||  : " << pum.L2_Err(L, uh, u) << std::endl;
     std::cout << "||uh-vh|| : " << pum.L2_Err(L, uh - vh, zero_fun) << std::endl;
