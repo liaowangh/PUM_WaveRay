@@ -17,8 +17,6 @@ execute $m$ steps of GMRES, then restart with $u_m$ as initial approximation of 
 | --------- | ---- | ---- | ---- | ---- | -------- | -------- | -------- |
 | $||e_i||$ | 1.13 | 0.61 | 0.30 | 0.12 | $4.0e-2$ | $1.4e-2$ | $6.3e-3$ |
 
-  convergence factor $\approx 0.2$.
-
 
 
 ### Domain: unit square with a hole, $k = 15$, $h_L=1/16$
