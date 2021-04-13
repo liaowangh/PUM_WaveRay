@@ -23,7 +23,7 @@ public:
     using Scalar = std::complex<double>;
     using Mat_t = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     
-   ExtendPUM_EdgeMat(std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space, 
+    ExtendPUM_EdgeMat(std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space, 
         lf::mesh::utils::CodimMeshDataSet<bool> &edge_selector, size_type N, double k, Scalar gamma, int degree = 20): 
         fe_space_(fe_space), edge_selector_(edge_selector), N_(N), k_(k), gamma_(gamma), degree_(degree) {}
 

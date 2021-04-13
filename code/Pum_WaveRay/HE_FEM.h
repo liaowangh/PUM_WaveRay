@@ -96,8 +96,8 @@ public:
 
     virtual ~HE_FEM() = default;
 
+public:
     std::vector<int> num_planwaves_;  // number of plan waves per mesh
-protected:
     size_type L_;  // number of refinement steps
     double k_;  // wave number in the Helmholtz equation
     

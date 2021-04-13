@@ -218,6 +218,14 @@ set(prolongation2_sources
   ../Pum/PUM_ElemVector.h
   ../Pum/HE_PUM.h
   ../Pum/HE_PUM.cpp
+  ../ExtendPum/ExtendPUM_EdgeMat.h
+  ../ExtendPum/ExtendPUM_EdgeVector.h
+  ../ExtendPum/ExtendPUM_ElementMatrix.h
+  ../ExtendPum/ExtendPUM_ElemVector.h
+  ../ExtendPum/HE_ExtendPUM.h
+  ../ExtendPum/HE_ExtendPUM.cpp
+  ../ExtendPum_WaveRay/ExtendPUM_WaveRay.h
+  ../ExtendPum_WaveRay/ExtendPUM_WaveRay.cpp
   ../utils/HE_solution.h
   ../utils/HE_solution.cpp
   ../utils/utils.h

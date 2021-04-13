@@ -43,7 +43,7 @@ public:
     ExtendPUM_ElementMatrix(size_type N, double k, Scalar alpha, Scalar gamma, int degree=20): 
         N_(N), k_(k), alpha_(alpha), gamma_(gamma), degree_(degree){}
     
-    bool isActive(const lf::mesh::Entity & /*cell*/) { return true; }
+    virtual bool isActive(const lf::mesh::Entity & /*cell*/) { return true; }
     
     /*
      * @brief main routine for the computation of element matrices
