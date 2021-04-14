@@ -28,7 +28,7 @@ HE_ExtendPUM::build_equation(size_type level) {
     
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
 
-    size_type N_wave(num_planwaves_[level]);
+    size_type N_wave(num_planewaves_[level]);
     auto dofh = get_dofh(level);
     size_type N_dofs(dofh.NumDofs());
 
@@ -126,7 +126,7 @@ HE_ExtendPUM::Vec_t HE_ExtendPUM::fun_in_vec(size_type l, const FHandle_t& f) {
     auto mesh = mesh_hierarchy_->getMesh(l);  // get mesh
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     
-    size_type N_wave(num_planwaves_[l]);
+    size_type N_wave(num_planewaves_[l]);
     auto dofh = get_dofh(l);
     size_type N_dofs(dofh.NumDofs());
 
@@ -163,7 +163,7 @@ HE_ExtendPUM::Vec_t HE_ExtendPUM::h_in_vec(size_type l, lf::mesh::utils::CodimMe
     auto mesh = mesh_hierarchy_->getMesh(l);  // get mesh
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
 
-    size_type N_wave(num_planwaves_[l]);
+    size_type N_wave(num_planewaves_[l]);
     auto dofh = get_dofh(l);
     size_type N_dofs(dofh.NumDofs());
 
@@ -213,7 +213,7 @@ double HE_ExtendPUM::L2_Err(size_type l, const Vec_t& mu, const FHandle_t& u) {
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     double res = 0.0;
 
-    size_type N_wave(num_planwaves_[l]);
+    size_type N_wave(num_planewaves_[l]);
     auto dofh = get_dofh(l);
 
     for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
@@ -265,7 +265,7 @@ double HE_ExtendPUM::H1_semiErr(size_type l, const Vec_t& mu, const FunGradient_
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     double res = 0.0;
 
-    size_type N_wave(num_planwaves_[l]);
+    size_type N_wave(num_planewaves_[l]);
     auto dofh = get_dofh(l);
 
     for(const lf::mesh::Entity* cell: mesh->Entities(0)) {
@@ -331,7 +331,7 @@ double HE_ExtendPUM::L2_BoundaryErr(size_type l, const Vec_t& mu, const FHandle_
     auto fe_space = std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh);
     double res = 0.0;
 
-    size_type N_wave(num_planwaves_[l]);
+    size_type N_wave(num_planewaves_[l]);
     auto dofh = get_dofh(l);
 
     for(const lf::mesh::Entity* cell: mesh->Entities(1)) {
@@ -398,7 +398,7 @@ HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation(size_type l) {
     double pi = std::acos(-1.);
     auto Q = prolongation_lagrange(l);
     int n1 = Q.cols(), n2 = Q.rows(); // n1: n_l, n2: n_{l+1}
-    int N1 = num_planwaves_[l], N2 = num_planwaves_[l+1]; // N1: N_l, N2: N_{l+1}
+    int N1 = num_planewaves_[l], N2 = num_planewaves_[l+1]; // N1: N_l, N2: N_{l+1}
 
     auto mesh = getmesh(l+1);  // fine mesh
     auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
@@ -513,7 +513,7 @@ HE_ExtendPUM::Mat_t HE_ExtendPUM::Assemble_EnergyProjection(size_type l, Scalar 
     auto mesh = getmesh(l);
     auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
     auto Q = prolongation_lagrange(l); // n_{l+1} x n_l
-    int Nl = num_planwaves_[l], Nl1 = num_planwaves_[l+1];
+    int Nl = num_planewaves_[l], Nl1 = num_planewaves_[l+1];
     int n = Q.rows();
 
     auto outer_boundary = outerBdy_selector(l);
@@ -654,7 +654,7 @@ HE_ExtendPUM::SpMat_t HE_ExtendPUM::prolongation_SE_S() {
     double pi = std::acos(-1.);
     auto Q = prolongation_lagrange(L_-1);
     int n = Q.rows();
-    int N = num_planwaves_[L_-1];
+    int N = num_planewaves_[L_-1];
 
     Mat_t E = Mat_t::Zero(n, N+1);
 
@@ -699,14 +699,14 @@ void HE_ExtendPUM::solve_multigrid(Vec_t& initial, size_type start_layer, int nu
     std::vector<SpMat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
     std::vector<int> stride(num_coarserlayer + 1);
     Op[num_coarserlayer] = A;
-    stride[num_coarserlayer] = num_planwaves_[start_layer] + 1;
+    stride[num_coarserlayer] = num_planewaves_[start_layer] + 1;
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
         int idx = L_ + i - num_coarserlayer;
         prolongation_op[i] = prolongation(idx);
         // auto tmp = build_equation(idx);
         // Op[i] = tmp.first.makeSparse();
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves_[idx] + 1;
+        stride[i] = num_planewaves_[idx] + 1;
     }
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
 }
@@ -721,14 +721,14 @@ HE_ExtendPUM::power_multigird(size_type start_layer, int num_coarserlayer, int m
     std::vector<SpMat_t> Op(num_coarserlayer + 1), prolongation_op(num_coarserlayer);
     std::vector<int> stride(num_coarserlayer + 1);
     Op[num_coarserlayer] = A;
-    stride[num_coarserlayer] = num_planwaves_[start_layer] + 1;
+    stride[num_coarserlayer] = num_planewaves_[start_layer] + 1;
     for(int i = num_coarserlayer - 1; i >= 0; --i) {
         int idx = start_layer + i - num_coarserlayer;
         prolongation_op[i] = prolongation(idx);
         // auto tmp = build_equation(idx);
         // Op[i] = tmp.first.makeSparse();
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves_[idx] + 1;
+        stride[i] = num_planewaves_[idx] + 1;
     }
 
     int N = A.rows();

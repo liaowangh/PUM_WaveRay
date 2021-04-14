@@ -29,7 +29,7 @@ using namespace std::complex_literals;
  *  E_i : plan wave spaces {exp(ikd x)}
  * 
  * Some notation:
- *  Nl  = 2^{N+1-l} = num_planwaves_[l]
+ *  Nl  = 2^{N+1-l} = num_planewaves_[l]
  *  dtl = [cos(2pi * t/Nl), sin(2pi * t/Nl)], t = 1, 2, ... ,N_l
  *  d0  = [0, 0] 
  *  etl = exp(ik* dtl x)
@@ -62,7 +62,7 @@ public:
 
     // get the vector representation of function f
     Vec_t fun_in_vec(size_type l, const FHandle_t& f) override;
-    size_type Dofs_perNode(size_type l) override { return l == L_ ? 1 : num_planwaves_[l]+1; };
+    size_type Dofs_perNode(size_type l) override { return l == L_ ? 1 : num_planewaves_[l]+1; };
     lf::assemble::UniformFEDofHandler get_dofh(size_type l) override {
         return lf::assemble::UniformFEDofHandler(getmesh(l), 
                 {{lf::base::RefEl::kPoint(), Dofs_perNode(l)}});

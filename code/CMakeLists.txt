@@ -28,7 +28,7 @@ hunter_add_package(Boost COMPONENTS chrono timer system filesystem program_optio
 find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_options)
 ###############################################################################
 
-# add_subdirectory(LagrangeO1)
+add_subdirectory(LagrangeO1)
 # add_subdirectory(test)
 # add_subdirectory(Pum)
 # add_subdirectory(Pum_WaveRay)
@@ -36,4 +36,4 @@ find_package(Boost CONFIG REQUIRED chrono timer system filesystem program_option
 # add_subdirectory(ExtendPum_WaveRay)
 # add_subdirectory(Krylov)
 # add_subdirectory(Wave_Ray_Cycle)
-add_subdirectory(local_impedance)
+# add_subdirectory(local_impedance)

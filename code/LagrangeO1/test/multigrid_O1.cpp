@@ -156,8 +156,8 @@ int main(){
     std::string square_hole = "../meshes/square_hole.msh";
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
-    size_type L = 4; // refinement steps
-    double k = 15.0; // wave number
+    size_type L = 5; // refinement steps
+    double k = 5.0; // wave number
     plan_wave sol(k, 0.8, 0.6);
 
     auto u = sol.get_fun();
@@ -167,7 +167,7 @@ int main(){
     // HE_LagrangeO1 he_O1(L, k, square_hole2, g, u, true, 50);
     // convergence_factor(he_O1, L, k);
     
-    int num_coarserlayer = 4;
+    int num_coarserlayer = L;
     std::vector<int> stride(num_coarserlayer + 1, 1);
     // mg_factor(he_O1, L, num_coarserlayer, k, stride, u, true);
     mg_O1(he_O1, L, num_coarserlayer, k, u, true);

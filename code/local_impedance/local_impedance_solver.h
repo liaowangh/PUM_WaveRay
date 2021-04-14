@@ -304,7 +304,7 @@ public:
     }
 
     void smoothing(int l, Vec_t& u, Vec_t& rhs) {
-        if(mw[l] * k_ < kh_threshold_) {
+        if(mw[l] * k_ < kh_threshold_ || mw[l] * k_ > 8.0) {
             Gaussian_Seidel(Op[l], rhs, u, 1, 3);
         } else {
             for(int i = 0; i < u.size(); ++i) {

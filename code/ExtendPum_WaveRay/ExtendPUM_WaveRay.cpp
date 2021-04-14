@@ -59,7 +59,7 @@ ExtendPUM_WaveRay::SpMat_t ExtendPUM_WaveRay::prolongation(size_type l) {
     // double pi = std::acos(-1.);
     // auto Q = prolongation_lagrange(l);
     // int n1 = Q.cols(), n2 = Q.rows(); // n1: n_l, n2: n_{l+1}
-    // int N1 = num_planwaves_[l], N2 = num_planwaves_[l+1]; // N1: N_l, N2: N_{l+1}
+    // int N1 = num_planewaves_[l], N2 = num_planewaves_[l+1]; // N1: N_l, N2: N_{l+1}
 
     // auto mesh = getmesh(l+1);  // fine mesh
     // auto dofh = lf::assemble::UniformFEDofHandler(mesh, {{lf::base::RefEl::kPoint(), 1}});
@@ -119,7 +119,7 @@ void ExtendPUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, i
         // Op[i] = tmp.first.makeSparse();
         prolongation_op[i] = prolongation(idx);
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves_[idx] + 1;
+        stride[i] = num_planewaves_[idx] + 1;
     }
     // HE_LagrangeO1::solve_multigrid(initial, start_layer, 2, 3, 3, false);
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
@@ -143,7 +143,7 @@ ExtendPUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
         int idx = start_layer + i - num_coarserlayer;
         prolongation_op[i] = prolongation(idx);
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves_[idx] + 1;
+        stride[i] = num_planewaves_[idx] + 1;
     }
 
     int N = A.rows();

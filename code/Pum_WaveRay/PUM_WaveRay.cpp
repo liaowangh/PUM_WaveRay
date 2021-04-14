@@ -83,7 +83,7 @@ void PUM_WaveRay::solve_multigrid(Vec_t& initial, size_type start_layer, int num
         // Op[i] = tmp.first.makeSparse();
         prolongation_op[i] = prolongation(idx);
         Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves_[idx];
+        stride[i] = num_planewaves_[idx];
     }
     v_cycle(initial, eq_pair.second, Op, prolongation_op, stride, nu1, nu2, solve_coarest);
 }
@@ -107,7 +107,7 @@ PUM_WaveRay::power_multigird(size_type start_layer, int num_coarserlayer,
         auto tmp = build_equation(idx);
         Op[i] = tmp.first.makeSparse();
         // Op[i] = prolongation_op[i].transpose() * Op[i+1] * prolongation_op[i];
-        stride[i] = num_planwaves_[idx];
+        stride[i] = num_planewaves_[idx];
     }
 
     int N = A.rows();

@@ -134,8 +134,8 @@ HE_FEM::SpMat_t HE_FEM::prolongation_planwave(size_type l) {
     double pi = std::acos(-1);
 
     // for(int l = 0; l < L_; ++l) {
-    int N1 = num_planwaves_[l];
-    int N2 = num_planwaves_[l+1];
+    int N1 = num_planewaves_[l];
+    int N2 = num_planewaves_[l+1];
 
     // Mat_t M = Mat_t::Zero(N2, N1);
     SpMat_t M(N2, N1);
@@ -196,7 +196,7 @@ HE_FEM::SpMat_t HE_FEM::prolongation_SE_S() {
     double pi = std::acos(-1.);
     auto Q = prolongation_lagrange(L_-1);
     int n = Q.rows();
-    int N = num_planwaves_[L_-1];
+    int N = num_planewaves_[L_-1];
 
     Mat_t E = Mat_t::Zero(n, N);
 

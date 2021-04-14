@@ -49,7 +49,7 @@ public:
     /******* Constructor *******/
     HE_FEM(size_type levels, double wave_num, const std::string& mesh_path, 
         FHandle_t g, FHandle_t h, bool hole, std::vector<int> num_waves, int quad_degree=20):
-        L_(levels), k_(wave_num), num_planwaves_(num_waves), g_(g), h_(h), hole_exist_(hole), degree_(quad_degree) {
+        L_(levels), k_(wave_num), num_planewaves_(num_waves), g_(g), h_(h), hole_exist_(hole), degree_(quad_degree) {
         auto mesh_factory = std::make_unique<lf::mesh::hybrid2d::MeshFactory>(2);
         reader_ = std::make_shared<lf::io::GmshReader>(std::move(mesh_factory), mesh_path);
         mesh_hierarchy_ = lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(reader_->mesh(), L_);
@@ -97,7 +97,7 @@ public:
     virtual ~HE_FEM() = default;
 
 public:
-    std::vector<int> num_planwaves_;  // number of plan waves per mesh
+    std::vector<int> num_planewaves_;  // number of plan waves per mesh
     size_type L_;  // number of refinement steps
     double k_;  // wave number in the Helmholtz equation
     

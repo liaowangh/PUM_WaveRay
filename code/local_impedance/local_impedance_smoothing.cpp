@@ -362,9 +362,9 @@ void iteration_count() {
     std::vector<std::string> meshes{"../meshes/square.msh", "../meshes/square_hole2.msh", "../meshes/triangle_hole.msh"};
     // std::vector<std::string> meshes{"../meshes/square_hole2.msh"};
     std::vector<bool> hole{false, true, true};
-    // std::vector<double> wave_number{2, 4, 6, 8, 10, 12, 14, 16, 18, 20};
-    std::vector<int> wave_number{42, 44, 46};
-    int L = 5;
+    // std::vector<double> wave_number{4, 6, 8, 10, 12, 14, 16, 18, 20};
+    std::vector<int> wave_number{10, 12, 14, 16, 18, 20};
+    int L = 4;
     int num_coarserlayer = L;
 
     double error_threshold = 0.000001;
@@ -388,7 +388,7 @@ void iteration_count() {
     } 
     std::vector<std::string> mesh_name{"unit_square", "square_hole", "triangle_hole", "k"};
     // std::vector<std::string> mesh_name{"square_hole", "k"};
-    std::string str = "L" + std::to_string(L);
+    std::string str = "gs_above_8_L" + std::to_string(L);
     print_save_error(counts, mesh_name, str, output);
 }
 
@@ -397,20 +397,20 @@ int main(){
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    // iteration_count();
-    size_type L = 5; // refinement steps
-    double k = 30.0; // wave number
-    plan_wave sol(k, 0.8, 0.6);
-    auto u = sol.get_fun();
-    auto g = sol.boundary_g();
-    auto grad_u = sol.get_gradient();
-    HE_LagrangeO1 he_O1(L, k, square, g, u, false, 50);
-    // HE_LagrangeO1 he_O1(L, k, square_hole2, g, u, true, 50);
-    // HE_LagrangeO1 he_O1(L, k, triangle_hole, g, u, true, 50);
+    iteration_count();
+    // size_type L = 5; // refinement steps
+    // double k = 30.0; // wave number
+    // plan_wave sol(k, 0.8, 0.6);
+    // auto u = sol.get_fun();
+    // auto g = sol.boundary_g();
+    // auto grad_u = sol.get_gradient();
+    // HE_LagrangeO1 he_O1(L, k, square, g, u, false, 50);
+    // // HE_LagrangeO1 he_O1(L, k, square_hole2, g, u, true, 50);
+    // // HE_LagrangeO1 he_O1(L, k, triangle_hole, g, u, true, 50);
     
-    int num_coarserlayer = L;
-    // mg_O1_impedance(he_O1, L, num_coarserlayer, k, u);    
-    KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, u, 1.5, 20, 20);
-    KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, 1.5, 0.000001, true);
+    // int num_coarserlayer = L;
+    // // mg_O1_impedance(he_O1, L, num_coarserlayer, k, u);    
+    // KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, u, 1.5, 20, 20);
+    // KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, 1.5, 0.000001, true);
     return 0;
 }
