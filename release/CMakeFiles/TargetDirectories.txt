@@ -1,0 +1,6 @@
+/home/liaowang/Documents/master-thesis/code/release/CMakeFiles/rebuild_cache.dir
+/home/liaowang/Documents/master-thesis/code/release/CMakeFiles/edit_cache.dir
+/home/liaowang/Documents/master-thesis/code/release/LagrangeO1/CMakeFiles/rebuild_cache.dir
+/home/liaowang/Documents/master-thesis/code/release/LagrangeO1/CMakeFiles/edit_cache.dir
+/home/liaowang/Documents/master-thesis/code/release/LagrangeO1/CMakeFiles/O1_factor.dir
+/home/liaowang/Documents/master-thesis/code/release/LagrangeO1/CMakeFiles/multigrid_O1.dir
