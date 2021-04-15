@@ -1,11 +1,6 @@
-code/build/
-code/release/
-code/pum_wave_ray/.vscode/
-reference/
-gmesh/
-code_test/
-.DS_Store/
-*.DS_Store
+build/
+release/
 *.vscode/
+*.DS_Store
 *.ipynb_checkpoints/
 
