@@ -1,6 +1,6 @@
 # Class LagrangeO1
 
-This class inherits from class HE_FEM
+This derived class inherits from the base class `HE_FEM`
 
 ```c++
 class HE_LagrangeO1: virtual public HE_FEM
