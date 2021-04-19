@@ -15,4 +15,4 @@ The `build_equation` generates the stiffness matrix and the right hand side vect
 
 The file `tests/pum_resolution.cpp` does the resolution test for PUM spaces,
 
-it computes the norm of finite element solution obtained by direct solve in PUM spaces minus the true solution. In current setting, the number of plane waves in PUM spaces takes value in `3, 5, 7, 8, 11, 13`,  wave number of Helmholtz equation takes the value `6, 20, 60`. We can change the corresponding variable in main function for different wave number and number of plane waves.
+it computes the norm of finite element solution obtained by direct solve in PUM spaces minus the true solution. In current setting, the number of plane waves in PUM spaces takes value in `3, 5, 7`,  wave number of Helmholtz equation takes the value `6, 20`. We can change the corresponding variable in main function for different wave number and number of plane waves.

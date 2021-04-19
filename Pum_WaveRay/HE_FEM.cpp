@@ -88,9 +88,8 @@ HE_FEM::SpMat_t HE_FEM::prolongation_lagrange(size_type l) {
     size_type n_c = coarse_dofh.NumDofs();
     size_type n_f = fine_dof.NumDofs();
     
-    Mat_t M = Mat_t::Zero(n_c, n_f);
-    // SpMat_t M(n_f, n_c);
-    // std::vector<triplet_t> triplets;
+    SpMat_t M(n_f, n_c);
+    std::vector<triplet_t> triplets;
 
     for(const lf::mesh::Entity* edge: fine_mesh->Entities(1)) {
         nonstd::span<const lf::mesh::Entity* const> points = edge->SubEntities(1);
@@ -102,18 +101,16 @@ HE_FEM::SpMat_t HE_FEM::prolongation_lagrange(size_type l) {
             if(parent_p->RefEl() == lf::base::RefEl::kPoint()) {
                 // it's parent is also a NODE. If the point in finer mesh does not show in coarser mesh,
                 // then it's parent is an EDGE
-                M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[j])) = 1.0;
-                M(coarse_mesh->Index(*parent_p), fine_mesh->Index(*points[1-j])) = 0.5;
-                // triplets.push_back(triplet_t(fine_mesh->Index(*points[j]), 
-                //     coarse_mesh->Index(*parent_p), 1.0));
-                // triplets.push_back(triplet_t(fine_mesh->Index(*points[1-j]),
-                //     coarse_mesh->Index(*parent_p), 0.5));
+                triplets.push_back(triplet_t(fine_mesh->Index(*points[j]), 
+                    coarse_mesh->Index(*parent_p), 1.0));
+                triplets.push_back(triplet_t(fine_mesh->Index(*points[1-j]),
+                    coarse_mesh->Index(*parent_p), 0.5));
             }
         }
     }
-    return (M.transpose()).sparseView();
-    // M.setFromTriplets(triplets.begin(), triplets.end());
-    // return M;
+    M.setFromTriplets(triplets.begin(), triplets.end(), 
+        [](const Scalar& a, const Scalar& b){ return b; });
+    return M;
 }
 
 /*
