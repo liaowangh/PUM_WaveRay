@@ -9184,7 +9184,7 @@ spdlog-inl.h
 
 /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
 
-/home/liaowang/Documents/master-thesis/code/Krylov/GMRES.h
+/home/liaowang/Documents/master-thesis/Krylov/GMRES.h
 iostream
 -
 iomanip
@@ -9196,7 +9196,7 @@ Eigen/Dense
 Eigen/Sparse
 -
 
-/home/liaowang/Documents/master-thesis/code/Krylov/KrylovEnhanced_mg.cpp
+/home/liaowang/Documents/master-thesis/Krylov/KrylovEnhanced_mg.cpp
 cmath
 -
 functional
@@ -9224,15 +9224,15 @@ Eigen/Core
 Eigen/SparseCore
 -
 GMRES.h
-/home/liaowang/Documents/master-thesis/code/Krylov/GMRES.h
+/home/liaowang/Documents/master-thesis/Krylov/GMRES.h
 ../utils/HE_solution.h
-/home/liaowang/Documents/master-thesis/code/utils/HE_solution.h
+/home/liaowang/Documents/master-thesis/utils/HE_solution.h
 ../utils/utils.h
-/home/liaowang/Documents/master-thesis/code/utils/utils.h
+/home/liaowang/Documents/master-thesis/utils/utils.h
 ../LagrangeO1/HE_LagrangeO1.h
-/home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
+/home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
 
-/home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
+/home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
 functional
 -
 vector
@@ -9256,9 +9256,9 @@ Eigen/Core
 Eigen/SparseCore
 -
 ../Pum_WaveRay/HE_FEM.h
-/home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
+/home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
 
-/home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
+/home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
 vector
 -
 functional
@@ -9282,7 +9282,7 @@ Eigen/Core
 Eigen/SparseCore
 -
 
-/home/liaowang/Documents/master-thesis/code/utils/HE_solution.h
+/home/liaowang/Documents/master-thesis/utils/HE_solution.h
 cmath
 -
 functional
@@ -9294,7 +9294,7 @@ vector
 Eigen/Core
 -
 
-/home/liaowang/Documents/master-thesis/code/utils/utils.h
+/home/liaowang/Documents/master-thesis/utils/utils.h
 cmath
 -
 functional
@@ -9320,5 +9320,5 @@ Eigen/Core
 Eigen/SparseCore
 -
 ../Pum_WaveRay/HE_FEM.h
-/home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
+/home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
 

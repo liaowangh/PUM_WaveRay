@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis/code
+CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/code/release
+CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/release
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,14 +80,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/code/release/CMakeFiles /home/liaowang/Documents/master-thesis/code/release/Krylov/CMakeFiles/progress.marks
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/code/release/CMakeFiles 0
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/release/CMakeFiles /home/liaowang/Documents/master-thesis/release/Krylov/CMakeFiles/progress.marks
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/release/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/clean
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/clean
 .PHONY : clean
 
 # The main clean target
@@ -97,37 +97,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/preinstall
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/preinstall
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
-Krylov/CMakeFiles/test_gmres.dir/rule:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/CMakeFiles/test_gmres.dir/rule
-.PHONY : Krylov/CMakeFiles/test_gmres.dir/rule
-
-# Convenience name for target.
-test_gmres: Krylov/CMakeFiles/test_gmres.dir/rule
-
-.PHONY : test_gmres
-
-# fast build rule for target.
-test_gmres/fast:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/test_gmres.dir/build.make Krylov/CMakeFiles/test_gmres.dir/build
-.PHONY : test_gmres/fast
-
-# Convenience name for target.
 Krylov/CMakeFiles/mg_krylov.dir/rule:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/CMakeFiles/mg_krylov.dir/rule
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 Krylov/CMakeFiles/mg_krylov.dir/rule
 .PHONY : Krylov/CMakeFiles/mg_krylov.dir/rule
 
 # Convenience name for target.
@@ -137,7 +122,7 @@ mg_krylov: Krylov/CMakeFiles/mg_krylov.dir/rule
 
 # fast build rule for target.
 mg_krylov/fast:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/build
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/build
 .PHONY : mg_krylov/fast
 
 KrylovEnhanced_mg.o: KrylovEnhanced_mg.cpp.o
@@ -146,7 +131,7 @@ KrylovEnhanced_mg.o: KrylovEnhanced_mg.cpp.o
 
 # target to build an object file
 KrylovEnhanced_mg.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o
 .PHONY : KrylovEnhanced_mg.cpp.o
 
 KrylovEnhanced_mg.i: KrylovEnhanced_mg.cpp.i
@@ -155,7 +140,7 @@ KrylovEnhanced_mg.i: KrylovEnhanced_mg.cpp.i
 
 # target to preprocess a source file
 KrylovEnhanced_mg.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.i
 .PHONY : KrylovEnhanced_mg.cpp.i
 
 KrylovEnhanced_mg.s: KrylovEnhanced_mg.cpp.s
@@ -164,7 +149,7 @@ KrylovEnhanced_mg.s: KrylovEnhanced_mg.cpp.s
 
 # target to generate assembly for a file
 KrylovEnhanced_mg.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.s
 .PHONY : KrylovEnhanced_mg.cpp.s
 
 __/LagrangeO1/HE_LagrangeO1.o: __/LagrangeO1/HE_LagrangeO1.cpp.o
@@ -173,7 +158,7 @@ __/LagrangeO1/HE_LagrangeO1.o: __/LagrangeO1/HE_LagrangeO1.cpp.o
 
 # target to build an object file
 __/LagrangeO1/HE_LagrangeO1.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o
 .PHONY : __/LagrangeO1/HE_LagrangeO1.cpp.o
 
 __/LagrangeO1/HE_LagrangeO1.i: __/LagrangeO1/HE_LagrangeO1.cpp.i
@@ -182,7 +167,7 @@ __/LagrangeO1/HE_LagrangeO1.i: __/LagrangeO1/HE_LagrangeO1.cpp.i
 
 # target to preprocess a source file
 __/LagrangeO1/HE_LagrangeO1.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.i
 .PHONY : __/LagrangeO1/HE_LagrangeO1.cpp.i
 
 __/LagrangeO1/HE_LagrangeO1.s: __/LagrangeO1/HE_LagrangeO1.cpp.s
@@ -191,7 +176,7 @@ __/LagrangeO1/HE_LagrangeO1.s: __/LagrangeO1/HE_LagrangeO1.cpp.s
 
 # target to generate assembly for a file
 __/LagrangeO1/HE_LagrangeO1.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.s
 .PHONY : __/LagrangeO1/HE_LagrangeO1.cpp.s
 
 __/Pum_WaveRay/HE_FEM.o: __/Pum_WaveRay/HE_FEM.cpp.o
@@ -200,7 +185,7 @@ __/Pum_WaveRay/HE_FEM.o: __/Pum_WaveRay/HE_FEM.cpp.o
 
 # target to build an object file
 __/Pum_WaveRay/HE_FEM.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o
 .PHONY : __/Pum_WaveRay/HE_FEM.cpp.o
 
 __/Pum_WaveRay/HE_FEM.i: __/Pum_WaveRay/HE_FEM.cpp.i
@@ -209,7 +194,7 @@ __/Pum_WaveRay/HE_FEM.i: __/Pum_WaveRay/HE_FEM.cpp.i
 
 # target to preprocess a source file
 __/Pum_WaveRay/HE_FEM.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.i
 .PHONY : __/Pum_WaveRay/HE_FEM.cpp.i
 
 __/Pum_WaveRay/HE_FEM.s: __/Pum_WaveRay/HE_FEM.cpp.s
@@ -218,7 +203,7 @@ __/Pum_WaveRay/HE_FEM.s: __/Pum_WaveRay/HE_FEM.cpp.s
 
 # target to generate assembly for a file
 __/Pum_WaveRay/HE_FEM.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.s
 .PHONY : __/Pum_WaveRay/HE_FEM.cpp.s
 
 __/utils/HE_solution.o: __/utils/HE_solution.cpp.o
@@ -227,7 +212,7 @@ __/utils/HE_solution.o: __/utils/HE_solution.cpp.o
 
 # target to build an object file
 __/utils/HE_solution.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o
 .PHONY : __/utils/HE_solution.cpp.o
 
 __/utils/HE_solution.i: __/utils/HE_solution.cpp.i
@@ -236,7 +221,7 @@ __/utils/HE_solution.i: __/utils/HE_solution.cpp.i
 
 # target to preprocess a source file
 __/utils/HE_solution.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.i
 .PHONY : __/utils/HE_solution.cpp.i
 
 __/utils/HE_solution.s: __/utils/HE_solution.cpp.s
@@ -245,7 +230,7 @@ __/utils/HE_solution.s: __/utils/HE_solution.cpp.s
 
 # target to generate assembly for a file
 __/utils/HE_solution.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.s
 .PHONY : __/utils/HE_solution.cpp.s
 
 __/utils/utils.o: __/utils/utils.cpp.o
@@ -254,7 +239,7 @@ __/utils/utils.o: __/utils/utils.cpp.o
 
 # target to build an object file
 __/utils/utils.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o
 .PHONY : __/utils/utils.cpp.o
 
 __/utils/utils.i: __/utils/utils.cpp.i
@@ -263,7 +248,7 @@ __/utils/utils.i: __/utils/utils.cpp.i
 
 # target to preprocess a source file
 __/utils/utils.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.i
 .PHONY : __/utils/utils.cpp.i
 
 __/utils/utils.s: __/utils/utils.cpp.s
@@ -272,35 +257,8 @@ __/utils/utils.s: __/utils/utils.cpp.s
 
 # target to generate assembly for a file
 __/utils/utils.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.s
 .PHONY : __/utils/utils.cpp.s
-
-test_gmres.o: test_gmres.cpp.o
-
-.PHONY : test_gmres.o
-
-# target to build an object file
-test_gmres.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/test_gmres.dir/build.make Krylov/CMakeFiles/test_gmres.dir/test_gmres.cpp.o
-.PHONY : test_gmres.cpp.o
-
-test_gmres.i: test_gmres.cpp.i
-
-.PHONY : test_gmres.i
-
-# target to preprocess a source file
-test_gmres.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/test_gmres.dir/build.make Krylov/CMakeFiles/test_gmres.dir/test_gmres.cpp.i
-.PHONY : test_gmres.cpp.i
-
-test_gmres.s: test_gmres.cpp.s
-
-.PHONY : test_gmres.s
-
-# target to generate assembly for a file
-test_gmres.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f Krylov/CMakeFiles/test_gmres.dir/build.make Krylov/CMakeFiles/test_gmres.dir/test_gmres.cpp.s
-.PHONY : test_gmres.cpp.s
 
 # Help Target
 help:
@@ -310,7 +268,6 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... test_gmres"
 	@echo "... mg_krylov"
 	@echo "... KrylovEnhanced_mg.o"
 	@echo "... KrylovEnhanced_mg.i"
@@ -327,9 +284,6 @@ help:
 	@echo "... __/utils/utils.o"
 	@echo "... __/utils/utils.i"
 	@echo "... __/utils/utils.s"
-	@echo "... test_gmres.o"
-	@echo "... test_gmres.i"
-	@echo "... test_gmres.s"
 .PHONY : help
 
 
@@ -341,6 +295,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

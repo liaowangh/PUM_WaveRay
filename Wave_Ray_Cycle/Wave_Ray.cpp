@@ -117,7 +117,7 @@ double power_wave_ray(HE_LagrangeO1& he_O1, HE_FEM& pum, int wave_start, int wav
 
 void wave_ray_factor() {
     std::vector<double> wave_number;
-    for(int i = 1; i <= 30; ++i) {
+    for(int i = 1; i <= 10; ++i) {
         wave_number.push_back(i);
     }
     int wave_L = 5, ray_L = 4;
@@ -127,7 +127,7 @@ void wave_ray_factor() {
     std::string square_hole2 = "../meshes/square_hole2.msh";
     std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    std::string output_folder = "../result_factor/";
+    std::string output_folder = "../result/waveray_factor/";
 
     std::vector<std::pair<std::string, bool>> 
         mesh{{square, false}, {square_hole2, true}, {triangle_hole, true}};
@@ -180,41 +180,41 @@ void wave_ray_factor() {
 }
 
 int main(){
-    std::string square_output = "../result_square/ExtendPUM_WaveRay/";
-    std::string square_hole_output = "../result_squarehole/ExtendPUM_WaveRaay/";
-    std::string square = "../meshes/square.msh";
-    std::string square_hole = "../meshes/square_hole.msh";
-    std::string square_hole2 = "../meshes/square_hole2.msh";
-    std::string triangle_hole = "../meshes/triangle_hole.msh";
+    // std::string square_output = "../result_square/ExtendPUM_WaveRay/";
+    // std::string square_hole_output = "../result_squarehole/ExtendPUM_WaveRaay/";
+    // std::string square = "../meshes/square.msh";
+    // std::string square_hole = "../meshes/square_hole.msh";
+    // std::string square_hole2 = "../meshes/square_hole2.msh";
+    // std::string triangle_hole = "../meshes/triangle_hole.msh";
 
-    std::vector<std::pair<std::string, bool>> 
-        mesh{{square, false}, {square_hole2, true}, {triangle_hole, true}};
+    // std::vector<std::pair<std::string, bool>> 
+    //     mesh{{square, false}, {square_hole2, true}, {triangle_hole, true}};
 
-    size_type wave_L = 6, ray_L = 5; // refinement steps
-    double k = 23; // wave number
-    std::vector<int> num_planwaves(ray_L+1);
-    num_planwaves[ray_L] = 2;
-    for(int i = ray_L - 1; i >= 0; --i) {
-        num_planwaves[i] = 2 * num_planwaves[i+1];
-    }
+    // size_type wave_L = 6, ray_L = 5; // refinement steps
+    // double k = 23; // wave number
+    // std::vector<int> num_planwaves(ray_L+1);
+    // num_planwaves[ray_L] = 2;
+    // for(int i = ray_L - 1; i >= 0; --i) {
+    //     num_planwaves[i] = 2 * num_planwaves[i+1];
+    // }
 
-    plan_wave sol(k, 0.8, 0.6);
-    auto u = sol.get_fun();
-    auto grad_u = sol.get_gradient();
-    auto g = sol.boundary_g();
-    int wave_coarselayers = 6, ray_coarselayers = 1;
-    for(int i = 0; i < mesh.size(); ++i) {
-        if(i != 0) continue;
-        auto m = mesh[i];
-        HE_LagrangeO1 he_O1(wave_L, k, m.first, g, u, m.second, 30);
-        PUM_WaveRay pum(ray_L, k, m.first, g, u, m.second, num_planwaves, 30);
-        ExtendPUM_WaveRay epum(ray_L, k, m.first, g, u, m.second, num_planwaves, 30);
+    // plan_wave sol(k, 0.8, 0.6);
+    // auto u = sol.get_fun();
+    // auto grad_u = sol.get_gradient();
+    // auto g = sol.boundary_g();
+    // int wave_coarselayers = 6, ray_coarselayers = 1;
+    // for(int i = 0; i < mesh.size(); ++i) {
+    //     if(i != 0) continue;
+    //     auto m = mesh[i];
+    //     HE_LagrangeO1 he_O1(wave_L, k, m.first, g, u, m.second, 30);
+    //     PUM_WaveRay pum(ray_L, k, m.first, g, u, m.second, num_planwaves, 30);
+    //     ExtendPUM_WaveRay epum(ray_L, k, m.first, g, u, m.second, num_planwaves, 30);
 
-        // wave_ray(he_O1, pum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k, u);
-        // power_wave_ray(he_O1, pum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k);
+    //     // wave_ray(he_O1, pum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k, u);
+    //     // power_wave_ray(he_O1, pum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k);
 
-        wave_ray(he_O1, epum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k, u);
-        power_wave_ray(he_O1, epum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k);
-    }  
-    // wave_ray_factor();
+    //     wave_ray(he_O1, epum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k, u);
+    //     power_wave_ray(he_O1, epum, wave_L, wave_coarselayers, ray_L, ray_coarselayers, k);
+    // }  
+    wave_ray_factor();
 }

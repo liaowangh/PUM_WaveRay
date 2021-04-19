@@ -1,4 +1,4 @@
-# Install script for directory: /home/liaowang/Documents/master-thesis/code/local_impedance
+# Install script for directory: /home/liaowang/Documents/master-thesis/local_impedance
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

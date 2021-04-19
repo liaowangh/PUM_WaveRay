@@ -1,4 +1,4 @@
-# Install script for directory: /home/liaowang/Documents/master-thesis/code/ExtendPum
+# Install script for directory: /home/liaowang/Documents/master-thesis/ExtendPum
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

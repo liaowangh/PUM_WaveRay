@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis/code
+CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/code/release
+CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/release
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/code/release/CMakeFiles /home/liaowang/Documents/master-thesis/code/release/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/release/CMakeFiles /home/liaowang/Documents/master-thesis/release/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/code/release/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/release/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -124,17 +124,82 @@ O1_factor/fast:
 .PHONY : O1_factor/fast
 
 #=============================================================================
-# Target rules for targets named multigrid_O1
+# Target rules for targets named O1_resolution
 
 # Build rule for target.
-multigrid_O1: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 multigrid_O1
-.PHONY : multigrid_O1
+O1_resolution: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 O1_resolution
+.PHONY : O1_resolution
 
 # fast build rule for target.
-multigrid_O1/fast:
-	$(MAKE) -f LagrangeO1/CMakeFiles/multigrid_O1.dir/build.make LagrangeO1/CMakeFiles/multigrid_O1.dir/build
-.PHONY : multigrid_O1/fast
+O1_resolution/fast:
+	$(MAKE) -f LagrangeO1/CMakeFiles/O1_resolution.dir/build.make LagrangeO1/CMakeFiles/O1_resolution.dir/build
+.PHONY : O1_resolution/fast
+
+#=============================================================================
+# Target rules for targets named pum_resolution
+
+# Build rule for target.
+pum_resolution: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 pum_resolution
+.PHONY : pum_resolution
+
+# fast build rule for target.
+pum_resolution/fast:
+	$(MAKE) -f Pum/CMakeFiles/pum_resolution.dir/build.make Pum/CMakeFiles/pum_resolution.dir/build
+.PHONY : pum_resolution/fast
+
+#=============================================================================
+# Target rules for targets named ExtendPum_resolution
+
+# Build rule for target.
+ExtendPum_resolution: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ExtendPum_resolution
+.PHONY : ExtendPum_resolution
+
+# fast build rule for target.
+ExtendPum_resolution/fast:
+	$(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build
+.PHONY : ExtendPum_resolution/fast
+
+#=============================================================================
+# Target rules for targets named mg_krylov
+
+# Build rule for target.
+mg_krylov: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 mg_krylov
+.PHONY : mg_krylov
+
+# fast build rule for target.
+mg_krylov/fast:
+	$(MAKE) -f Krylov/CMakeFiles/mg_krylov.dir/build.make Krylov/CMakeFiles/mg_krylov.dir/build
+.PHONY : mg_krylov/fast
+
+#=============================================================================
+# Target rules for targets named Wave_Ray
+
+# Build rule for target.
+Wave_Ray: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 Wave_Ray
+.PHONY : Wave_Ray
+
+# fast build rule for target.
+Wave_Ray/fast:
+	$(MAKE) -f Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/build.make Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/build
+.PHONY : Wave_Ray/fast
+
+#=============================================================================
+# Target rules for targets named local_impedance_smoothing
+
+# Build rule for target.
+local_impedance_smoothing: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 local_impedance_smoothing
+.PHONY : local_impedance_smoothing
+
+# fast build rule for target.
+local_impedance_smoothing/fast:
+	$(MAKE) -f local_impedance/CMakeFiles/local_impedance_smoothing.dir/build.make local_impedance/CMakeFiles/local_impedance_smoothing.dir/build
+.PHONY : local_impedance_smoothing/fast
 
 # Help Target
 help:
@@ -145,7 +210,12 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... O1_factor"
-	@echo "... multigrid_O1"
+	@echo "... O1_resolution"
+	@echo "... pum_resolution"
+	@echo "... ExtendPum_resolution"
+	@echo "... mg_krylov"
+	@echo "... Wave_Ray"
+	@echo "... local_impedance_smoothing"
 .PHONY : help
 
 

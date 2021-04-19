@@ -1,4 +1,0 @@
-unit_square square_hole triangle_hole k
-245 204 224 42
-271 219 250 44
-295 239 276 46

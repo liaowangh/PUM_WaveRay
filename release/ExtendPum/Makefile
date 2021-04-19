@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis/code
+CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/code/release
+CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/release
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,14 +80,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/code/release/CMakeFiles /home/liaowang/Documents/master-thesis/code/release/ExtendPum/CMakeFiles/progress.marks
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/code/release/CMakeFiles 0
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/release/CMakeFiles /home/liaowang/Documents/master-thesis/release/ExtendPum/CMakeFiles/progress.marks
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/liaowang/Documents/master-thesis/release/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/clean
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/clean
 .PHONY : clean
 
 # The main clean target
@@ -97,22 +97,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/preinstall
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/preinstall
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/rule:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/rule
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f CMakeFiles/Makefile2 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/rule
 .PHONY : ExtendPum/CMakeFiles/ExtendPum_resolution.dir/rule
 
 # Convenience name for target.
@@ -122,116 +122,8 @@ ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/rule
 
 # fast build rule for target.
 ExtendPum_resolution/fast:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build
 .PHONY : ExtendPum_resolution/fast
-
-ExtendPUM_EdgeMat.o: ExtendPUM_EdgeMat.cpp.o
-
-.PHONY : ExtendPUM_EdgeMat.o
-
-# target to build an object file
-ExtendPUM_EdgeMat.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.o
-.PHONY : ExtendPUM_EdgeMat.cpp.o
-
-ExtendPUM_EdgeMat.i: ExtendPUM_EdgeMat.cpp.i
-
-.PHONY : ExtendPUM_EdgeMat.i
-
-# target to preprocess a source file
-ExtendPUM_EdgeMat.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.i
-.PHONY : ExtendPUM_EdgeMat.cpp.i
-
-ExtendPUM_EdgeMat.s: ExtendPUM_EdgeMat.cpp.s
-
-.PHONY : ExtendPUM_EdgeMat.s
-
-# target to generate assembly for a file
-ExtendPUM_EdgeMat.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.s
-.PHONY : ExtendPUM_EdgeMat.cpp.s
-
-ExtendPUM_EdgeVector.o: ExtendPUM_EdgeVector.cpp.o
-
-.PHONY : ExtendPUM_EdgeVector.o
-
-# target to build an object file
-ExtendPUM_EdgeVector.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.o
-.PHONY : ExtendPUM_EdgeVector.cpp.o
-
-ExtendPUM_EdgeVector.i: ExtendPUM_EdgeVector.cpp.i
-
-.PHONY : ExtendPUM_EdgeVector.i
-
-# target to preprocess a source file
-ExtendPUM_EdgeVector.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.i
-.PHONY : ExtendPUM_EdgeVector.cpp.i
-
-ExtendPUM_EdgeVector.s: ExtendPUM_EdgeVector.cpp.s
-
-.PHONY : ExtendPUM_EdgeVector.s
-
-# target to generate assembly for a file
-ExtendPUM_EdgeVector.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.s
-.PHONY : ExtendPUM_EdgeVector.cpp.s
-
-ExtendPUM_ElemVector.o: ExtendPUM_ElemVector.cpp.o
-
-.PHONY : ExtendPUM_ElemVector.o
-
-# target to build an object file
-ExtendPUM_ElemVector.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.o
-.PHONY : ExtendPUM_ElemVector.cpp.o
-
-ExtendPUM_ElemVector.i: ExtendPUM_ElemVector.cpp.i
-
-.PHONY : ExtendPUM_ElemVector.i
-
-# target to preprocess a source file
-ExtendPUM_ElemVector.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.i
-.PHONY : ExtendPUM_ElemVector.cpp.i
-
-ExtendPUM_ElemVector.s: ExtendPUM_ElemVector.cpp.s
-
-.PHONY : ExtendPUM_ElemVector.s
-
-# target to generate assembly for a file
-ExtendPUM_ElemVector.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.s
-.PHONY : ExtendPUM_ElemVector.cpp.s
-
-ExtendPUM_ElementMatrix.o: ExtendPUM_ElementMatrix.cpp.o
-
-.PHONY : ExtendPUM_ElementMatrix.o
-
-# target to build an object file
-ExtendPUM_ElementMatrix.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.o
-.PHONY : ExtendPUM_ElementMatrix.cpp.o
-
-ExtendPUM_ElementMatrix.i: ExtendPUM_ElementMatrix.cpp.i
-
-.PHONY : ExtendPUM_ElementMatrix.i
-
-# target to preprocess a source file
-ExtendPUM_ElementMatrix.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.i
-.PHONY : ExtendPUM_ElementMatrix.cpp.i
-
-ExtendPUM_ElementMatrix.s: ExtendPUM_ElementMatrix.cpp.s
-
-.PHONY : ExtendPUM_ElementMatrix.s
-
-# target to generate assembly for a file
-ExtendPUM_ElementMatrix.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.s
-.PHONY : ExtendPUM_ElementMatrix.cpp.s
 
 HE_ExtendPUM.o: HE_ExtendPUM.cpp.o
 
@@ -239,7 +131,7 @@ HE_ExtendPUM.o: HE_ExtendPUM.cpp.o
 
 # target to build an object file
 HE_ExtendPUM.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o
 .PHONY : HE_ExtendPUM.cpp.o
 
 HE_ExtendPUM.i: HE_ExtendPUM.cpp.i
@@ -248,7 +140,7 @@ HE_ExtendPUM.i: HE_ExtendPUM.cpp.i
 
 # target to preprocess a source file
 HE_ExtendPUM.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.i
 .PHONY : HE_ExtendPUM.cpp.i
 
 HE_ExtendPUM.s: HE_ExtendPUM.cpp.s
@@ -257,7 +149,7 @@ HE_ExtendPUM.s: HE_ExtendPUM.cpp.s
 
 # target to generate assembly for a file
 HE_ExtendPUM.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.s
 .PHONY : HE_ExtendPUM.cpp.s
 
 __/Pum_WaveRay/HE_FEM.o: __/Pum_WaveRay/HE_FEM.cpp.o
@@ -266,7 +158,7 @@ __/Pum_WaveRay/HE_FEM.o: __/Pum_WaveRay/HE_FEM.cpp.o
 
 # target to build an object file
 __/Pum_WaveRay/HE_FEM.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o
 .PHONY : __/Pum_WaveRay/HE_FEM.cpp.o
 
 __/Pum_WaveRay/HE_FEM.i: __/Pum_WaveRay/HE_FEM.cpp.i
@@ -275,7 +167,7 @@ __/Pum_WaveRay/HE_FEM.i: __/Pum_WaveRay/HE_FEM.cpp.i
 
 # target to preprocess a source file
 __/Pum_WaveRay/HE_FEM.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i
 .PHONY : __/Pum_WaveRay/HE_FEM.cpp.i
 
 __/Pum_WaveRay/HE_FEM.s: __/Pum_WaveRay/HE_FEM.cpp.s
@@ -284,7 +176,7 @@ __/Pum_WaveRay/HE_FEM.s: __/Pum_WaveRay/HE_FEM.cpp.s
 
 # target to generate assembly for a file
 __/Pum_WaveRay/HE_FEM.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s
 .PHONY : __/Pum_WaveRay/HE_FEM.cpp.s
 
 __/utils/HE_solution.o: __/utils/HE_solution.cpp.o
@@ -293,7 +185,7 @@ __/utils/HE_solution.o: __/utils/HE_solution.cpp.o
 
 # target to build an object file
 __/utils/HE_solution.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o
 .PHONY : __/utils/HE_solution.cpp.o
 
 __/utils/HE_solution.i: __/utils/HE_solution.cpp.i
@@ -302,7 +194,7 @@ __/utils/HE_solution.i: __/utils/HE_solution.cpp.i
 
 # target to preprocess a source file
 __/utils/HE_solution.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.i
 .PHONY : __/utils/HE_solution.cpp.i
 
 __/utils/HE_solution.s: __/utils/HE_solution.cpp.s
@@ -311,7 +203,7 @@ __/utils/HE_solution.s: __/utils/HE_solution.cpp.s
 
 # target to generate assembly for a file
 __/utils/HE_solution.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.s
 .PHONY : __/utils/HE_solution.cpp.s
 
 __/utils/utils.o: __/utils/utils.cpp.o
@@ -320,7 +212,7 @@ __/utils/utils.o: __/utils/utils.cpp.o
 
 # target to build an object file
 __/utils/utils.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o
 .PHONY : __/utils/utils.cpp.o
 
 __/utils/utils.i: __/utils/utils.cpp.i
@@ -329,7 +221,7 @@ __/utils/utils.i: __/utils/utils.cpp.i
 
 # target to preprocess a source file
 __/utils/utils.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.i
 .PHONY : __/utils/utils.cpp.i
 
 __/utils/utils.s: __/utils/utils.cpp.s
@@ -338,7 +230,7 @@ __/utils/utils.s: __/utils/utils.cpp.s
 
 # target to generate assembly for a file
 __/utils/utils.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.s
 .PHONY : __/utils/utils.cpp.s
 
 tests/extendpum_resolution.o: tests/extendpum_resolution.cpp.o
@@ -347,7 +239,7 @@ tests/extendpum_resolution.o: tests/extendpum_resolution.cpp.o
 
 # target to build an object file
 tests/extendpum_resolution.cpp.o:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o
 .PHONY : tests/extendpum_resolution.cpp.o
 
 tests/extendpum_resolution.i: tests/extendpum_resolution.cpp.i
@@ -356,7 +248,7 @@ tests/extendpum_resolution.i: tests/extendpum_resolution.cpp.i
 
 # target to preprocess a source file
 tests/extendpum_resolution.cpp.i:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.i
 .PHONY : tests/extendpum_resolution.cpp.i
 
 tests/extendpum_resolution.s: tests/extendpum_resolution.cpp.s
@@ -365,7 +257,7 @@ tests/extendpum_resolution.s: tests/extendpum_resolution.cpp.s
 
 # target to generate assembly for a file
 tests/extendpum_resolution.cpp.s:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release && $(MAKE) -f ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build.make ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.s
 .PHONY : tests/extendpum_resolution.cpp.s
 
 # Help Target
@@ -377,18 +269,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... ExtendPum_resolution"
-	@echo "... ExtendPUM_EdgeMat.o"
-	@echo "... ExtendPUM_EdgeMat.i"
-	@echo "... ExtendPUM_EdgeMat.s"
-	@echo "... ExtendPUM_EdgeVector.o"
-	@echo "... ExtendPUM_EdgeVector.i"
-	@echo "... ExtendPUM_EdgeVector.s"
-	@echo "... ExtendPUM_ElemVector.o"
-	@echo "... ExtendPUM_ElemVector.i"
-	@echo "... ExtendPUM_ElemVector.s"
-	@echo "... ExtendPUM_ElementMatrix.o"
-	@echo "... ExtendPUM_ElementMatrix.i"
-	@echo "... ExtendPUM_ElementMatrix.s"
 	@echo "... HE_ExtendPUM.o"
 	@echo "... HE_ExtendPUM.i"
 	@echo "... HE_ExtendPUM.s"
@@ -415,6 +295,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

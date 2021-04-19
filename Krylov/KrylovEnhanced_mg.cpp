@@ -338,9 +338,8 @@ void iteration_count() {
     std::vector<std::string> meshes{"../meshes/square.msh", "../meshes/square_hole2.msh", "../meshes/triangle_hole.msh"};
     // std::vector<std::string> meshes{"../meshes/square_hole2.msh"};
     std::vector<bool> hole{false, true, true};
-    std::vector<int> wave_number{4, 6, 8, 10, 12, 14, 16, 18, 20};
-    // std::vector<int> wave_number{16, 18, 20};
-    // std::vector<int> wave_number{42, 44, 46};
+    // std::vector<int> wave_number{4, 6, 8, 10, 12, 14, 16, 18, 20};
+    std::vector<int> wave_number{8, 10, 12};
     int L = 4;
     int num_coarserlayer = L;
 
@@ -357,7 +356,7 @@ void iteration_count() {
             auto g = sol.boundary_g();
 
             HE_LagrangeO1 he_O1(L, k, meshes[mesh_idx], g, u, hole[mesh_idx], 50);
-            int it_count = KrylovEnhance(he_O1, L, num_coarserlayer, k, error_threshold, true);
+            int it_count = KrylovEnhance(he_O1, L, num_coarserlayer, k, error_threshold, false);
             counts[mesh_idx].push_back(it_count);
         }
         std::cout << meshes[mesh_idx] << " finished" << std::endl;

@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis/code
+CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/code/release
+CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/release
 
 # Include any dependencies generated for this target.
 include LagrangeO1/CMakeFiles/O1_resolution.dir/depend.make
@@ -59,68 +59,68 @@ include LagrangeO1/CMakeFiles/O1_resolution.dir/flags.make
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.o: LagrangeO1/CMakeFiles/O1_resolution.dir/flags.make
 LagrangeO1/CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.o: ../LagrangeO1/test/O1_resolution.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.o -c /home/liaowang/Documents/master-thesis/code/LagrangeO1/test/O1_resolution.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.o -c /home/liaowang/Documents/master-thesis/LagrangeO1/test/O1_resolution.cpp
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/LagrangeO1/test/O1_resolution.cpp > CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/LagrangeO1/test/O1_resolution.cpp > CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.i
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/LagrangeO1/test/O1_resolution.cpp -o CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/LagrangeO1/test/O1_resolution.cpp -o CMakeFiles/O1_resolution.dir/test/O1_resolution.cpp.s
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.o: LagrangeO1/CMakeFiles/O1_resolution.dir/flags.make
 LagrangeO1/CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.o: ../LagrangeO1/HE_LagrangeO1.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.o -c /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.o -c /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.cpp
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.cpp > CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.cpp > CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.i
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.cpp -o CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.cpp -o CMakeFiles/O1_resolution.dir/HE_LagrangeO1.cpp.s
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o: LagrangeO1/CMakeFiles/O1_resolution.dir/flags.make
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o: ../Pum_WaveRay/HE_FEM.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o -c /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o -c /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp > CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp > CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp -o CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp -o CMakeFiles/O1_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.o: LagrangeO1/CMakeFiles/O1_resolution.dir/flags.make
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.o: ../utils/utils.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.o -c /home/liaowang/Documents/master-thesis/code/utils/utils.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.o -c /home/liaowang/Documents/master-thesis/utils/utils.cpp
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/utils/utils.cpp > CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/utils/utils.cpp > CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.i
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/utils/utils.cpp -o CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/utils/utils.cpp -o CMakeFiles/O1_resolution.dir/__/utils/utils.cpp.s
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.o: LagrangeO1/CMakeFiles/O1_resolution.dir/flags.make
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.o: ../utils/HE_solution.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.o -c /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.o -c /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp > CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp > CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.i
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp -o CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp -o CMakeFiles/O1_resolution.dir/__/utils/HE_solution.cpp.s
 
 # Object files for target O1_resolution
 O1_resolution_OBJECTS = \
@@ -164,8 +164,8 @@ LagrangeO1/O1_resolution: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/I
 LagrangeO1/O1_resolution: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/lib/libspdlog.a
 LagrangeO1/O1_resolution: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/lib/libfmt.a
 LagrangeO1/O1_resolution: LagrangeO1/CMakeFiles/O1_resolution.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable O1_resolution"
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/O1_resolution.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable O1_resolution"
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/O1_resolution.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 LagrangeO1/CMakeFiles/O1_resolution.dir/build: LagrangeO1/O1_resolution
@@ -173,10 +173,10 @@ LagrangeO1/CMakeFiles/O1_resolution.dir/build: LagrangeO1/O1_resolution
 .PHONY : LagrangeO1/CMakeFiles/O1_resolution.dir/build
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/clean:
-	cd /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 && $(CMAKE_COMMAND) -P CMakeFiles/O1_resolution.dir/cmake_clean.cmake
+	cd /home/liaowang/Documents/master-thesis/release/LagrangeO1 && $(CMAKE_COMMAND) -P CMakeFiles/O1_resolution.dir/cmake_clean.cmake
 .PHONY : LagrangeO1/CMakeFiles/O1_resolution.dir/clean
 
 LagrangeO1/CMakeFiles/O1_resolution.dir/depend:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/liaowang/Documents/master-thesis/code /home/liaowang/Documents/master-thesis/code/LagrangeO1 /home/liaowang/Documents/master-thesis/code/release /home/liaowang/Documents/master-thesis/code/release/LagrangeO1 /home/liaowang/Documents/master-thesis/code/release/LagrangeO1/CMakeFiles/O1_resolution.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/liaowang/Documents/master-thesis /home/liaowang/Documents/master-thesis/LagrangeO1 /home/liaowang/Documents/master-thesis/release /home/liaowang/Documents/master-thesis/release/LagrangeO1 /home/liaowang/Documents/master-thesis/release/LagrangeO1/CMakeFiles/O1_resolution.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : LagrangeO1/CMakeFiles/O1_resolution.dir/depend
 

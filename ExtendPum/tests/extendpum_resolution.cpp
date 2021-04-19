@@ -33,12 +33,14 @@ int main() {
     std::string square_hole = "../meshes/square_hole.msh";
     std::string square = "../meshes/square.msh";
     std::string square_hole_output = "../result_squarehole/ExtendPUM/";
-    std::string square_output = "../result_square/ExtendPUM/";
+    std::string square_output = "../result_square/ExtendPum/";
     int L = 4; // refinement steps
-    std::vector<int> number_waves{4, 8, 16, 32};
-    // std::vector<int> number_waves{0};
+
+    // std::vector<int> number_waves{3, 5, 7, 9, 11, 13};
+    std::vector<int> number_waves{3, 5, 7};
     
-    std::vector<double> wave_number{20};
+    // std::vector<double> wave_number{6, 20, 60};
+    std::vector<double> wave_number{6, 20};
 
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;

@@ -1,4 +1,4 @@
-# Install script for directory: /home/liaowang/Documents/master-thesis/code/LagrangeO1
+# Install script for directory: /home/liaowang/Documents/master-thesis/LagrangeO1
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

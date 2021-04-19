@@ -1,4 +1,4 @@
-# Install script for directory: /home/liaowang/Documents/master-thesis/code
+# Install script for directory: /home/liaowang/Documents/master-thesis
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,12 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/liaowang/Documents/master-thesis/code/release/LagrangeO1/cmake_install.cmake")
+  include("/home/liaowang/Documents/master-thesis/release/LagrangeO1/cmake_install.cmake")
+  include("/home/liaowang/Documents/master-thesis/release/Pum/cmake_install.cmake")
+  include("/home/liaowang/Documents/master-thesis/release/ExtendPum/cmake_install.cmake")
+  include("/home/liaowang/Documents/master-thesis/release/Krylov/cmake_install.cmake")
+  include("/home/liaowang/Documents/master-thesis/release/Wave_Ray_Cycle/cmake_install.cmake")
+  include("/home/liaowang/Documents/master-thesis/release/local_impedance/cmake_install.cmake")
 
 endif()
 
@@ -51,5 +56,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/liaowang/Documents/master-thesis/code/release/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/liaowang/Documents/master-thesis/release/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

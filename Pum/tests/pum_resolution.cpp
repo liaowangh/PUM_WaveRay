@@ -38,9 +38,11 @@ int main() {
     std::string square_hole_output = "../result_squarehole/planwave_PUM/";
     std::string square_output = "../result_square/PUM/";
     int L = 5; // refinement steps
-    std::vector<int> number_waves{3, 5, 7, 9, 11, 13};
+    // std::vector<int> number_waves{3, 5, 7, 9, 11, 13};
+    std::vector<int> number_waves{3, 5, 7};
     
-    std::vector<double> wave_number{6, 20, 60};
+    // std::vector<double> wave_number{6, 20, 60};
+    std::vector<double> wave_number{6, 20};
 
     Eigen::Vector2d c; // center in fundamental solution
     c << 10.0, 10.0;

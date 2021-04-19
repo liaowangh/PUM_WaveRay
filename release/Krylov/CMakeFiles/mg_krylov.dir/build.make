@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis/code
+CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/code/release
+CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/release
 
 # Include any dependencies generated for this target.
 include Krylov/CMakeFiles/mg_krylov.dir/depend.make
@@ -59,68 +59,68 @@ include Krylov/CMakeFiles/mg_krylov.dir/flags.make
 
 Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o: Krylov/CMakeFiles/mg_krylov.dir/flags.make
 Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o: ../Krylov/KrylovEnhanced_mg.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o -c /home/liaowang/Documents/master-thesis/code/Krylov/KrylovEnhanced_mg.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o -c /home/liaowang/Documents/master-thesis/Krylov/KrylovEnhanced_mg.cpp
 
 Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/Krylov/KrylovEnhanced_mg.cpp > CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/Krylov/KrylovEnhanced_mg.cpp > CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.i
 
 Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/Krylov/KrylovEnhanced_mg.cpp -o CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/Krylov/KrylovEnhanced_mg.cpp -o CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.s
 
 Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o: Krylov/CMakeFiles/mg_krylov.dir/flags.make
 Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o: ../Pum_WaveRay/HE_FEM.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o -c /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o -c /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp
 
 Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp > CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp > CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.i
 
 Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp -o CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp -o CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.s
 
 Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o: Krylov/CMakeFiles/mg_krylov.dir/flags.make
 Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o: ../LagrangeO1/HE_LagrangeO1.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o -c /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o -c /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.cpp
 
 Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.cpp > CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.cpp > CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.i
 
 Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.cpp -o CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.cpp -o CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.s
 
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o: Krylov/CMakeFiles/mg_krylov.dir/flags.make
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o: ../utils/HE_solution.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o -c /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o -c /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp
 
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp > CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp > CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.i
 
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp -o CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp -o CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.s
 
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o: Krylov/CMakeFiles/mg_krylov.dir/flags.make
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o: ../utils/utils.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o -c /home/liaowang/Documents/master-thesis/code/utils/utils.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o -c /home/liaowang/Documents/master-thesis/utils/utils.cpp
 
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/utils/utils.cpp > CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/utils/utils.cpp > CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.i
 
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/utils/utils.cpp -o CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/utils/utils.cpp -o CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.s
 
 # Object files for target mg_krylov
 mg_krylov_OBJECTS = \
@@ -164,8 +164,8 @@ Krylov/mg_krylov: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/l
 Krylov/mg_krylov: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/lib/libspdlog.a
 Krylov/mg_krylov: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/lib/libfmt.a
 Krylov/mg_krylov: Krylov/CMakeFiles/mg_krylov.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable mg_krylov"
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/mg_krylov.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable mg_krylov"
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/mg_krylov.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 Krylov/CMakeFiles/mg_krylov.dir/build: Krylov/mg_krylov
@@ -173,10 +173,10 @@ Krylov/CMakeFiles/mg_krylov.dir/build: Krylov/mg_krylov
 .PHONY : Krylov/CMakeFiles/mg_krylov.dir/build
 
 Krylov/CMakeFiles/mg_krylov.dir/clean:
-	cd /home/liaowang/Documents/master-thesis/code/release/Krylov && $(CMAKE_COMMAND) -P CMakeFiles/mg_krylov.dir/cmake_clean.cmake
+	cd /home/liaowang/Documents/master-thesis/release/Krylov && $(CMAKE_COMMAND) -P CMakeFiles/mg_krylov.dir/cmake_clean.cmake
 .PHONY : Krylov/CMakeFiles/mg_krylov.dir/clean
 
 Krylov/CMakeFiles/mg_krylov.dir/depend:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/liaowang/Documents/master-thesis/code /home/liaowang/Documents/master-thesis/code/Krylov /home/liaowang/Documents/master-thesis/code/release /home/liaowang/Documents/master-thesis/code/release/Krylov /home/liaowang/Documents/master-thesis/code/release/Krylov/CMakeFiles/mg_krylov.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/liaowang/Documents/master-thesis /home/liaowang/Documents/master-thesis/Krylov /home/liaowang/Documents/master-thesis/release /home/liaowang/Documents/master-thesis/release/Krylov /home/liaowang/Documents/master-thesis/release/Krylov/CMakeFiles/mg_krylov.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : Krylov/CMakeFiles/mg_krylov.dir/depend
 

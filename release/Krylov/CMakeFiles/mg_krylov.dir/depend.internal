@@ -995,12 +995,12 @@ Krylov/CMakeFiles/mg_krylov.dir/KrylovEnhanced_mg.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/Krylov/GMRES.h
- /home/liaowang/Documents/master-thesis/code/Krylov/KrylovEnhanced_mg.cpp
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/utils/HE_solution.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/Krylov/GMRES.h
+ /home/liaowang/Documents/master-thesis/Krylov/KrylovEnhanced_mg.cpp
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/utils/HE_solution.h
+ /home/liaowang/Documents/master-thesis/utils/utils.h
 Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -1995,10 +1995,10 @@ Krylov/CMakeFiles/mg_krylov.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.cpp
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.cpp
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/utils/utils.h
 Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -2993,8 +2993,8 @@ Krylov/CMakeFiles/mg_krylov.dir/__/Pum_WaveRay/HE_FEM.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/Core
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/src/Core/Array.h
@@ -3136,8 +3136,8 @@ Krylov/CMakeFiles/mg_krylov.dir/__/utils/HE_solution.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/src/plugins/CommonCwiseUnaryOps.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/src/plugins/MatrixCwiseBinaryOps.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/src/plugins/MatrixCwiseUnaryOps.h
- /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp
- /home/liaowang/Documents/master-thesis/code/utils/HE_solution.h
+ /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp
+ /home/liaowang/Documents/master-thesis/utils/HE_solution.h
 Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -4132,10 +4132,10 @@ Krylov/CMakeFiles/mg_krylov.dir/__/utils/utils.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
- /home/liaowang/Documents/master-thesis/code/Pum/HE_PUM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/PUM_WaveRay.h
- /home/liaowang/Documents/master-thesis/code/utils/HE_solution.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.cpp
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
+ /home/liaowang/Documents/master-thesis/Pum/HE_PUM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/PUM_WaveRay.h
+ /home/liaowang/Documents/master-thesis/utils/HE_solution.h
+ /home/liaowang/Documents/master-thesis/utils/utils.cpp
+ /home/liaowang/Documents/master-thesis/utils/utils.h

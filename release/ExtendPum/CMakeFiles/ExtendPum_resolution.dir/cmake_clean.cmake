@@ -1,8 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.o"
-  "CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.o"
-  "CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.o"
-  "CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.o"
   "CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o"
   "CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o"
   "CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o"

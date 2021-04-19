@@ -1,4 +1,4 @@
-# Install script for directory: /home/liaowang/Documents/master-thesis/code/Wave_Ray_Cycle
+# Install script for directory: /home/liaowang/Documents/master-thesis/Wave_Ray_Cycle
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

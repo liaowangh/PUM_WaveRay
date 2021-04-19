@@ -13,4 +13,4 @@ It rewrite the function `build_equation` to assemble the stiffness matrix and ri
 In `test` folder
 
 - `O1_factor.cpp` computes the convergence factor using the standard multigrid to solve the Helmholtz equation.
-- `O1_resolution.cpp` use the direct solve to solve the Helmholtz equation with different wave number.
+- `O1_resolution.cpp` use the direct solve to solve the Helmholtz equation with different wave number and different manufacture solution.

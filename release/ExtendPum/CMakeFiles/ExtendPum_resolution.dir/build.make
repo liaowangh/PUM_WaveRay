@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis/code
+CMAKE_SOURCE_DIR = /home/liaowang/Documents/master-thesis
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/code/release
+CMAKE_BINARY_DIR = /home/liaowang/Documents/master-thesis/release
 
 # Include any dependencies generated for this target.
 include ExtendPum/CMakeFiles/ExtendPum_resolution.dir/depend.make
@@ -59,129 +59,73 @@ include ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o: ../ExtendPum/tests/extendpum_resolution.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o -c /home/liaowang/Documents/master-thesis/code/ExtendPum/tests/extendpum_resolution.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o -c /home/liaowang/Documents/master-thesis/ExtendPum/tests/extendpum_resolution.cpp
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/ExtendPum/tests/extendpum_resolution.cpp > CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/ExtendPum/tests/extendpum_resolution.cpp > CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.i
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/ExtendPum/tests/extendpum_resolution.cpp -o CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/ExtendPum/tests/extendpum_resolution.cpp -o CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.s
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o: ../Pum_WaveRay/HE_FEM.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o -c /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o -c /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp > CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp > CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.i
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp -o CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.o: ../ExtendPum/ExtendPUM_EdgeMat.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.o -c /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_EdgeMat.cpp
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_EdgeMat.cpp > CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.i
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_EdgeMat.cpp -o CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.s
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.o: ../ExtendPum/ExtendPUM_EdgeVector.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.o -c /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_EdgeVector.cpp
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_EdgeVector.cpp > CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.i
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_EdgeVector.cpp -o CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.s
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.o: ../ExtendPum/ExtendPUM_ElementMatrix.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.o -c /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_ElementMatrix.cpp
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_ElementMatrix.cpp > CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.i
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_ElementMatrix.cpp -o CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.s
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.o: ../ExtendPum/ExtendPUM_ElemVector.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.o -c /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_ElemVector.cpp
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_ElemVector.cpp > CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.i
-
-ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_ElemVector.cpp -o CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp -o CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.s
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o: ../ExtendPum/HE_ExtendPUM.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o -c /home/liaowang/Documents/master-thesis/code/ExtendPum/HE_ExtendPUM.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o -c /home/liaowang/Documents/master-thesis/ExtendPum/HE_ExtendPUM.cpp
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/ExtendPum/HE_ExtendPUM.cpp > CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/ExtendPum/HE_ExtendPUM.cpp > CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.i
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/ExtendPum/HE_ExtendPUM.cpp -o CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/ExtendPum/HE_ExtendPUM.cpp -o CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.s
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o: ../utils/utils.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o -c /home/liaowang/Documents/master-thesis/code/utils/utils.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o -c /home/liaowang/Documents/master-thesis/utils/utils.cpp
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/utils/utils.cpp > CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/utils/utils.cpp > CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.i
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/utils/utils.cpp -o CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/utils/utils.cpp -o CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.s
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/flags.make
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o: ../utils/HE_solution.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o -c /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o"
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o -c /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.i"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp > CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.i
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp > CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.i
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.s"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp -o CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.s
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp -o CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.s
 
 # Object files for target ExtendPum_resolution
 ExtendPum_resolution_OBJECTS = \
 "CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o" \
 "CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o" \
-"CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.o" \
-"CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.o" \
-"CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.o" \
-"CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.o" \
 "CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o" \
 "CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o" \
 "CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o"
@@ -191,10 +135,6 @@ ExtendPum_resolution_EXTERNAL_OBJECTS =
 
 ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/tests/extendpum_resolution.cpp.o
 ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/Pum_WaveRay/HE_FEM.cpp.o
-ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeMat.cpp.o
-ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_EdgeVector.cpp.o
-ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElementMatrix.cpp.o
-ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/ExtendPUM_ElemVector.cpp.o
 ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/HE_ExtendPUM.cpp.o
 ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/utils.cpp.o
 ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/__/utils/HE_solution.cpp.o
@@ -224,8 +164,8 @@ ExtendPum/ExtendPum_resolution: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f
 ExtendPum/ExtendPum_resolution: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/lib/libspdlog.a
 ExtendPum/ExtendPum_resolution: /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/lib/libfmt.a
 ExtendPum/ExtendPum_resolution: ExtendPum/CMakeFiles/ExtendPum_resolution.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/liaowang/Documents/master-thesis/code/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable ExtendPum_resolution"
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/ExtendPum_resolution.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/liaowang/Documents/master-thesis/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable ExtendPum_resolution"
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/ExtendPum_resolution.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build: ExtendPum/ExtendPum_resolution
@@ -233,10 +173,10 @@ ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build: ExtendPum/ExtendPum_resolut
 .PHONY : ExtendPum/CMakeFiles/ExtendPum_resolution.dir/build
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/clean:
-	cd /home/liaowang/Documents/master-thesis/code/release/ExtendPum && $(CMAKE_COMMAND) -P CMakeFiles/ExtendPum_resolution.dir/cmake_clean.cmake
+	cd /home/liaowang/Documents/master-thesis/release/ExtendPum && $(CMAKE_COMMAND) -P CMakeFiles/ExtendPum_resolution.dir/cmake_clean.cmake
 .PHONY : ExtendPum/CMakeFiles/ExtendPum_resolution.dir/clean
 
 ExtendPum/CMakeFiles/ExtendPum_resolution.dir/depend:
-	cd /home/liaowang/Documents/master-thesis/code/release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/liaowang/Documents/master-thesis/code /home/liaowang/Documents/master-thesis/code/ExtendPum /home/liaowang/Documents/master-thesis/code/release /home/liaowang/Documents/master-thesis/code/release/ExtendPum /home/liaowang/Documents/master-thesis/code/release/ExtendPum/CMakeFiles/ExtendPum_resolution.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/liaowang/Documents/master-thesis/release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/liaowang/Documents/master-thesis /home/liaowang/Documents/master-thesis/ExtendPum /home/liaowang/Documents/master-thesis/release /home/liaowang/Documents/master-thesis/release/ExtendPum /home/liaowang/Documents/master-thesis/release/ExtendPum/CMakeFiles/ExtendPum_resolution.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : ExtendPum/CMakeFiles/ExtendPum_resolution.dir/depend
 

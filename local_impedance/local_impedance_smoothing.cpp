@@ -363,7 +363,7 @@ void iteration_count() {
     // std::vector<std::string> meshes{"../meshes/square_hole2.msh"};
     std::vector<bool> hole{false, true, true};
     // std::vector<double> wave_number{4, 6, 8, 10, 12, 14, 16, 18, 20};
-    std::vector<int> wave_number{10, 12, 14, 16, 18, 20};
+    std::vector<int> wave_number{10, 12, 14};
     int L = 4;
     int num_coarserlayer = L;
 
@@ -381,14 +381,14 @@ void iteration_count() {
             auto g = sol.boundary_g();
 
             HE_LagrangeO1 he_O1(L, k, meshes[mesh_idx], g, u, hole[mesh_idx], 50);
-            int it_count = KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, relaxation_threshold, error_threshold, true);
+            int it_count = KrylovEnhance_impedance(he_O1, L, num_coarserlayer, k, relaxation_threshold, error_threshold, false);
             counts[mesh_idx].push_back(it_count);
         }
         std::cout << meshes[mesh_idx] << " finished" << std::endl;
     } 
     std::vector<std::string> mesh_name{"unit_square", "square_hole", "triangle_hole", "k"};
     // std::vector<std::string> mesh_name{"square_hole", "k"};
-    std::string str = "gs_above_8_L" + std::to_string(L);
+    std::string str = "L" + std::to_string(L);
     print_save_error(counts, mesh_name, str, output);
 }
 

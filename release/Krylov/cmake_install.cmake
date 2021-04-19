@@ -1,4 +1,4 @@
-# Install script for directory: /home/liaowang/Documents/master-thesis/code/Krylov
+# Install script for directory: /home/liaowang/Documents/master-thesis/Krylov
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

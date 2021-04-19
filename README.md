@@ -17,22 +17,25 @@ make
 - Resolution test for standard Lagrangian finite elmeent spaces
   - Results are in section 7.1 in the thesis pdf.
   - Source file: `LagrangeO1/test/O1_resolution.cpp`
-  - Run the executable file `./O1_resolution`
-  - The results 
+  - Run the executable file `./LagrangeO1/O1_resolution`
+  - The results are stored at `result_squarehole/LagrangeO1/`
 - Resolution test for (Extend) PUM spaces
   - Results are in section 5.4 in the thesis pdf.
   - Source file lies in `Pum/tests/pum_resolution.cpp`  and `ExtendPum/tests/extendpum_resolution.cpp`
   - Run the executable file `./Pum/pum_resolution` and `./ExtendPum/ExtendPum_resolution`
+  - Results are stroed at `result_square/PUM` and `result_square/ExtendPum/`
 - PUM Wave-Ray method
   - Results are in section 7.3 
   - Source file lies in `Wave_Ray_Cycle/Wave_Ray.cpp`, and some useful functions are in `utils/mg_element.h`
   - Run the executable `./Wave_Ray_Cycle/Wave_Ray`
+  - Results are stored at `result/waveray_factor/`
 
 - GMRES
 
   - Results are in section 8.3
   - Source file: `Krylov/KrylovEnhance_mg.cpp`
   - Run the executable file `./Krylov/mg_krylov`
+  - Results are stored at `result/mgGmres_count/`
 
 - Local impedance smoothing
 
@@ -41,6 +44,7 @@ make
   - Files: `local_impedance/local_impedance_smoothing.cpp`
 
   - Run the executable file `./local_impedance/local_impedance_smoothing`
+  - Results are stored at `result/impedance_count`
 
     
 

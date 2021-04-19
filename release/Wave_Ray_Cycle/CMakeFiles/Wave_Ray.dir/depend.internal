@@ -1095,17 +1095,17 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/Wave_Ray.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum/HE_ExtendPUM.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum_WaveRay/ExtendPUM_WaveRay.h
- /home/liaowang/Documents/master-thesis/code/Krylov/GMRES.h
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
- /home/liaowang/Documents/master-thesis/code/Pum/HE_PUM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/PUM_WaveRay.h
- /home/liaowang/Documents/master-thesis/code/Wave_Ray_Cycle/Wave_Ray.cpp
- /home/liaowang/Documents/master-thesis/code/utils/HE_solution.h
- /home/liaowang/Documents/master-thesis/code/utils/mg_element.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/ExtendPum/HE_ExtendPUM.h
+ /home/liaowang/Documents/master-thesis/ExtendPum_WaveRay/ExtendPUM_WaveRay.h
+ /home/liaowang/Documents/master-thesis/Krylov/GMRES.h
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
+ /home/liaowang/Documents/master-thesis/Pum/HE_PUM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/PUM_WaveRay.h
+ /home/liaowang/Documents/master-thesis/Wave_Ray_Cycle/Wave_Ray.cpp
+ /home/liaowang/Documents/master-thesis/utils/HE_solution.h
+ /home/liaowang/Documents/master-thesis/utils/mg_element.h
+ /home/liaowang/Documents/master-thesis/utils/utils.h
 Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/ExtendPum/HE_ExtendPUM.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -2100,14 +2100,14 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/ExtendPum/HE_ExtendPUM.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_EdgeMat.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_EdgeVector.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_ElemVector.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum/ExtendPUM_ElementMatrix.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum/HE_ExtendPUM.cpp
- /home/liaowang/Documents/master-thesis/code/ExtendPum/HE_ExtendPUM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/ExtendPum/ExtendPUM_EdgeMat.h
+ /home/liaowang/Documents/master-thesis/ExtendPum/ExtendPUM_EdgeVector.h
+ /home/liaowang/Documents/master-thesis/ExtendPum/ExtendPUM_ElemVector.h
+ /home/liaowang/Documents/master-thesis/ExtendPum/ExtendPUM_ElementMatrix.h
+ /home/liaowang/Documents/master-thesis/ExtendPum/HE_ExtendPUM.cpp
+ /home/liaowang/Documents/master-thesis/ExtendPum/HE_ExtendPUM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/utils/utils.h
 Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/ExtendPum_WaveRay/ExtendPUM_WaveRay.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -3102,12 +3102,12 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/ExtendPum_WaveRay/ExtendPUM_WaveRay.cp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum/HE_ExtendPUM.h
- /home/liaowang/Documents/master-thesis/code/ExtendPum_WaveRay/ExtendPUM_WaveRay.cpp
- /home/liaowang/Documents/master-thesis/code/ExtendPum_WaveRay/ExtendPUM_WaveRay.h
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/ExtendPum/HE_ExtendPUM.h
+ /home/liaowang/Documents/master-thesis/ExtendPum_WaveRay/ExtendPUM_WaveRay.cpp
+ /home/liaowang/Documents/master-thesis/ExtendPum_WaveRay/ExtendPUM_WaveRay.h
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/utils/utils.h
 Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -4102,10 +4102,10 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/LagrangeO1/HE_LagrangeO1.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.cpp
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.cpp
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/utils/utils.h
 Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/Pum/HE_PUM.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -5100,14 +5100,14 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/Pum/HE_PUM.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/Pum/HE_PUM.cpp
- /home/liaowang/Documents/master-thesis/code/Pum/HE_PUM.h
- /home/liaowang/Documents/master-thesis/code/Pum/PUM_EdgeMat.h
- /home/liaowang/Documents/master-thesis/code/Pum/PUM_EdgeVector.h
- /home/liaowang/Documents/master-thesis/code/Pum/PUM_ElemVector.h
- /home/liaowang/Documents/master-thesis/code/Pum/PUM_ElementMatrix.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/Pum/HE_PUM.cpp
+ /home/liaowang/Documents/master-thesis/Pum/HE_PUM.h
+ /home/liaowang/Documents/master-thesis/Pum/PUM_EdgeMat.h
+ /home/liaowang/Documents/master-thesis/Pum/PUM_EdgeVector.h
+ /home/liaowang/Documents/master-thesis/Pum/PUM_ElemVector.h
+ /home/liaowang/Documents/master-thesis/Pum/PUM_ElementMatrix.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/utils/utils.h
 Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/Pum_WaveRay/HE_FEM.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -6102,8 +6102,8 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/Pum_WaveRay/HE_FEM.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.cpp
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.cpp
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
 Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/Pum_WaveRay/PUM_WaveRay.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -7098,12 +7098,12 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/Pum_WaveRay/PUM_WaveRay.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
- /home/liaowang/Documents/master-thesis/code/Pum/HE_PUM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/PUM_WaveRay.cpp
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/PUM_WaveRay.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
+ /home/liaowang/Documents/master-thesis/Pum/HE_PUM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/PUM_WaveRay.cpp
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/PUM_WaveRay.h
+ /home/liaowang/Documents/master-thesis/utils/utils.h
 Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/utils/HE_solution.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/Core
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/src/Core/Array.h
@@ -7245,8 +7245,8 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/utils/HE_solution.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/src/plugins/CommonCwiseUnaryOps.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/src/plugins/MatrixCwiseBinaryOps.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/eigen3/Eigen/src/plugins/MatrixCwiseUnaryOps.h
- /home/liaowang/Documents/master-thesis/code/utils/HE_solution.cpp
- /home/liaowang/Documents/master-thesis/code/utils/HE_solution.h
+ /home/liaowang/Documents/master-thesis/utils/HE_solution.cpp
+ /home/liaowang/Documents/master-thesis/utils/HE_solution.h
 Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/utils/utils.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/aligned_storage.hpp
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/boost/assert.hpp
@@ -8241,10 +8241,10 @@ Wave_Ray_Cycle/CMakeFiles/Wave_Ray.dir/__/utils/utils.cpp.o
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/spdlog.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/tweakme.h
  /home/liaowang/.hunter/_Base/6c9b2bc/252be92/d0f91ad/Install/include/spdlog/version.h
- /home/liaowang/Documents/master-thesis/code/LagrangeO1/HE_LagrangeO1.h
- /home/liaowang/Documents/master-thesis/code/Pum/HE_PUM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/HE_FEM.h
- /home/liaowang/Documents/master-thesis/code/Pum_WaveRay/PUM_WaveRay.h
- /home/liaowang/Documents/master-thesis/code/utils/HE_solution.h
- /home/liaowang/Documents/master-thesis/code/utils/utils.cpp
- /home/liaowang/Documents/master-thesis/code/utils/utils.h
+ /home/liaowang/Documents/master-thesis/LagrangeO1/HE_LagrangeO1.h
+ /home/liaowang/Documents/master-thesis/Pum/HE_PUM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/HE_FEM.h
+ /home/liaowang/Documents/master-thesis/Pum_WaveRay/PUM_WaveRay.h
+ /home/liaowang/Documents/master-thesis/utils/HE_solution.h
+ /home/liaowang/Documents/master-thesis/utils/utils.cpp
+ /home/liaowang/Documents/master-thesis/utils/utils.h
